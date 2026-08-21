@@ -23,8 +23,6 @@ COPY --from=builder /app/backend/package.json ./backend/
 COPY frontend ./frontend
 COPY admin ./admin
 COPY knowledge-base ./knowledge-base
-COPY scripts ./scripts
-COPY .env.example ./
 
 EXPOSE 5000
 
