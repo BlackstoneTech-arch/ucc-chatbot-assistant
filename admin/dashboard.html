@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UCC Admin - Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="admin-header-content">
+        <div>
+          <h1>UCC Chatbot Admin</h1>
+          <p>Knowledge Management Dashboard</p>
+        </div>
+        <button class="btn-secondary" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="admin-container">
+      <!-- Navigation -->
+      <nav class="admin-nav">
+        <button class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="nav-tab" data-tab="documents" onclick="switchTab('documents')">Documents</button>
+        <button class="nav-tab" data-tab="conversations" onclick="switchTab('conversations')">Conversations</button>
+        <button class="nav-tab" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
+      </nav>
+
+      <!-- Dashboard Tab -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p class="stat-label">Total Conversations</p>
+            <p class="stat-value" id="stat-conversations">-</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Total Messages</p>
+            <p class="stat-value" id="stat-messages">-</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Average Rating</p>
+            <p class="stat-value" id="stat-rating">-</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Active Documents</p>
+            <p class="stat-value" id="stat-documents">-</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Tab -->
+      <div id="tab-documents" class="tab-content">
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Year</th>
+                <th>Indexed</th>
+              </tr>
+            </thead>
+            <tbody id="documents-table-body">
+              <tr><td colspan="5" class="text-center">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Conversations Tab -->
+      <div id="tab-conversations" class="tab-content">
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>User</th>
+                <th>Messages</th>
+                <th>Started At</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="conversations-table-body">
+              <tr><td colspan="5" class="text-center">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div id="tab-analytics" class="tab-content">
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <h3>Top Intents</h3>
+            <div id="top-intents" class="intents-list">
+              <p class="text-center text-gray-500">Loading...</p>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <h3>Metrics</h3>
+            <div id="metrics-list" class="metrics-list">
+              <p class="text-center text-gray-500">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
