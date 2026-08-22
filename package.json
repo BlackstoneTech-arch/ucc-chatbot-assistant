@@ -1,25 +1,17 @@
 {
   "name": "ucc-chatbot-assistant",
   "version": "1.0.0",
-  "description": "UCC Chatbot Assistant - University of Dar es Salaam Computing Centre AI Customer Care System",
+  "description": "UCC Chatbot Assistant - University of Dar es Salaam Computing Centre",
   "private": true,
-  "workspaces": [
-    "backend"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run serve:frontend\"",
-    "dev:backend": "npm run dev --workspace=backend",
-    "serve:frontend": "npx serve frontend -l 3000",
-    "serve:admin": "npx serve admin -l 3001",
-    "build": "npm run build --workspace=backend",
-    "db:migrate": "npm run migrate --workspace=backend",
-    "db:seed": "npm run seed --workspace=backend",
-    "test": "npm run test --workspace=backend",
-    "lint": "npm run lint --workspace=backend",
-    "typecheck": "npm run typecheck --workspace=backend"
+    "dev:backend": "cd backend && mvn spring-boot:run",
+    "dev:frontend": "npx serve frontend -l 3000",
+    "dev:admin": "npx serve admin -l 3001",
+    "build:backend": "cd backend && mvn clean package",
+    "test": "cd backend && mvn test",
+    "lint": "echo \"No lint configured\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.0",
     "serve": "^14.2.0"
   }
 }

@@ -1,8 +1,10 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE_URL = window.location.hostname === "localhost"
+    ? "http://localhost:8080/api"
+    : "https://YOUR-JAVA-BACKEND-DOMAIN/api";
 
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('ucc_token');
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

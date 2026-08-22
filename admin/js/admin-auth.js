@@ -1,7 +1,9 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE_URL = window.location.hostname === "localhost"
+    ? "http://localhost:8080/api"
+    : "https://YOUR-JAVA-BACKEND-DOMAIN/api";
 
 async function login(email, password) {
-  const response = await fetch(`${API_BASE}/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -33,7 +35,7 @@ async function getCurrentUser() {
   if (!token) return null;
 
   try {
-    const response = await fetch(`${API_BASE}/auth/me`, {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

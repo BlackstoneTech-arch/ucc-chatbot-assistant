@@ -1,7 +1,3 @@
-const API_BASE_URL = window.location.hostname === "localhost"
-    ? "http://localhost:8080/api"
-    : "https://YOUR-JAVA-BACKEND-DOMAIN/api";
-
 let sessionId = crypto.randomUUID();
 let conversationHistory = [];
 let isProcessing = false;
