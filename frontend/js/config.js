@@ -1,5 +1,5 @@
 const API_BASE_URL = window.location.hostname === "localhost"
-    ? "http://localhost:8080/api"
+    ? "http://localhost:8081/api"
     : "https://YOUR-JAVA-BACKEND-DOMAIN/api";
 
 async function apiRequest(endpoint, options = {}) {
