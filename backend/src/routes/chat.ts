@@ -3,7 +3,7 @@ import { chatController, getProgrammes, getProgrammeById, getFAQs, getContacts, 
 
 const router = Router();
 
-router.post('/chat', chatController);
+router.post('/', chatController);
 router.get('/programmes', getProgrammes);
 router.get('/programmes/:id', getProgrammeById);
 router.get('/faqs', getFAQs);
