@@ -21,6 +21,27 @@ function sendQuickAction(message) {
   sendMessage(message);
 }
 
+function detectLanguage(message) {
+  const lower = message.toLowerCase();
+  const swahiliIndicators = [
+    'nina', 'ni', 'na', 'wa', 'kwa', 'ya', 'za', 'vya', 'kozi', 'omba', 'sasa',
+    'hii', 'hilo', 'hizi', 'hayo', 'kweli', 'labda', 'kama', 'au', 'kabla', 'baada',
+    'mimi', 'wewe', 'sisi', 'ninyi', 'huyu', 'huyo', 'hawa', 'ndani', 'nje', 'karibu',
+    'habari', 'hapo', 'huku', 'kule', 'chini', 'juu', 'mbele', 'nyuma', 'mbali', 'moja',
+    'mbili', 'nini', 'kazi', 'ali', 'ta', 'vyo', 'si', 'hadi', 'kati', 'pia', 'tafadhali',
+    'asante', 'kwaheri', 'salamu', 'jina', 'mahali', 'siku', 'leo', 'kesho', 'jana'
+  ];
+
+  let count = 0;
+  for (const word of swahiliIndicators) {
+    if (lower.includes(word)) {
+      count++;
+    }
+  }
+
+  return count >= 2 ? 'sw' : 'en';
+}
+
 function addMessage(role, content, sources = [], intent = '', confidence = 0, escalated = false) {
   const messagesContainer = document.getElementById('chat-messages');
 
@@ -100,13 +121,15 @@ async function sendMessage(message) {
   showTypingIndicator();
 
   try {
+    const detectedLanguage = detectLanguage(message);
+
     const response = await fetch(`${API_BASE_URL}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message: message.trim(),
         conversationId: sessionId,
-        language: 'en'
+        language: detectedLanguage
       }),
     });
 
