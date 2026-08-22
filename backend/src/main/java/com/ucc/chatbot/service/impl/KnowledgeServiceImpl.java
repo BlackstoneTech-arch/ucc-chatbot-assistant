@@ -64,4 +64,17 @@ public class KnowledgeServiceImpl implements com.ucc.chatbot.service.KnowledgeSe
     public List<KnowledgeDocument> getActiveDocumentsByCategory(String category) {
         return knowledgeRepository.findByCategoryAndIsActiveTrue(category);
     }
+
+    @Override
+    public KnowledgeDocument uploadDocument(String title, String category, String content, String sourceType, String academicYear) {
+        KnowledgeDocument doc = new KnowledgeDocument();
+        doc.setTitle(title);
+        doc.setCategory(category);
+        doc.setContent(content);
+        doc.setSourceType(sourceType);
+        doc.setAcademicYear(academicYear);
+        doc.setIsActive(true);
+        doc.setApprovalStatus("PENDING");
+        return knowledgeRepository.save(doc);
+    }
 }

@@ -8,7 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,5 +72,27 @@ public class KnowledgeController {
     public ResponseEntity<Void> deleteKnowledge(@PathVariable String id) {
         knowledgeService.deleteDocument(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<KnowledgeDocument> uploadKnowledge(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "category", defaultValue = "imported") String category,
+            @RequestParam(value = "sourceType", defaultValue = "FILE") String sourceType,
+            @RequestParam(value = "academicYear", required = false) String academicYear) {
+        try {
+            String content = new BufferedReader(new InputStreamReader(file.getInputStream()))
+                    .lines().reduce("", (acc, line) -> acc + line + "\n");
+            KnowledgeDocument doc = knowledgeService.uploadDocument(
+                    file.getOriginalFilename(),
+                    category,
+                    content,
+                    sourceType,
+                    academicYear
+            );
+            return ResponseEntity.ok(doc);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

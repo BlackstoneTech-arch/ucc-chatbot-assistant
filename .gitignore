@@ -28,5 +28,7 @@ knowledge-base/.index/*
 !knowledge-base/.index/.gitkeep
 database/backups/*
 !database/backups/.gitkeep
+backend/target/
+backend/maven-temp/
 *.tsbuildinfo
 .nyc_output

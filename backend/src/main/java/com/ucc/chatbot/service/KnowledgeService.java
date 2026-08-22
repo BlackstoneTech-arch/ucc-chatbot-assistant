@@ -15,4 +15,5 @@ public interface KnowledgeService {
     void deleteDocument(String id);
     List<KnowledgeDocument> getDocumentsByCategory(String category);
     List<KnowledgeDocument> getActiveDocumentsByCategory(String category);
+    KnowledgeDocument uploadDocument(String title, String category, String content, String sourceType, String academicYear);
 }

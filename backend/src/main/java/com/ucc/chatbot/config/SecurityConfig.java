@@ -24,9 +24,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtService jwtService;
+    private final JwtAuthFilter jwtAuthFilter;
 
-    public SecurityConfig(JwtService jwtService) {
+    public SecurityConfig(JwtService jwtService, JwtAuthFilter jwtAuthFilter) {
         this.jwtService = jwtService;
+        this.jwtAuthFilter = jwtAuthFilter;
     }
 
     @Bean
@@ -44,7 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/contacts/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
                         .anyRequest().permitAll()
-                );
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

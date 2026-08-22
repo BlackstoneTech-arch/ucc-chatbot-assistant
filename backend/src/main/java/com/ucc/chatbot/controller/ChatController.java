@@ -7,8 +7,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping("/api")
 @CrossOrigin
 public class ChatController {
 
@@ -18,7 +20,12 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    @PostMapping
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> health() {
+        return ResponseEntity.ok(Map.of("status", "UP"));
+    }
+
+    @PostMapping("/chat")
     public ResponseEntity<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
         ChatResponse response = chatService.processMessage(request);
         return ResponseEntity.ok(response);
