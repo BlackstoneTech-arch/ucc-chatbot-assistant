@@ -32,6 +32,8 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
     @Value("${ai.model:gpt-4o-mini}")
     private String model;
 
+    private static final Set<String> PROGRAMME_CODES = Set.of("DBIT", "DCIT", "CCIT", "CBIT");
+
     private static final String SYSTEM_PROMPT = """
             You are the UCC Chatbot Assistant for the University of Dar es Salaam Computing Centre (UCC).
             
@@ -152,6 +154,11 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
         String lowerMessage = request.getMessage().toLowerCase();
         String language = detectLanguage(request.getMessage(), request.getLanguage());
 
+        String activeProgramme = extractActiveProgrammeFromContext(context);
+        if (activeProgramme != null && !lowerMessage.contains(activeProgramme.toLowerCase())) {
+            lowerMessage = lowerMessage + " " + activeProgramme.toLowerCase();
+        }
+
         Map<String, List<String>> staticKB = "sw".equals(language) ? STATIC_KB_SW : STATIC_KB_EN;
 
         for (Map.Entry<String, List<String>> entry : staticKB.entrySet()) {
@@ -257,6 +264,17 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    private String extractActiveProgrammeFromContext(String context) {
+        if (context == null || context.isBlank()) return null;
+        String lower = context.toLowerCase();
+        for (String code : PROGRAMME_CODES) {
+            if (lower.contains(code.toLowerCase())) {
+                return code;
+            }
+        }
+        return null;
     }
 
     private String detectLanguage(String message, String explicitLanguage) {

@@ -61,4 +61,15 @@ public class ConversationServiceImpl implements com.ucc.chatbot.service.Conversa
     public Optional<Conversation> getConversationById(String id) {
         return conversationRepository.findById(id);
     }
+
+    @Override
+    public void updateContext(String conversationId, String programme, String concept, String intent) {
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
+        if (conversation != null) {
+            if (programme != null) conversation.setLastProgramme(programme);
+            if (concept != null) conversation.setLastConcept(concept);
+            if (intent != null) conversation.setLastIntent(intent);
+            conversationRepository.save(conversation);
+        }
+    }
 }

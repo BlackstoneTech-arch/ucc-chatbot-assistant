@@ -11,4 +11,5 @@ public interface ConversationService {
     List<Message> getMessages(String conversationId);
     List<Conversation> getAllConversations();
     Optional<Conversation> getConversationById(String id);
+    void updateContext(String conversationId, String programme, String concept, String intent);
 }

@@ -28,6 +28,15 @@ public class Conversation {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Column(name = "last_programme", length = 50)
+    private String lastProgramme;
+
+    @Column(name = "last_concept", length = 100)
+    private String lastConcept;
+
+    @Column(name = "last_intent", length = 100)
+    private String lastIntent;
+
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Message> messages = new HashSet<>();
 
@@ -60,6 +69,12 @@ public class Conversation {
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    public String getLastProgramme() { return lastProgramme; }
+    public void setLastProgramme(String lastProgramme) { this.lastProgramme = lastProgramme; }
+    public String getLastConcept() { return lastConcept; }
+    public void setLastConcept(String lastConcept) { this.lastConcept = lastConcept; }
+    public String getLastIntent() { return lastIntent; }
+    public void setLastIntent(String lastIntent) { this.lastIntent = lastIntent; }
     public Set<Message> getMessages() { return messages; }
     public void setMessages(Set<Message> messages) { this.messages = messages; }
     public Feedback getFeedback() { return feedback; }

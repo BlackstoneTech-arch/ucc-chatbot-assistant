@@ -25,7 +25,13 @@ public class KnowledgeServiceImpl implements com.ucc.chatbot.service.KnowledgeSe
 
     @Override
     public Page<KnowledgeDocument> searchDocuments(String query, Pageable pageable) {
-        return knowledgeRepository.findAll(pageable);
+        if (query == null || query.isBlank()) {
+            return knowledgeRepository.findAll(pageable);
+        }
+        List<KnowledgeDocument> results = knowledgeRepository.searchActive(query.trim());
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), results.size());
+        return new org.springframework.data.domain.PageImpl<>(results.subList(start, end), pageable, results.size());
     }
 
     @Override

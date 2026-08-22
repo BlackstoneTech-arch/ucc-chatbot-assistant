@@ -35,9 +35,15 @@ public class ChatResponse {
     public ChatResponse build() { return this; }
 
     public String getAnswer() { return answer; }
+    public void setAnswer(String answer) { this.answer = answer; }
     public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
     public String getConversationId() { return conversationId; }
+    public void setConversationId(String conversationId) { this.conversationId = conversationId; }
     public List<Map<String, String>> getSources() { return sources; }
+    public void setSources(List<Map<String, String>> sources) { this.sources = sources; }
     public double getConfidence() { return confidence; }
+    public void setConfidence(double confidence) { this.confidence = confidence; }
     public boolean isEscalationRequired() { return escalationRequired; }
+    public void setEscalationRequired(boolean escalationRequired) { this.escalationRequired = escalationRequired; }
 }

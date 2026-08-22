@@ -1,6 +1,14 @@
-const API_BASE_URL = window.location.hostname === "localhost"
-    ? "http://localhost:8080/api"
-    : "https://YOUR-JAVA-BACKEND-DOMAIN/api";
+// ============================================
+// ADMIN CONFIGURATION - UPDATE THIS FOR PRODUCTION
+// ============================================
+const ADMIN_CONFIG = {
+  API_BASE_URL: window.location.hostname === "localhost"
+    ? "http://localhost:8081/api"
+    : "https://YOUR-BACKEND-DOMAIN/api"
+};
+// ============================================
+
+const API_BASE_URL = ADMIN_CONFIG.API_BASE_URL;
 
 async function login(email, password) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -16,58 +24,65 @@ async function login(email, password) {
   }
 
   localStorage.setItem('ucc_token', data.token);
-  localStorage.setItem('ucc_user', JSON.stringify(data.user));
+  localStorage.setItem('ucc_user', JSON.stringify(data));
   return data;
 }
 
 function logout() {
   localStorage.removeItem('ucc_token');
   localStorage.removeItem('ucc_user');
-  window.location.href = 'index.html';
+  window.location.reload();
 }
 
 function isAuthenticated() {
   return !!localStorage.getItem('ucc_token');
 }
 
+function getToken() {
+  return localStorage.getItem('ucc_token');
+}
+
+function getUser() {
+  const user = localStorage.getItem('ucc_user');
+  return user ? JSON.parse(user) : null;
+}
+
+async function refreshToken() {
+  const token = getToken();
+  if (!token) return false;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      logout();
+      return false;
+    }
+
+    const data = await response.json();
+    localStorage.setItem('ucc_token', data.token);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function getCurrentUser() {
-  const token = localStorage.getItem('ucc_token');
+  const token = getToken();
   if (!token) return null;
 
   try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!response.ok) return null;
     const data = await response.json();
-    return data.user;
+    return data;
   } catch {
     return null;
   }
 }
-
-// Login form handler
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('login-form');
-  const loginError = document.getElementById('login-error');
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-
-      loginError.classList.add('hidden');
-
-      try {
-        await login(email, password);
-        window.location.href = 'dashboard.html';
-      } catch (error) {
-        loginError.textContent = error.message;
-        loginError.classList.remove('hidden');
-      }
-    });
-  }
-});

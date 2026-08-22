@@ -63,7 +63,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5500",
                 "http://localhost:3000",
+                "http://localhost:3001",
                 "http://localhost:8080",
+                "http://localhost:8081",
                 "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));

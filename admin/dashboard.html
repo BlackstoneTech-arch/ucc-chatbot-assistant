@@ -3,116 +3,730 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UCC Admin - Dashboard</title>
+  <title>UCC Admin - Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
   <div id="app">
-    <!-- Header -->
-    <header class="admin-header">
-      <div class="admin-header-content">
-        <div>
-          <h1>UCC Chatbot Admin</h1>
-          <p>Knowledge Management Dashboard</p>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-logo">UCC</div>
+          <h1>Admin Command Center</h1>
+          <p>University of Dar es Salaam Computing Centre</p>
         </div>
-        <button class="btn-secondary" onclick="logout()">Logout</button>
-      </div>
-    </header>
-
-    <div class="admin-container">
-      <!-- Navigation -->
-      <nav class="admin-nav">
-        <button class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
-        <button class="nav-tab" data-tab="documents" onclick="switchTab('documents')">Documents</button>
-        <button class="nav-tab" data-tab="conversations" onclick="switchTab('conversations')">Conversations</button>
-        <button class="nav-tab" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
-      </nav>
-
-      <!-- Dashboard Tab -->
-      <div id="tab-dashboard" class="tab-content active">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <p class="stat-label">Total Conversations</p>
-            <p class="stat-value" id="stat-conversations">-</p>
+        <form class="login-form" onsubmit="handleLogin(event)">
+          <div id="login-error" class="login-error hidden"></div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="login-email" placeholder="admin@ucc.co.tz" required>
           </div>
-          <div class="stat-card">
-            <p class="stat-label">Total Messages</p>
-            <p class="stat-value" id="stat-messages">-</p>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="Enter password" required>
           </div>
-          <div class="stat-card">
-            <p class="stat-label">Average Rating</p>
-            <p class="stat-value" id="stat-rating">-</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Active Documents</p>
-            <p class="stat-value" id="stat-documents">-</p>
-          </div>
+          <button type="submit" class="btn-primary btn-block" id="login-btn">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-loader hidden">Signing in...</span>
+          </button>
+        </form>
+        <div class="login-footer">
+          <p>Restricted access. Authorized personnel only.</p>
         </div>
       </div>
+    </div>
 
-      <!-- Documents Tab -->
-      <div id="tab-documents" class="tab-content">
-        <div class="data-table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Year</th>
-                <th>Indexed</th>
-              </tr>
-            </thead>
-            <tbody id="documents-table-body">
-              <tr><td colspan="5" class="text-center">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Conversations Tab -->
-      <div id="tab-conversations" class="tab-content">
-        <div class="data-table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Session ID</th>
-                <th>User</th>
-                <th>Messages</th>
-                <th>Started At</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="conversations-table-body">
-              <tr><td colspan="5" class="text-center">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Analytics Tab -->
-      <div id="tab-analytics" class="tab-content">
-        <div class="analytics-grid">
-          <div class="analytics-card">
-            <h3>Top Intents</h3>
-            <div id="top-intents" class="intents-list">
-              <p class="text-center text-gray-500">Loading...</p>
+    <!-- Main Dashboard -->
+    <div id="dashboard-screen" class="dashboard-screen hidden">
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="admin-header-content">
+          <div class="header-left">
+            <h1>UCC Admin</h1>
+            <p class="header-subtitle">Command Center v1.0</p>
+          </div>
+          <div class="header-right">
+            <div class="header-status">
+              <span class="status-dot" id="system-status-dot"></span>
+              <span id="system-status-text">System Online</span>
             </div>
-          </div>
-          <div class="analytics-card">
-            <h3>Metrics</h3>
-            <div id="metrics-list" class="metrics-list">
-              <p class="text-center text-gray-500">Loading...</p>
+            <div class="header-user">
+              <span id="user-name">Admin</span>
+              <button class="btn-logout" onclick="logout()">Logout</button>
             </div>
           </div>
         </div>
+      </header>
+
+      <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <nav class="admin-sidebar">
+          <div class="sidebar-section">
+            <button class="nav-item active" data-tab="overview" onclick="switchTab('overview')">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+              Overview
+            </button>
+            <button class="nav-item" data-tab="knowledge" onclick="switchTab('knowledge')">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+              Knowledge Base
+            </button>
+            <button class="nav-item" data-tab="ai-training" onclick="switchTab('ai-training')">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+              AI Training
+            </button>
+            <button class="nav-item" data-tab="apis" onclick="switchTab('apis')">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+              API Integrations
+            </button>
+            <button class="nav-item" data-tab="conversations" onclick="switchTab('conversations')">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+              Conversations
+            </button>
+            <button class="nav-item" data-tab="logs" onclick="switchTab('logs')">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+              System Logs
+              <span id="error-badge" class="nav-badge hidden">0</span>
+            </button>
+            <button class="nav-item" data-tab="faqs" onclick="switchTab('faqs')">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              FAQs
+            </button>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+          <!-- Overview Tab -->
+          <section id="tab-overview" class="tab-panel active">
+            <div class="page-header">
+              <h2>System Overview</h2>
+              <p class="page-subtitle">Real-time monitoring and key metrics</p>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                </div>
+                <div class="stat-info">
+                  <p class="stat-label">Total Conversations</p>
+                  <p class="stat-value" id="stat-conversations">-</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                </div>
+                <div class="stat-info">
+                  <p class="stat-label">Total Messages</p>
+                  <p class="stat-value" id="stat-messages">-</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="stat-info">
+                  <p class="stat-label">Avg. Response Time</p>
+                  <p class="stat-value" id="stat-response-time">-</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="stat-info">
+                  <p class="stat-label">User Satisfaction</p>
+                  <p class="stat-value" id="stat-rating">-</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div class="stat-info">
+                  <p class="stat-label">Active Documents</p>
+                  <p class="stat-value" id="stat-documents">-</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div class="stat-info">
+                  <p class="stat-label">Error Count (24h)</p>
+                  <p class="stat-value" id="stat-errors">-</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="overview-grid">
+              <div class="overview-card">
+                <h3>System Health</h3>
+                <div id="system-health" class="health-list">
+                  <div class="health-item">
+                    <span class="health-label">Backend API</span>
+                    <span class="health-status healthy">Operational</span>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-label">Database</span>
+                    <span class="health-status healthy">Operational</span>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-label">AI Service</span>
+                    <span class="health-status healthy">Operational</span>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-label">File Storage</span>
+                    <span class="health-status healthy">Operational</span>
+                  </div>
+                </div>
+              </div>
+              <div class="overview-card">
+                <h3>Top Intents (24h)</h3>
+                <div id="top-intents" class="intents-list">
+                  <p class="text-center text-gray-500">Loading...</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Knowledge Base Tab -->
+          <section id="tab-knowledge" class="tab-panel">
+            <div class="page-header">
+              <div class="page-header-left">
+                <h2>Knowledge Base</h2>
+                <p class="page-subtitle">Manage documents, upload files, and maintain verified content</p>
+              </div>
+              <div class="page-header-actions">
+                <button class="btn-secondary" onclick="exportKnowledge()">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export
+                </button>
+                <button class="btn-primary" onclick="openDocumentModal()">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  New Document
+                </button>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <div class="search-box">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="kb-search" placeholder="Search documents..." oninput="filterDocuments()">
+              </div>
+              <div class="toolbar-filters">
+                <select id="kb-category-filter" onchange="filterDocuments()">
+                  <option value="">All Categories</option>
+                  <option value="admissions">Admissions</option>
+                  <option value="fees">Fees</option>
+                  <option value="programmes">Programmes</option>
+                  <option value="registration">Registration</option>
+                  <option value="ict-support">ICT Support</option>
+                  <option value="contacts">Contacts</option>
+                  <option value="student-services">Student Services</option>
+                  <option value="examinations">Examinations</option>
+                  <option value="professional-training">Professional Training</option>
+                </select>
+                <select id="kb-status-filter" onchange="filterDocuments()">
+                  <option value="">All Status</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="upload-zone" id="upload-zone">
+              <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+              <p class="upload-text">Drag & drop files here, or click to browse</p>
+              <p class="upload-hint">Supports: PDF, DOCX, MD, TXT, JSON, CSV (max 10MB)</p>
+              <input type="file" id="file-input" hidden multiple accept=".pdf,.docx,.md,.txt,.json,.csv">
+            </div>
+
+            <div class="data-table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Year</th>
+                    <th>Source</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="documents-table-body">
+                  <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="documents-pagination" class="pagination"></div>
+          </section>
+
+          <!-- AI Training Tab -->
+          <section id="tab-ai-training" class="tab-panel">
+            <div class="page-header">
+              <div class="page-header-left">
+                <h2>AI Training & Prompt Engineering</h2>
+                <p class="page-subtitle">Manage system prompts, test responses, and fine-tune AI behavior</p>
+              </div>
+              <div class="page-header-actions">
+                <button class="btn-primary" onclick="openPromptModal()">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  New Prompt Template
+                </button>
+              </div>
+            </div>
+
+            <div class="ai-grid">
+              <div class="ai-panel">
+                <h3>Prompt Templates</h3>
+                <div id="prompts-list" class="prompts-list">
+                  <p class="text-center text-gray-500">Loading...</p>
+                </div>
+              </div>
+              <div class="ai-panel">
+                <h3>Test Console</h3>
+                <div class="test-console">
+                  <div class="form-group">
+                    <label>Test Query</label>
+                    <input type="text" id="test-query" placeholder="Enter a test query...">
+                  </div>
+                  <div class="form-group">
+                    <label>Prompt Template</label>
+                    <select id="test-prompt">
+                      <option value="">Default System Prompt</option>
+                    </select>
+                  </div>
+                  <button class="btn-primary" onclick="runAITest()">Run Test</button>
+                  <div id="test-result" class="test-result hidden">
+                    <pre id="test-output"></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- API Integrations Tab -->
+          <section id="tab-apis" class="tab-panel">
+            <div class="page-header">
+              <div class="page-header-left">
+                <h2>API Integrations</h2>
+                <p class="page-subtitle">Manage external API connections, keys, and webhooks</p>
+              </div>
+              <div class="page-header-actions">
+                <button class="btn-primary" onclick="openIntegrationModal()">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Integration
+                </button>
+              </div>
+            </div>
+
+            <div class="integrations-grid" id="integrations-grid">
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon openai">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  </div>
+                  <div class="integration-info">
+                    <h4>OpenAI / LLM API</h4>
+                    <p>Primary AI response generation</p>
+                  </div>
+                  <span class="badge badge-success">Connected</span>
+                </div>
+                <div class="integration-body">
+                  <div class="integration-metric">
+                    <span class="metric-label">Model</span>
+                    <span class="metric-value">gpt-4o-mini</span>
+                  </div>
+                  <div class="integration-metric">
+                    <span class="metric-label">Requests (24h)</span>
+                    <span class="metric-value">1,234</span>
+                  </div>
+                  <div class="integration-metric">
+                    <span class="metric-label">Avg. Latency</span>
+                    <span class="metric-value">450ms</span>
+                  </div>
+                </div>
+                <div class="integration-actions">
+                  <button class="btn-sm btn-secondary" onclick="testIntegration('openai')">Test Connection</button>
+                  <button class="btn-sm btn-secondary" onclick="editIntegration('openai')">Configure</button>
+                </div>
+              </div>
+
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon database">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                  </div>
+                  <div class="integration-info">
+                    <h4>MySQL Database</h4>
+                    <p>Primary data storage</p>
+                  </div>
+                  <span class="badge badge-success">Connected</span>
+                </div>
+                <div class="integration-body">
+                  <div class="integration-metric">
+                    <span class="metric-label">Host</span>
+                    <span class="metric-value">localhost:3306</span>
+                  </div>
+                  <div class="integration-metric">
+                    <span class="metric-label">Connections</span>
+                    <span class="metric-value">12 / 50</span>
+                  </div>
+                  <div class="integration-metric">
+                    <span class="metric-label">Latency</span>
+                    <span class="metric-value">2ms</span>
+                  </div>
+                </div>
+                <div class="integration-actions">
+                  <button class="btn-sm btn-secondary" onclick="testIntegration('database')">Test Connection</button>
+                  <button class="btn-sm btn-secondary" onclick="editIntegration('database')">Configure</button>
+                </div>
+              </div>
+
+              <div class="integration-card add-new">
+                <button class="add-integration-btn" onclick="openIntegrationModal()">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  <span>Add New Integration</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="api-docs-section">
+              <h3>API Integration Guide</h3>
+              <div class="api-docs-grid">
+                <div class="api-doc-card">
+                  <h4>REST API Integration</h4>
+                  <p>Connect external systems via REST endpoints with API key authentication.</p>
+                  <code>POST /api/admin/integrations</code>
+                </div>
+                <div class="api-doc-card">
+                  <h4>Webhook Integration</h4>
+                  <p>Configure webhooks for real-time event notifications.</p>
+                  <code>POST /api/admin/integrations/{id}/webhook</code>
+                </div>
+                <div class="api-doc-card">
+                  <h4>File Import Integration</h4>
+                  <p>Automated document ingestion from external sources.</p>
+                  <code>POST /api/admin/knowledge/import</code>
+                </div>
+                <div class="api-doc-card">
+                  <h4>SSO Integration</h4>
+                  <p>Single sign-on with institutional identity providers.</p>
+                  <code>POST /api/auth/sso</code>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Conversations Tab -->
+          <section id="tab-conversations" class="tab-panel">
+            <div class="page-header">
+              <h2>Conversations</h2>
+              <p class="page-subtitle">Monitor and analyze user interactions</p>
+            </div>
+            <div class="toolbar">
+              <div class="search-box">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="conv-search" placeholder="Search by session ID or user..." oninput="filterConversations()">
+              </div>
+              <div class="toolbar-filters">
+                <select id="conv-status-filter" onchange="filterConversations()">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="ended">Ended</option>
+                </select>
+              </div>
+            </div>
+            <div class="data-table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Session ID</th>
+                    <th>User</th>
+                    <th>Messages</th>
+                    <th>Started At</th>
+                    <th>Last Activity</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="conversations-table-body">
+                  <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="conversations-pagination" class="pagination"></div>
+          </section>
+
+          <!-- System Logs Tab -->
+          <section id="tab-logs" class="tab-panel">
+            <div class="page-header">
+              <div class="page-header-left">
+                <h2>System Logs</h2>
+                <p class="page-subtitle">Error detection, system events, and diagnostics</p>
+              </div>
+              <div class="page-header-actions">
+                <button class="btn-secondary" onclick="exportLogs()">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export Logs
+                </button>
+              </div>
+            </div>
+
+            <div class="log-controls">
+              <div class="log-filters">
+                <select id="log-level-filter" onchange="filterLogs()">
+                  <option value="">All Levels</option>
+                  <option value="ERROR">Errors Only</option>
+                  <option value="WARN">Warnings</option>
+                  <option value="INFO">Info</option>
+                  <option value="DEBUG">Debug</option>
+                </select>
+                <select id="log-component-filter" onchange="filterLogs()">
+                  <option value="">All Components</option>
+                  <option value="QueryUnderstanding">Query Understanding</option>
+                  <option value="AIService">AI Service</option>
+                  <option value="KnowledgeService">Knowledge Service</option>
+                  <option value="ChatService">Chat Service</option>
+                  <option value="Database">Database</option>
+                </select>
+                <input type="date" id="log-date-filter" onchange="filterLogs()">
+              </div>
+              <div class="log-stats">
+                <span class="log-stat error"><span id="error-count">0</span> Errors</span>
+                <span class="log-stat warning"><span id="warning-count">0</span> Warnings</span>
+                <span class="log-stat info"><span id="info-count">0</span> Info</span>
+              </div>
+            </div>
+
+            <div class="log-terminal" id="log-terminal">
+              <div class="log-header">
+                <span class="log-title">Live Log Stream</span>
+                <button class="btn-sm btn-secondary" onclick="clearLogs()">Clear</button>
+              </div>
+              <div id="log-content" class="log-content">
+                <div class="log-line info"><span class="log-time">2026-08-23 00:00:00</span><span class="log-component">System</span> Loading logs...</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- FAQs Tab -->
+          <section id="tab-faqs" class="tab-panel">
+            <div class="page-header">
+              <div class="page-header-left">
+                <h2>FAQ Management</h2>
+                <p class="page-subtitle">Create and manage frequently asked questions</p>
+              </div>
+              <div class="page-header-actions">
+                <button class="btn-primary" onclick="openFaqModal()">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  New FAQ
+                </button>
+              </div>
+            </div>
+            <div class="faqs-list" id="faqs-list">
+              <p class="text-center text-gray-500">Loading...</p>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Document Modal -->
+    <div id="document-modal" class="modal hidden">
+      <div class="modal-backdrop" onclick="closeDocumentModal()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="document-modal-title">New Document</h3>
+          <button class="modal-close" onclick="closeDocumentModal()">&times;</button>
+        </div>
+        <form id="document-form" onsubmit="saveDocument(event)">
+          <div class="form-group">
+            <label>Title *</label>
+            <input type="text" id="doc-title" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="doc-category" required>
+                <option value="">Select category</option>
+                <option value="admissions">Admissions</option>
+                <option value="fees">Fees</option>
+                <option value="programmes">Programmes</option>
+                <option value="registration">Registration</option>
+                <option value="ict-support">ICT Support</option>
+                <option value="contacts">Contacts</option>
+                <option value="student-services">Student Services</option>
+                <option value="examinations">Examinations</option>
+                <option value="professional-training">Professional Training</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Academic Year</label>
+              <input type="text" id="doc-year" placeholder="e.g. 2026/2027">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Content *</label>
+            <textarea id="doc-content" rows="10" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Source URL</label>
+              <input type="url" id="doc-source-url" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label>Source Type</label>
+              <select id="doc-source-type">
+                <option value="MANUAL">Manual</option>
+                <option value="WEB">Web</option>
+                <option value="FILE">File Upload</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Approval Status</label>
+            <select id="doc-status">
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeDocumentModal()">Cancel</button>
+            <button type="submit" class="btn-primary">Save Document</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Prompt Modal -->
+    <div id="prompt-modal" class="modal hidden">
+      <div class="modal-backdrop" onclick="closePromptModal()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="prompt-modal-title">New Prompt Template</h3>
+          <button class="modal-close" onclick="closePromptModal()">&times;</button>
+        </div>
+        <form id="prompt-form" onsubmit="savePrompt(event)">
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" id="prompt-name" required>
+          </div>
+          <div class="form-group">
+            <label>Type *</label>
+            <select id="prompt-type" required>
+              <option value="SYSTEM_PROMPT">System Prompt</option>
+              <option value="RESPONSE_TEMPLATE">Response Template</option>
+              <option value="QUERY_EXPANSION">Query Expansion</option>
+              <option value="WELCOME_MESSAGE">Welcome Message</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Content *</label>
+            <textarea id="prompt-content" rows="12" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Variables (comma-separated)</label>
+            <input type="text" id="prompt-variables" placeholder="e.g. programme_name, academic_year">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closePromptModal()">Cancel</button>
+            <button type="submit" class="btn-primary">Save Prompt</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Integration Modal -->
+    <div id="integration-modal" class="modal hidden">
+      <div class="modal-backdrop" onclick="closeIntegrationModal()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="integration-modal-title">Add Integration</h3>
+          <button class="modal-close" onclick="closeIntegrationModal()">&times;</button>
+        </div>
+        <form id="integration-form" onsubmit="saveIntegration(event)">
+          <div class="form-group">
+            <label>Integration Name *</label>
+            <input type="text" id="int-name" required>
+          </div>
+          <div class="form-group">
+            <label>Type *</label>
+            <select id="int-type" required>
+              <option value="REST_API">REST API</option>
+              <option value="WEBHOOK">Webhook</option>
+              <option value="DATABASE">Database</option>
+              <option value="SSO">SSO / Identity Provider</option>
+              <option value="FILE_STORAGE">File Storage</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Base URL *</label>
+            <input type="url" id="int-url" required>
+          </div>
+          <div class="form-group">
+            <label>API Key / Secret</label>
+            <input type="password" id="int-key" placeholder="Enter API key or secret">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Timeout (ms)</label>
+              <input type="number" id="int-timeout" value="5000">
+            </div>
+            <div class="form-group">
+              <label>Retry Count</label>
+              <input type="number" id="int-retry" value="3">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="testIntegrationFromModal()">Test Connection</button>
+            <button type="button" class="btn-secondary" onclick="closeIntegrationModal()">Cancel</button>
+            <button type="submit" class="btn-primary">Save Integration</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- FAQ Modal -->
+    <div id="faq-modal" class="modal hidden">
+      <div class="modal-backdrop" onclick="closeFaqModal()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="faq-modal-title">New FAQ</h3>
+          <button class="modal-close" onclick="closeFaqModal()">&times;</button>
+        </div>
+        <form id="faq-form" onsubmit="saveFaq(event)">
+          <div class="form-group">
+            <label>Question *</label>
+            <textarea id="faq-question" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Answer *</label>
+            <textarea id="faq-answer" rows="6" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <input type="text" id="faq-category" placeholder="e.g. admissions, fees">
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeFaqModal()">Cancel</button>
+            <button type="submit" class="btn-primary">Save FAQ</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
+  <script src="js/admin-auth.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

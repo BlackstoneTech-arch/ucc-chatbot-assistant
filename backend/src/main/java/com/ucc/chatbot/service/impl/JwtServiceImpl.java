@@ -14,7 +14,7 @@ import java.util.Date;
 @Service
 public class JwtServiceImpl implements JwtService {
 
-    @Value("${jwt.secret:defaultSecretKeyChangeThisInProduction12345678901234567890}")
+    @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.expiration.ms:604800000}")
