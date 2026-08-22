@@ -22,6 +22,10 @@ export class AIService {
     this.model = process.env.AI_MODEL || 'gpt-4o-mini';
   }
 
+  isConfigured(): boolean {
+    return !!this.apiKey;
+  }
+
   async generateResponse(messages: Message[], systemPrompt: string, context?: string): Promise<AIResponse> {
     if (!this.apiKey) {
       return {
@@ -82,6 +86,10 @@ export class AIService {
   }
 
   async classifyIntent(question: string): Promise<{ intent: string; confidence: number; entities: Record<string, any> }> {
+    if (!this.isConfigured()) {
+      return { intent: 'unknown', confidence: 0, entities: {} };
+    }
+
     const systemPrompt = `You are an intent classifier for the UCC Chatbot Assistant. Classify the user's question into one of these intents:
 - greeting
 - about_ucc
