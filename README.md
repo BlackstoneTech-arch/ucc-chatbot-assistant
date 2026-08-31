@@ -1,10 +1,19 @@
-# UCC Chatbot Assistant
+# UCC Chatbot Assistant — "Aisha"
 
-AI-powered customer-care assistant for the University of Dar es Salaam Computing Centre (UCC).
+AI-powered premium customer-care assistant for the University of Dar es Salaam Computing Centre (UCC).
 
-**Official Website:** https://www.ucc.co.tz/
+**Official UCC Website:** https://ucc.co.tz/
 **Admission Portal:** https://admission.ucc.co.tz/
-**Live Frontend:** https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app/
+**Live Chatbot:** https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app/
+**Live Admin Dashboard:** https://admin-uccchatbot.netlify.app/
+
+---
+
+## Meet Aisha — Your UCC Virtual Customer-Care Assistant
+
+> *"Hello there! I'm Aisha, your UCC Virtual Customer Care Assistant. It's a real pleasure to have you here today."*
+
+Aisha is the warm, polished, concierge-grade persona behind the UCC Chatbot. She greets every visitor with genuine warmth, speaks fluent English and Kiswahili, and uses verified information from https://ucc.co.tz/ to answer questions about programmes, admissions, fees, IT services, and software products.
 
 ---
 
@@ -35,6 +44,7 @@ The UCC Chatbot Assistant is an intelligent conversational AI system designed to
 
 ### Key Features
 
+- **Premium Persona — "Aisha":** Warm, charming, concierge-grade customer-care tone
 - **Multilingual Support:** English, Kiswahili, and mixed-language queries
 - **Query Understanding Layer:** Normalizes informal language, detects intent, extracts entities, and expands queries semantically
 - **Knowledge Base Retrieval:** Retrieves verified information from structured documents
@@ -42,6 +52,7 @@ The UCC Chatbot Assistant is an intelligent conversational AI system designed to
 - **Conversation Context:** Maintains context across follow-up questions
 - **Admin Dashboard:** Full management interface for knowledge base, AI training, API integrations, and system monitoring
 - **Escalation System:** Routes unverified queries to human agents
+- **Verified Data:** All programme, fee, admission, and contact data verified against https://ucc.co.tz/
 
 ---
 
@@ -486,7 +497,7 @@ ucc-chatbot-assistant/
   "title": "DBIT Fees 2026/2027",
   "content": "Full text content here...",
   "category": "fees",
-  "sourceUrl": "https://www.ucc.co.tz/course/...",
+  "sourceUrl": "https://ucc.co.tz/course/...",
   "sourceType": "WEB",
   "academicYear": "2026/2027",
   "version": "1.0",
