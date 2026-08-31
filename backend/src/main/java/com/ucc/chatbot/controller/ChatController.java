@@ -46,7 +46,7 @@ public class ChatController {
         List<Map<String, Object>> result = msgs.stream().map(m -> {
             Map<String, Object> r = new LinkedHashMap<>();
             r.put("id", m.getId());
-            r.put("role", m.getSender());
+            r.put("role", m.getRole());
             r.put("content", m.getContent());
             r.put("createdAt", m.getCreatedAt());
             return r;

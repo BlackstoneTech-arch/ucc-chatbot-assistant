@@ -52,7 +52,7 @@ public class AITrainingController {
         AIPrompt existing = promptRepository.findById(id).orElse(null);
         if (existing == null) return ResponseEntity.notFound().build();
         existing.setName(prompt.getName());
-        existing.setPromptText(prompt.getPromptText());
+        existing.setContent(prompt.getContent());
         existing.setDescription(prompt.getDescription());
         existing.setIsActive(prompt.getIsActive());
         existing.setCategory(prompt.getCategory());

@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface KnowledgeCategoryRepository extends JpaRepository<KnowledgeCategory, String> {
     List<KnowledgeCategory> findByIsActiveTrue();
+    List<KnowledgeCategory> findByIsActiveTrueOrderByDisplayOrderAsc();
     Optional<KnowledgeCategory> findByName(String name);
 }

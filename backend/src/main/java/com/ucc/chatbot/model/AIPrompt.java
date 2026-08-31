@@ -14,11 +14,17 @@ public class AIPrompt {
     private String name;
 
     @Column(nullable = false, length = 50)
-    private String type;
+    private String type = "SYSTEM";
 
     @Lob
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
+
+    @Column(length = 500)
+    private String description;
+
+    @Column(length = 50)
+    private String category;
 
     @Column(columnDefinition = "JSON")
     private String variables;
@@ -50,6 +56,10 @@ public class AIPrompt {
     public void setType(String type) { this.type = type; }
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
     public String getVariables() { return variables; }
     public void setVariables(String variables) { this.variables = variables; }
     public Boolean getIsActive() { return isActive; }

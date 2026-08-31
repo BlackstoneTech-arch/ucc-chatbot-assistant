@@ -22,6 +22,9 @@ public class RefreshToken {
     @Column(nullable = false)
     private Boolean revoked = false;
 
+    @Column(name = "revoked_at")
+    private LocalDateTime revokedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -42,4 +45,7 @@ public class RefreshToken {
     public Boolean getRevoked() { return revoked; }
     public void setRevoked(Boolean revoked) { this.revoked = revoked; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getRevokedAt() { return revokedAt; }
+    public void setRevokedAt(LocalDateTime revokedAt) { this.revokedAt = revokedAt; }
 }
