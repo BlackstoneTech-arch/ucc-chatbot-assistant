@@ -1,98 +1,117 @@
 package com.ucc.chatbot.controller;
 
-import com.ucc.chatbot.dto.KnowledgeRequest;
-import com.ucc.chatbot.model.KnowledgeDocument;
-import com.ucc.chatbot.service.KnowledgeService;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.ucc.chatbot.model.*;
+import com.ucc.chatbot.repository.*;
+import com.ucc.chatbot.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Optional;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/admin/knowledge")
-@CrossOrigin
+@PreAuthorize("hasAnyRole('ADMIN','STAFF','EDITOR')")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "https://uccchatbot.netlify.app"})
 public class KnowledgeController {
 
     private final KnowledgeService knowledgeService;
+    private final KnowledgeCategoryRepository categoryRepository;
 
-    public KnowledgeController(KnowledgeService knowledgeService) {
+    @Autowired
+    public KnowledgeController(KnowledgeService knowledgeService,
+                                KnowledgeCategoryRepository categoryRepository) {
         this.knowledgeService = knowledgeService;
+        this.categoryRepository = categoryRepository;
     }
 
     @GetMapping
-    public ResponseEntity<List<KnowledgeDocument>> getAllKnowledge(Pageable pageable) {
-        Page<KnowledgeDocument> page = knowledgeService.searchDocuments(null, pageable);
-        return ResponseEntity.ok(page.getContent());
+    public ResponseEntity<Map<String, Object>> list(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        List<KnowledgeDocument> docs = knowledgeService.searchDocuments(query, PageRequest.of(page, size));
+        response.put("content", docs);
+        response.put("totalElements", docs.size());
+        response.put("page", page);
+        response.put("size", size);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<KnowledgeCategory>> categories() {
+        return ResponseEntity.ok(categoryRepository.findByIsActiveTrueOrderByDisplayOrderAsc());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<KnowledgeDocument> getKnowledgeById(@PathVariable String id) {
-        return knowledgeService.getDocumentById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<KnowledgeDocument> get(@PathVariable String id) {
+        KnowledgeDocument d = knowledgeService.getDocumentById(id);
+        if (d == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(d);
     }
 
     @PostMapping
-    public ResponseEntity<KnowledgeDocument> createKnowledge(@Valid @RequestBody KnowledgeRequest request) {
-        KnowledgeDocument doc = new KnowledgeDocument();
-        doc.setTitle(request.getTitle());
-        doc.setCategory(request.getCategory());
-        doc.setContent(request.getContent());
-        doc.setSourceUrl(request.getSourceUrl());
-        doc.setSourceType(request.getSourceType());
-        doc.setAcademicYear(request.getAcademicYear());
-        doc.setVersion(request.getVersion());
-        doc.setApprovalStatus(request.getApprovalStatus());
-        doc.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
+    public ResponseEntity<KnowledgeDocument> create(@RequestBody KnowledgeDocument doc) {
         return ResponseEntity.ok(knowledgeService.createDocument(doc));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<KnowledgeDocument> updateKnowledge(@PathVariable String id, @Valid @RequestBody KnowledgeRequest request) {
-        KnowledgeDocument doc = new KnowledgeDocument();
-        doc.setTitle(request.getTitle());
-        doc.setCategory(request.getCategory());
-        doc.setContent(request.getContent());
-        doc.setSourceUrl(request.getSourceUrl());
-        doc.setSourceType(request.getSourceType());
-        doc.setAcademicYear(request.getAcademicYear());
-        doc.setVersion(request.getVersion());
-        doc.setApprovalStatus(request.getApprovalStatus());
-        doc.setIsActive(request.getIsActive());
+    public ResponseEntity<KnowledgeDocument> update(@PathVariable String id, @RequestBody KnowledgeDocument doc) {
         return ResponseEntity.ok(knowledgeService.updateDocument(id, doc));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteKnowledge(@PathVariable String id) {
+    public ResponseEntity<?> delete(@PathVariable String id) {
         knowledgeService.deleteDocument(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<KnowledgeDocument> approve(@PathVariable String id, @RequestParam String approvedBy) {
+        return ResponseEntity.ok(knowledgeService.approveDocument(id, approvedBy));
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<KnowledgeDocument> reject(@PathVariable String id, @RequestParam String rejectedBy) {
+        return ResponseEntity.ok(knowledgeService.rejectDocument(id, rejectedBy));
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<KnowledgeDocument> uploadKnowledge(
+    public ResponseEntity<?> upload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "category", defaultValue = "imported") String category,
-            @RequestParam(value = "sourceType", defaultValue = "FILE") String sourceType,
-            @RequestParam(value = "academicYear", required = false) String academicYear) {
-        try {
-            String content = new BufferedReader(new InputStreamReader(file.getInputStream()))
-                    .lines().reduce("", (acc, line) -> acc + line + "\n");
-            KnowledgeDocument doc = knowledgeService.uploadDocument(
-                    file.getOriginalFilename(),
-                    category,
-                    content,
-                    sourceType,
-                    academicYear
-            );
-            return ResponseEntity.ok(doc);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String category) throws IOException {
+        String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+        String docTitle = (title != null && !title.isBlank()) ? title : file.getOriginalFilename();
+        String docCategory = (category != null && !category.isBlank()) ? category : "UPLOADED";
+        Map<String, Object> result = knowledgeService.uploadAndProcess(docTitle, content, docCategory, "FILE_UPLOAD");
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/text")
+    public ResponseEntity<?> uploadText(@RequestBody Map<String, String> payload) {
+        String title = payload.getOrDefault("title", "Untitled");
+        String content = payload.getOrDefault("content", "");
+        String category = payload.getOrDefault("category", "TEXT");
+        Map<String, Object> result = knowledgeService.uploadAndProcess(title, content, category, "TEXT");
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/reindex")
+    public ResponseEntity<?> reindex() {
+        List<KnowledgeDocument> all = knowledgeService.getApprovedDocuments();
+        int count = 0;
+        for (KnowledgeDocument d : all) {
+            knowledgeService.processAndIndex(d.getId());
+            count++;
         }
+        return ResponseEntity.ok(Map.of("success", true, "reindexed", count));
     }
 }

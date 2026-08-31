@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface FAQRepository extends JpaRepository<FAQ, String> {
-    List<FAQ> findByStatusAndIsActiveTrue(String status);
-    List<FAQ> findByCategoryAndStatus(String category, String status);
+    List<FAQ> findByIsPublishedTrue();
+    List<FAQ> findByCategory(String category);
+    List<FAQ> findAllByOrderByPriorityDesc();
 }

@@ -7,12 +7,11 @@ import java.time.LocalDateTime;
 @Table(name = "audit_logs")
 public class AuditLog {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
     private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(name = "user_id", length = 36)
+    private String userId;
 
     @Column(nullable = false, length = 255)
     private String action;
@@ -20,19 +19,19 @@ public class AuditLog {
     @Column(name = "resource_type", length = 100)
     private String resourceType;
 
-    @Column(name = "resource_id", length = 100)
+    @Column(name = "resource_id", length = 36)
     private String resourceId;
 
-    @Column(columnDefinition = "JSON")
+    @Column(name = "old_values", columnDefinition = "JSON")
     private String oldValues;
 
-    @Column(columnDefinition = "JSON")
+    @Column(name = "new_values", columnDefinition = "JSON")
     private String newValues;
 
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
 
-    @Column(name = "user_agent", length = 500)
+    @Column(name = "user_agent", columnDefinition = "TEXT")
     private String userAgent;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -40,13 +39,14 @@ public class AuditLog {
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) id = java.util.UUID.randomUUID().toString();
         createdAt = LocalDateTime.now();
     }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
     public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
     public String getResourceType() { return resourceType; }
@@ -62,5 +62,4 @@ public class AuditLog {
     public String getUserAgent() { return userAgent; }
     public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

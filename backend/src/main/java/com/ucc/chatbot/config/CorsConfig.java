@@ -17,12 +17,16 @@ public class CorsConfig {
                         .allowedOrigins(
                                 "http://localhost:5500",
                                 "http://localhost:3000",
+                                "http://localhost:3001",
                                 "http://localhost:8080",
+                                "http://localhost:8081",
                                 "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app"
                         )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("Authorization", "Content-Type")
-                        .allowCredentials(true);
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                        .allowedHeaders("Authorization", "Content-Type", "Accept")
+                        .exposedHeaders("Authorization")
+                        .allowCredentials(true)
+                        .maxAge(3600);
             }
         };
     }

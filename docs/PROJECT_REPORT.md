@@ -1,8 +1,8 @@
-# UCC Chatbot Assistant — Project Report
+# UCC AI Assistant — Project Report
 
 ## 1. Executive Summary
 
-The **University of Dar es Salaam Computing Centre (UCC) Chatbot Assistant** is an intelligent, multilingual customer-care chatbot designed to help prospective students, current students, and the public discover accurate information about UCC's academic programmes, professional courses, admissions, fees, IT services, and software products. The system runs 24/7, supports English and Kiswahili, and adopts the persona of **"Aisha"**, a warm, polished, premium concierge-grade virtual assistant.
+The **University of Dar es Salaam Computing Centre (UCC) AI Assistant** is an intelligent, multilingual customer-care chatbot designed to help prospective students, current students, and the public discover accurate information about UCC's academic programmes, professional courses, admissions, fees, IT services, and software products. The system runs 24/7, supports English and Kiswahili, and operates under the official identity of **"UCC AI Assistant"** — a neutral, professional, institutional persona.
 
 **Live system:**
 - **Frontend (Chatbot):** https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app/

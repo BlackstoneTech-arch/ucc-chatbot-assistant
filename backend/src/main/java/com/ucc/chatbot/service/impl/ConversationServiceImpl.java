@@ -41,8 +41,8 @@ public class ConversationServiceImpl implements com.ucc.chatbot.service.Conversa
     @Override
     public Message saveMessage(Conversation conversation, String sender, String content) {
         Message message = new Message();
-        message.setConversation(conversation);
-        message.setSender(sender);
+        message.setConversationId(conversation.getId());
+        message.setRole(sender);
         message.setContent(content);
         return messageRepository.save(message);
     }

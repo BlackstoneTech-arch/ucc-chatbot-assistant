@@ -1,5 +1,7 @@
 package com.ucc.chatbot.config;
 
+import com.ucc.chatbot.model.User;
+import com.ucc.chatbot.repository.UserRepository;
 import com.ucc.chatbot.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -19,9 +22,11 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -38,10 +43,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             String email = jwtService.extractEmail(token);
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                var userDetails = new org.springframework.security.core.userdetails.User(
-                        email, "", List.of()
+                User user = userRepository.findByEmail(email).orElse(null);
+                String role = user != null ? user.getRole() : "USER";
+                var authToken = new UsernamePasswordAuthenticationToken(
+                        email, null,
+                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
                 );
-                var authToken = new UsernamePasswordAuthenticationToken(userDetails, null, List.of());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

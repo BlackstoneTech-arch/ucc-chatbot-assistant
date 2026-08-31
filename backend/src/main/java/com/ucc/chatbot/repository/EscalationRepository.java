@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface EscalationRepository extends JpaRepository<Escalation, String> {
     List<Escalation> findByStatusOrderByCreatedAtDesc(String status);
+    List<Escalation> findAllByOrderByCreatedAtDesc();
+    long countByStatus(String status);
 }

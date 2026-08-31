@@ -167,7 +167,7 @@ async function sendMessage(message) {
     conversationHistory.push({ role: 'assistant', content: data.answer || data.response || '' });
   } catch (error) {
     hideTypingIndicator();
-    const fallback = aishaFallbackAnswer(message);
+    const fallback = uccFallbackAnswer(message);
     addMessage(
       'assistant',
       fallback.answer,

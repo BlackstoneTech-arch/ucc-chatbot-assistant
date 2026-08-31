@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, String> {
     List<Message> findByConversationIdOrderByCreatedAtAsc(String conversationId);
+    long countByConversationId(String conversationId);
+    long countByCreatedAtAfter(java.time.LocalDateTime after);
 }

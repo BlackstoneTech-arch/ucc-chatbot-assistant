@@ -1,6 +1,7 @@
 package com.ucc.chatbot.controller;
 
 import com.ucc.chatbot.model.Conversation;
+import com.ucc.chatbot.repository.MessageRepository;
 import com.ucc.chatbot.service.ConversationService;
 import com.ucc.chatbot.service.KnowledgeService;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,12 @@ public class AdminController {
 
     private final ConversationService conversationService;
     private final KnowledgeService knowledgeService;
+    private final MessageRepository messageRepository;
 
-    public AdminController(ConversationService conversationService, KnowledgeService knowledgeService) {
+    public AdminController(ConversationService conversationService, KnowledgeService knowledgeService, MessageRepository messageRepository) {
         this.conversationService = conversationService;
         this.knowledgeService = knowledgeService;
+        this.messageRepository = messageRepository;
     }
 
     @GetMapping("/dashboard")
@@ -27,7 +30,7 @@ public class AdminController {
         List<Conversation> conversations = conversationService.getAllConversations();
         long totalConversations = conversations.size();
         long totalMessages = conversations.stream()
-                .mapToLong(c -> c.getMessages() != null ? c.getMessages().size() : 0)
+                .mapToLong(c -> messageRepository.countByConversationId(c.getId()))
                 .sum();
         long activeDocuments = knowledgeService.getAllActiveDocuments().size();
 
