@@ -167,14 +167,16 @@ async function sendMessage(message) {
     conversationHistory.push({ role: 'assistant', content: data.answer || data.response || '' });
   } catch (error) {
     hideTypingIndicator();
+    const fallback = aishaFallbackAnswer(message);
     addMessage(
       'assistant',
-      'I\'m temporarily unable to process your request. Please try again shortly or contact UCC directly at https://www.ucc.co.tz/.',
-      [],
-      'error',
-      0,
-      true
+      fallback.answer,
+      fallback.sources,
+      '',
+      fallback.confidence,
+      fallback.escalationRequired
     );
+    conversationHistory.push({ role: 'assistant', content: fallback.answer });
   } finally {
     isProcessing = false;
     input.disabled = false;
