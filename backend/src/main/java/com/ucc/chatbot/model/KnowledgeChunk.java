@@ -16,18 +16,16 @@ public class KnowledgeChunk {
     @Column(name = "chunk_index", nullable = false)
     private Integer chunkIndex;
 
-    @Lob
-    @Column(name = "chunk_text", nullable = false, columnDefinition = "LONGTEXT")
+    @Column(name = "chunk_text", nullable = false, columnDefinition = "TEXT")
     private String chunkText;
 
-    @Lob
-    @Column(name = "embedding_vector", columnDefinition = "LONGTEXT")
+    @Column(name = "embedding_vector", columnDefinition = "TEXT")
     private String embeddingVector;
 
     @Column(name = "token_count")
     private Integer tokenCount;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String metadata;
 
     @Column(name = "created_at", nullable = false, updatable = false)

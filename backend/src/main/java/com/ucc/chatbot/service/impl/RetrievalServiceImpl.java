@@ -29,7 +29,7 @@ public class RetrievalServiceImpl implements RetrievalService {
 
     @Override
     public List<FAQ> getFAQsByCategory(String category) {
-        return faqRepository.findByCategoryAndStatus(category, "ACTIVE");
+        return faqRepository.findByCategoryAndIsPublished(category, true);
     }
 
     @Override

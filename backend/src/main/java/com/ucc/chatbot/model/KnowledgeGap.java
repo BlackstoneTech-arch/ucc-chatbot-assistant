@@ -10,7 +10,6 @@ public class KnowledgeGap {
     @Column(length = 36)
     private String id;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String question;
 

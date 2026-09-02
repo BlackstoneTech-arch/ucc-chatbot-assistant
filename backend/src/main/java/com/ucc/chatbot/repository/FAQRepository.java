@@ -8,5 +8,5 @@ public interface FAQRepository extends JpaRepository<FAQ, String> {
     List<FAQ> findByIsPublishedTrue();
     List<FAQ> findByCategory(String category);
     List<FAQ> findAllByOrderByPriorityDesc();
-    List<FAQ> findByCategoryAndStatus(String category, String status);
+    List<FAQ> findByCategoryAndIsPublished(String category, Boolean isPublished);
 }

@@ -19,6 +19,9 @@ public class KnowledgeCategory {
     @Column(name = "parent_id", length = 36)
     private String parentId;
 
+    @Column(name = "display_order")
+    private Integer displayOrder = 0;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 
@@ -39,6 +42,8 @@ public class KnowledgeCategory {
     public void setDescription(String description) { this.description = description; }
     public String getParentId() { return parentId; }
     public void setParentId(String parentId) { this.parentId = parentId; }
+    public Integer getDisplayOrder() { return displayOrder; }
+    public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }

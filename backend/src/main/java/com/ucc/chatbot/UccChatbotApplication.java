@@ -1,5 +1,6 @@
 package com.ucc.chatbot;
 
+import com.ucc.chatbot.config.SchemaReset;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class UccChatbotApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(UccChatbotApplication.class, args);
+        SpringApplication app = new SpringApplication(UccChatbotApplication.class);
+        app.addListeners(new SchemaReset());
+        app.run(args);
     }
 }

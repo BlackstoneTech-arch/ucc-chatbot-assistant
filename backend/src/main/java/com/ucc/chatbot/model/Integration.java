@@ -40,7 +40,7 @@ public class Integration {
     @Column(nullable = false, length = 20)
     private String status = "ACTIVE";
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String config;
 
     @Column(name = "last_tested_at")

@@ -22,7 +22,7 @@ public class PromptTemplate {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String variables;
 
     @Column(name = "is_active")

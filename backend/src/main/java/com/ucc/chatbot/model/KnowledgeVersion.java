@@ -19,8 +19,7 @@ public class KnowledgeVersion {
     @Column(length = 500)
     private String title;
 
-    @Lob
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "content_hash", length = 64)

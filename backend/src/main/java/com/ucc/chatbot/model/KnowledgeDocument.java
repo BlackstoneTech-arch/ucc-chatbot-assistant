@@ -13,12 +13,10 @@ public class KnowledgeDocument {
     @Column(nullable = false, length = 500)
     private String title;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Lob
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "category_id", length = 36)
@@ -71,7 +69,7 @@ public class KnowledgeDocument {
     @Column(name = "indexed_at")
     private LocalDateTime indexedAt;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String metadata;
 
     @Column(name = "created_at", nullable = false, updatable = false)

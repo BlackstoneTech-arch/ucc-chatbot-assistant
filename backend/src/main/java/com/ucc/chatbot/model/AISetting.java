@@ -13,7 +13,6 @@ public class AISetting {
     @Column(name = "setting_key", unique = true, nullable = false, length = 100)
     private String key;
 
-    @Lob
     @Column(name = "setting_value", columnDefinition = "TEXT")
     private String value;
 

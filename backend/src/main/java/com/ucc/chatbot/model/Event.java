@@ -13,7 +13,6 @@ public class Event {
     @Column(nullable = false, length = 500)
     private String title;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 

@@ -16,8 +16,7 @@ public class AIPrompt {
     @Column(nullable = false, length = 50)
     private String type = "SYSTEM";
 
-    @Lob
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(length = 500)
@@ -26,7 +25,7 @@ public class AIPrompt {
     @Column(length = 50)
     private String category;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String variables;
 
     @Column(name = "is_active")

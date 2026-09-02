@@ -13,7 +13,6 @@ public class UCCService {
     @Column(nullable = false, length = 255)
     private String name;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 

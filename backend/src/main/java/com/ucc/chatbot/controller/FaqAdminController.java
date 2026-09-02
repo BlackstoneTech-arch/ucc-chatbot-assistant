@@ -57,4 +57,31 @@ public class FaqAdminController {
     public ResponseEntity<List<Contact>> contacts() {
         return ResponseEntity.ok(contactRepository.findByIsActiveTrueOrderByDisplayOrderAsc());
     }
+
+    @PostMapping("/contacts")
+    public ResponseEntity<Contact> createContact(@RequestBody Contact contact) {
+        if (contact.getIsActive() == null) contact.setIsActive(true);
+        return ResponseEntity.ok(contactRepository.save(contact));
+    }
+
+    @PutMapping("/contacts/{id}")
+    public ResponseEntity<Contact> updateContact(@PathVariable String id, @RequestBody Contact contact) {
+        Contact existing = contactRepository.findById(id).orElse(null);
+        if (existing == null) return ResponseEntity.notFound().build();
+        existing.setName(contact.getName());
+        existing.setTitle(contact.getTitle());
+        existing.setDepartment(contact.getDepartment());
+        existing.setEmail(contact.getEmail());
+        existing.setPhone(contact.getPhone());
+        existing.setOfficeLocation(contact.getOfficeLocation());
+        existing.setIsPrimary(contact.getIsPrimary());
+        existing.setIsActive(contact.getIsActive());
+        return ResponseEntity.ok(contactRepository.save(existing));
+    }
+
+    @DeleteMapping("/contacts/{id}")
+    public ResponseEntity<?> deleteContact(@PathVariable String id) {
+        contactRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
 }

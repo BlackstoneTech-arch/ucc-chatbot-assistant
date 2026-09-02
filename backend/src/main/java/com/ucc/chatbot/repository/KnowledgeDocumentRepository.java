@@ -14,10 +14,10 @@ public interface KnowledgeDocumentRepository extends JpaRepository<KnowledgeDocu
     List<KnowledgeDocument> findByCategory(String category);
     Page<KnowledgeDocument> findAll(Pageable pageable);
 
-    @Query("SELECT k FROM KnowledgeDocument k WHERE k.isActive = true AND k.approvalStatus = 'APPROVED' AND " +
-           "(LOWER(k.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(k.content) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(k.category) LIKE LOWER(CONCAT('%', :query, '%')))")
+    @Query(value = "SELECT * FROM knowledge_documents WHERE is_active = true AND approval_status = 'APPROVED' AND " +
+           "(LOWER(title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(content) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(category) LIKE LOWER(CONCAT('%', :query, '%')))", nativeQuery = true)
     List<KnowledgeDocument> searchApproved(@Param("query") String query);
 
     @Query("SELECT k FROM KnowledgeDocument k WHERE k.isActive = true AND k.approvalStatus = 'APPROVED' AND k.category = :category")

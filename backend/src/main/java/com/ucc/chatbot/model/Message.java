@@ -16,7 +16,6 @@ public class Message {
     @Column(nullable = false, length = 20)
     private String role;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
@@ -28,10 +27,10 @@ public class Message {
 
     private Double confidence;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String sources;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String entities;
 
     @Column(name = "response_time_ms")

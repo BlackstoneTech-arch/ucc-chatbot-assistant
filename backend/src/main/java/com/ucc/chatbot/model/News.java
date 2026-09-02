@@ -13,12 +13,10 @@ public class News {
     @Column(nullable = false, length = 500)
     private String title;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String summary;
 
-    @Lob
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "image_url", length = 500)

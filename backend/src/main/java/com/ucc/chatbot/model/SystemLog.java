@@ -16,11 +16,10 @@ public class SystemLog {
     @Column(length = 100)
     private String component;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String details;
 
     @Column(name = "created_at", nullable = false, updatable = false)

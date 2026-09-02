@@ -22,7 +22,7 @@ public class ApiIntegration {
     @Column(name = "api_key", length = 500)
     private String apiKey;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String config;
 
     private Integer timeout = 5000;

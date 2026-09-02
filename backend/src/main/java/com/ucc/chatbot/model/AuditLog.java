@@ -22,10 +22,10 @@ public class AuditLog {
     @Column(name = "resource_id", length = 36)
     private String resourceId;
 
-    @Column(name = "old_values", columnDefinition = "JSON")
+    @Column(name = "old_values", columnDefinition = "TEXT")
     private String oldValues;
 
-    @Column(name = "new_values", columnDefinition = "JSON")
+    @Column(name = "new_values", columnDefinition = "TEXT")
     private String newValues;
 
     @Column(name = "ip_address", length = 45)

@@ -123,23 +123,48 @@ async function sendMessage(message) {
   try {
     const detectedLanguage = detectLanguage(message);
 
-    const response = await fetch(`${API_BASE_URL}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: message.trim(),
-        conversationId: sessionId,
-        language: detectedLanguage
-      }),
-    });
+    let data;
+    const apiBase = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
+    const hasLiveApi = apiBase && !apiBase.includes('YOUR-BACKEND-DOMAIN') && !apiBase.includes('localhost') || (apiBase && apiBase.includes('localhost'));
 
-    hideTypingIndicator();
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    if (hasLiveApi) {
+      try {
+        const response = await fetch(`${apiBase}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: message.trim(),
+            conversationId: sessionId,
+            language: detectedLanguage
+          }),
+        });
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (networkErr) {
+        data = null;
+      }
     }
 
-    const data = await response.json();
+    if (!data) {
+      const lang = detectedLanguage || 'en';
+      const fallback = (typeof uccFallbackAnswer === 'function')
+        ? uccFallbackAnswer(message, lang)
+        : null;
+      data = {
+        answer: fallback || (lang === 'sw'
+          ? 'Samahani, huduma ya chat haipatikani kwa sasa. Tafadhali jaribu tena baadaye au tembelea https://ucc.co.tz/ kwa taarifa zaidi.'
+          : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.'),
+        language: lang,
+        sources: [],
+        confidence: fallback ? 0.7 : 0,
+        escalationRequired: !fallback
+      };
+    }
+
+    hideTypingIndicator();
 
     addMessage(
       'assistant',

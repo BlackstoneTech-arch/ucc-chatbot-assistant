@@ -19,7 +19,6 @@ public class Escalation {
     @Column(name = "user_id", length = 36)
     private String userId;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String question;
 
@@ -28,7 +27,7 @@ public class Escalation {
 
     private Double confidence;
 
-    @Column(name = "retrieved_sources", columnDefinition = "JSON")
+    @Column(name = "retrieved_sources", columnDefinition = "TEXT")
     private String retrievedSources;
 
     @Column(length = 255)

@@ -28,11 +28,9 @@ public class AILog {
     @Column(name = "user_email", length = 200)
     private String userEmail;
 
-    @Lob
     @Column(name = "user_message", columnDefinition = "TEXT")
     private String userMessage;
 
-    @Lob
     @Column(name = "ai_response", columnDefinition = "TEXT")
     private String aiResponse;
 
@@ -50,7 +48,7 @@ public class AILog {
     @Column(length = 100)
     private String model;
 
-    @Column(name = "retrieved_documents", columnDefinition = "JSON")
+    @Column(name = "retrieved_documents", columnDefinition = "TEXT")
     private String retrievedDocuments;
 
     @Column(name = "prompt_tokens")
