@@ -88,23 +88,30 @@ const UCC_KB_SW = {
   usajili: "Usajili wa kozi za UCC:\n\n1. Tembelea portal ya udahili https://admission.ucc.co.tz/\n2. Ingia kwa akaunti yako\n3. Nenda kwenye sehemu ya usajili wa kozi\n4. Chagua kozi\n5. Kagua uteuzi\n6. Thibitisha usajili\n\nMsaada: info@ucc.co.tz | +255 22 2410641/5\n\nChanzo: https://ucc.co.tz/"
 };
 
-function uccFallbackAnswer(message) {
+function uccFallbackAnswer(message, lang) {
   const lower = message.toLowerCase().trim();
-  const isSwahili = detectLanguage(message) === "sw";
-  const kb = isSwahili ? UCC_KB_SW : UCC_KB_EN;
+  const detectedLang = (typeof lang === 'string') ? lang : ((typeof detectLanguage === 'function') ? detectLanguage(message) : 'en');
 
-  for (const key of Object.keys(kb)) {
-    if (lower.includes(key)) {
-      return {
-        answer: kb[key],
-        sources: [{ title: "UCC Knowledge Base", url: "https://ucc.co.tz/" }],
-        confidence: 0.8,
-        escalationRequired: false
-      };
+  const kbs = [
+    { kb: UCC_KB_EN, lang: 'en' },
+    { kb: UCC_KB_SW, lang: 'sw' }
+  ];
+
+  for (const { kb, lang: kbLang } of kbs) {
+    for (const key of Object.keys(kb)) {
+      if (lower.includes(key)) {
+        return {
+          answer: kb[key],
+          sources: [{ title: "UCC Knowledge Base", url: "https://ucc.co.tz/" }],
+          confidence: kbLang === detectedLang ? 0.9 : 0.8,
+          escalationRequired: false,
+          language: detectedLang
+        };
+      }
     }
   }
 
-  const fallback = isSwahili
+  const fallback = detectedLang === 'sw'
     ? "Samahani, sina taarifa maalum kuhusu hilo kwa sasa. Tafadhali wasiliana na UCC kwa info@ucc.co.tz au +255 22 2410641/5, au tembelea https://ucc.co.tz/."
     : "I couldn't find verified information about that in the UCC knowledge base. I don't want to give you incorrect information. Please contact UCC at info@ucc.co.tz or +255 22 2410641/5, or visit https://ucc.co.tz/.";
 
@@ -112,6 +119,7 @@ function uccFallbackAnswer(message) {
     answer: fallback,
     sources: [{ title: "UCC Knowledge Base", url: "https://ucc.co.tz/" }],
     confidence: 0.0,
-    escalationRequired: true
+    escalationRequired: true,
+    language: detectedLang
   };
 }

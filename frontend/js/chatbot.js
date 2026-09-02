@@ -24,22 +24,41 @@ function sendQuickAction(message) {
 function detectLanguage(message) {
   const lower = message.toLowerCase();
   const swahiliIndicators = [
-    'nina', 'ni', 'na', 'wa', 'kwa', 'ya', 'za', 'vya', 'kozi', 'omba', 'sasa',
-    'hii', 'hilo', 'hizi', 'hayo', 'kweli', 'labda', 'kama', 'au', 'kabla', 'baada',
-    'mimi', 'wewe', 'sisi', 'ninyi', 'huyu', 'huyo', 'hawa', 'ndani', 'nje', 'karibu',
-    'habari', 'hapo', 'huku', 'kule', 'chini', 'juu', 'mbele', 'nyuma', 'mbali', 'moja',
-    'mbili', 'nini', 'kazi', 'ali', 'ta', 'vyo', 'si', 'hadi', 'kati', 'pia', 'tafadhali',
-    'asante', 'kwaheri', 'salamu', 'jina', 'mahali', 'siku', 'leo', 'kesho', 'jana'
+    'habari', 'hujambo', 'kwaheri', 'asante', 'karibu', 'tafadhali', 'ninataka',
+    'naomba', 'nimekuwa', 'ninaweza', 'kwanini', 'vipi', 'wapi', 'lini',
+    'ndiyo', 'hapana', 'labda', 'pia', 'bado', 'sasa', 'kesho', 'jana',
+    'programu', 'kozi', 'ada', 'masomo', 'chuo', 'udahili', 'usajili', 'mitihani',
+    'diploma', 'cheti', 'msaada', 'mwalimu', 'mwanafunzi', 'walimu', 'wanafunzi',
+    'kuhusu', 'kwa nini', 'kwa hiyo', 'kwa sababu', 'pamoja', 'bila', 'baada ya',
+    'kabla ya', 'miongoni', 'mara', 'mara kwa mara', 'hata hivyo', 'ingawa',
+    'hata', 'tena', 'tayari', 'bado', 'kisha', 'halafu', 'sasa hivi',
+    'mkuu', 'wa dar es salaam', 'uchumi', 'biashara', 'kilimo', 'afya',
+    'swahili only', 'lugha', 'maneno', 'sentensi', 'kifungu', 'kitabu'
   ];
 
-  let count = 0;
-  for (const word of swahiliIndicators) {
-    if (lower.includes(word)) {
-      count++;
-    }
+  const englishIndicators = [
+    'the', 'and', 'with', 'what', 'how', 'when', 'where', 'why', 'which',
+    'can', 'could', 'would', 'should', 'will', 'shall', 'may', 'might',
+    'about', 'from', 'into', 'onto', 'upon', 'over', 'under', 'between',
+    'tuition', 'fees', 'program', 'course', 'diploma', 'certificate',
+    'admission', 'application', 'enrollment', 'registration', 'requirements',
+    'scholarship', 'curriculum', 'semester', 'academic', 'university',
+    'apply', 'contact', 'email', 'phone', 'address', 'location', 'office',
+    'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+    'january', 'february', 'march', 'april', 'may', 'june', 'july',
+    'august', 'september', 'october', 'november', 'december'
+  ];
+
+  let swScore = 0;
+  let enScore = 0;
+  for (const w of swahiliIndicators) {
+    if (lower.includes(w)) swScore += 2;
+  }
+  for (const w of englishIndicators) {
+    if (lower.includes(w)) enScore += 1;
   }
 
-  return count >= 2 ? 'sw' : 'en';
+  return swScore > enScore ? 'sw' : 'en';
 }
 
 function addMessage(role, content, sources = [], intent = '', confidence = 0, escalated = false) {
