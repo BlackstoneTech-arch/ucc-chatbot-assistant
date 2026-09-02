@@ -150,17 +150,28 @@ async function sendMessage(message) {
 
     if (!data) {
       const lang = detectedLanguage || 'en';
-      const fallback = (typeof uccFallbackAnswer === 'function')
-        ? uccFallbackAnswer(message, lang)
-        : null;
-      data = {
-        answer: fallback || (lang === 'sw'
+      let fallbackResult = null;
+      if (typeof uccFallbackAnswer === 'function') {
+        try {
+          fallbackResult = uccFallbackAnswer(message, lang);
+          if (fallbackResult && typeof fallbackResult === 'object' && fallbackResult.answer) {
+            fallbackResult = fallbackResult.answer;
+          }
+        } catch (e) {
+          fallbackResult = null;
+        }
+      }
+      const fallbackText = (typeof fallbackResult === 'string')
+        ? fallbackResult
+        : (lang === 'sw'
           ? 'Samahani, huduma ya chat haipatikani kwa sasa. Tafadhali jaribu tena baadaye au tembelea https://ucc.co.tz/ kwa taarifa zaidi.'
-          : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.'),
+          : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.');
+      data = {
+        answer: fallbackText,
         language: lang,
         sources: [],
-        confidence: fallback ? 0.7 : 0,
-        escalationRequired: !fallback
+        confidence: fallbackResult ? 0.7 : 0,
+        escalationRequired: !fallbackResult
       };
     }
 
