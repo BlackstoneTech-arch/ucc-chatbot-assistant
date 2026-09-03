@@ -79,7 +79,7 @@ public class QueryUnderstandingServiceImpl implements QueryUnderstandingService 
     );
 
     private static final Set<String> FAREWELL_EN = Set.of(
-            "bye", "goodbye", "see you", "see ya", "later", "take care"
+            "bye", "goodbye", "see you", "see ya", "take care", "farewell"
     );
 
     private static final Set<String> FAREWELL_SW = Set.of(
@@ -248,8 +248,11 @@ public class QueryUnderstandingServiceImpl implements QueryUnderstandingService 
     private String normalizeText(String text) {
         String normalized = text.toLowerCase().trim();
 
-        for (Map.Entry<String, String> entry : INFORMAL_SW_NORMALIZATIONS.entrySet()) {
-            normalized = normalized.replace(entry.getKey(), entry.getValue());
+        String preDetectLang = quickDetectSwahili(normalized);
+        if ("sw".equals(preDetectLang)) {
+            for (Map.Entry<String, String> entry : INFORMAL_SW_NORMALIZATIONS.entrySet()) {
+                normalized = normalized.replaceAll("\\b" + java.util.regex.Pattern.quote(entry.getKey()) + "\\b", entry.getValue());
+            }
         }
 
         for (Map.Entry<String, String> entry : TYPO_CORRECTIONS_EN.entrySet()) {
@@ -262,39 +265,53 @@ public class QueryUnderstandingServiceImpl implements QueryUnderstandingService 
         return normalized;
     }
 
+    private String quickDetectSwahili(String text) {
+        if (text == null || text.isBlank()) return "en";
+        if (text.contains("habari") || text.contains("hujambo") || text.contains("salamu") ||
+            text.contains("mambo") || text.contains("niaje") || text.contains("shikamoo") ||
+            text.contains("asante") || text.contains("shukrani") || text.contains("kwaheri") ||
+            text.contains("msaada") || text.contains("ada") || text.contains("kozi") ||
+            text.contains("vigezo") || text.contains("maombi") || text.contains("kujiunga") ||
+            text.contains("muda") || text.contains("anwani") || text.contains("mahali")) {
+            return "sw";
+        }
+        return "en";
+    }
+
     private String detectLanguage(String text) {
+        if (text == null || text.isBlank()) return "en";
         String lower = text.toLowerCase();
 
-        if (lower.contains("habari") || lower.contains("hujambo") || lower.contains("salamu") ||
-            lower.contains("mambo") || lower.contains("niaje") || lower.contains("shikamoo") ||
-            lower.contains("vipi") || lower.contains("za kwako") || lower.contains("asante") ||
-            lower.contains("shukrani") || lower.contains("kwaheri") || lower.contains("msaada") ||
-            lower.contains("ada") || lower.contains("kozi") || lower.contains("vigezo") ||
-            lower.contains("maombi") || lower.contains("kujiunga") || lower.contains("miaka") ||
-            lower.contains("muda") || lower.contains("anwani") || lower.contains("mahali")) {
+        if (containsWord(lower, "habari") || containsWord(lower, "hujambo") || containsWord(lower, "salamu") ||
+            containsWord(lower, "mambo") || containsWord(lower, "niaje") || containsWord(lower, "shikamoo") ||
+            containsWord(lower, "vipi") || lower.contains("za kwako") || containsWord(lower, "asante") ||
+            containsWord(lower, "shukrani") || containsWord(lower, "kwaheri") || containsWord(lower, "msaada") ||
+            containsWord(lower, "ada") || containsWord(lower, "kozi") || containsWord(lower, "vigezo") ||
+            containsWord(lower, "maombi") || containsWord(lower, "kujiunga") || containsWord(lower, "miaka") ||
+            containsWord(lower, "muda") || containsWord(lower, "anwani") || containsWord(lower, "mahali")) {
             return "sw";
         }
 
-        if (lower.contains("hello") || lower.startsWith("hi ") || lower.equals("hi") ||
+        if (containsWord(lower, "hello") || lower.startsWith("hi ") || lower.equals("hi") ||
             lower.contains("good morning") || lower.contains("good afternoon") ||
-            lower.contains("good evening") || lower.contains("programme") ||
-            lower.contains("admission") || lower.contains("application") ||
-            lower.contains("requirement") || lower.contains("duration") ||
-            lower.contains("contact") || lower.contains("location") ||
-            lower.contains("address") || lower.contains("fee") || lower.contains("fees")) {
+            lower.contains("good evening") || containsWord(lower, "programme") ||
+            containsWord(lower, "admission") || containsWord(lower, "application") ||
+            containsWord(lower, "requirement") || containsWord(lower, "duration") ||
+            containsWord(lower, "contact") || containsWord(lower, "location") ||
+            containsWord(lower, "address") || containsWord(lower, "fee") || containsWord(lower, "fees")) {
             return "en";
         }
 
         Set<String> swahiliIndicators = Set.of(
-                "nina", "ni", "na", "wa", "kwa", "ya", "za", "vya", "kozi", "omba", "sasa",
+                "nina", "kwa", "vya", "omba", "sasa",
                 "hii", "hilo", "hizi", "hayo", "kweli", "labda", "kama", "au", "kabla", "baada",
                 "mimi", "wewe", "sisi", "ninyi", "huyu", "huyo", "hawa", "ndani", "nje", "karibu",
                 "habari", "hapo", "huku", "kule", "chini", "juu", "mbele", "nyuma", "mbali", "moja",
-                "mbili", "nini", "kazi", "ali", "vyo", "si", "hadi", "kati", "pia"
+                "mbili", "nini", "kazi", "vyo", "hadi", "kati", "pia"
         );
 
         long swahiliCount = swahiliIndicators.stream()
-                .filter(lower::contains)
+                .filter(w -> containsWord(lower, w))
                 .count();
 
         return swahiliCount >= 1 ? "sw" : "en";
@@ -308,49 +325,53 @@ public class QueryUnderstandingServiceImpl implements QueryUnderstandingService 
     }
 
     private boolean isGreeting(String text, String lang) {
+        if (text == null || text.isBlank()) return false;
         if ("sw".equals(lang)) {
             for (String g : GREETING_SW) {
-                if (text.contains(g)) return true;
+                if (containsWord(text, g)) return true;
             }
         }
         for (String g : GREETING_EN) {
-            if (text.contains(g)) return true;
+            if (containsWord(text, g)) return true;
         }
         return false;
     }
 
     private boolean isFarewell(String text, String lang) {
+        if (text == null || text.isBlank()) return false;
         if ("sw".equals(lang)) {
             for (String f : FAREWELL_SW) {
-                if (text.contains(f)) return true;
+                if (containsWord(text, f)) return true;
             }
         }
         for (String f : FAREWELL_EN) {
-            if (text.contains(f)) return true;
+            if (containsWord(text, f)) return true;
         }
         return false;
     }
 
     private boolean isThankYou(String text, String lang) {
+        if (text == null || text.isBlank()) return false;
         if ("sw".equals(lang)) {
             for (String t : THANK_YOU_SW) {
-                if (text.contains(t)) return true;
+                if (containsWord(text, t)) return true;
             }
         }
         for (String t : THANK_YOU_EN) {
-            if (text.contains(t)) return true;
+            if (containsWord(text, t)) return true;
         }
         return false;
     }
 
     private boolean isHelpRequest(String text, String lang) {
+        if (text == null || text.isBlank()) return false;
         if ("sw".equals(lang)) {
             for (String h : HELP_SW) {
-                if (text.contains(h)) return true;
+                if (containsWord(text, h)) return true;
             }
         }
         for (String h : HELP_EN) {
-            if (text.contains(h)) return true;
+            if (containsWord(text, h)) return true;
         }
         return false;
     }
@@ -496,5 +517,24 @@ public class QueryUnderstandingServiceImpl implements QueryUnderstandingService 
         }
 
         return queries.stream().distinct().toList();
+    }
+
+    /**
+     * Word-boundary substring match.
+     * "hi" should NOT match inside "which", "this", "his", etc.
+     * Multi-word phrases (e.g. "good morning") are matched as-is.
+     */
+    private static boolean containsWord(String text, String word) {
+        if (text == null || word == null) return false;
+        if (word.contains(" ")) return text.contains(word);
+        int idx = 0;
+        while ((idx = text.indexOf(word, idx)) != -1) {
+            boolean startOk = (idx == 0) || !Character.isLetterOrDigit(text.charAt(idx - 1));
+            int after = idx + word.length();
+            boolean endOk = (after >= text.length()) || !Character.isLetterOrDigit(text.charAt(after));
+            if (startOk && endOk) return true;
+            idx = after;
+        }
+        return false;
     }
 }
