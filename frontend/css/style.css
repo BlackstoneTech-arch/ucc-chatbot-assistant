@@ -624,6 +624,72 @@ body {
   margin-top: 8px;
 }
 
+/* Intake banner (admissions notice) */
+.intake-banner {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e3f0ff 100%);
+  border: 1px solid #b3d4f0;
+  border-left: 4px solid var(--ucc-primary);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 0 12px 0;
+  font-size: 0.78rem;
+  color: #0a3a5c;
+  line-height: 1.5;
+}
+.intake-banner a {
+  color: var(--ucc-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.intake-banner a:hover { text-decoration: underline; }
+
+/* Bot message text block (preserves \n) */
+.message-text {
+  white-space: pre-line;
+  word-wrap: break-word;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.message-text br { line-height: 1.2; }
+
+/* Quick-reply chips under welcome / first answer */
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.quick-reply-chip {
+  background: #f0f7ff;
+  color: var(--ucc-primary);
+  border: 1px solid var(--ucc-primary);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.quick-reply-chip:hover {
+  background: var(--ucc-primary);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.quick-reply-chip:active { transform: translateY(0); }
+
+/* Escalation note inside a bot bubble */
+.escalation-note {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: #8a4b00;
+  background: #fff7e6;
+  border-left: 3px solid #f0a020;
+  padding: 6px 10px;
+  border-radius: 4px;
+  white-space: pre-line;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .hero {

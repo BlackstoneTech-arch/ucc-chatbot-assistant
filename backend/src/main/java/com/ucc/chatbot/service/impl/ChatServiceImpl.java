@@ -89,20 +89,20 @@ public class ChatServiceImpl implements com.ucc.chatbot.service.ChatService {
 
         String answer = switch (intent) {
             case "GREETING" -> "sw".equals(lang)
-                    ? "Habari! Mimi ni UCC Chatbot Assistant. Naweza kukusaidia kupata taarifa kuhusu programu, maombi, ada, usajili, huduma za wanafunzi, huduma za ICT, na huduma nyingine za UCC. Niko hapa kukusaidia leo?"
-                    : "Hello! I'm UCC Chatbot Assistant. I can help you find information about programmes, admissions, fees, registration, student services, ICT services, and other UCC services. How can I help you today?";
+                    ? "Habari! 👋 Karibu katika Kituo cha Kompyuta cha Chuo Kikuu cha Dar es Salaam (UCC). Mimi ni Msaidizi wako wa Huduma kwa Wateja wa UCC.\n\nHivi ndivyo ninavyoweza kukusaidia sasa hivi:\n• Programu na ada (DCIT, DBIT, CCIT, CBIT, kozi za kitaalamu)\n• Udaahili (dirisha wazi 1 Juni – 30 Septemba 2026, intake Septemba 2026)\n• Jinsi ya kuomba, vigezo vya kujiunga, maeneo\n• Mawasiliano na taarifa za kampasi\n\nAndika swali lako au chagua chaguo la haraka hapa chini."
+                    : "Hello! 👋 Welcome to the University of Dar es Salaam Computing Centre (UCC). I'm your UCC Customer Care Assistant.\n\nHere's what I can help you with right now:\n• Programmes and fees (DCIT, DBIT, CCIT, CBIT, professional courses)\n• Admissions (open 1 June – 30 Sept 2026, intake September 2026)\n• How to apply, entry requirements, locations\n• Contacts and campus info\n\nJust type your question or pick one of the quick options below.";
             case "FAREWELL" -> "sw".equals(lang)
-                    ? "Kwaheri! Nakutakia kila la heri. Usisite kuzungumza nasi tena ukipo na maswali kuhusu UCC."
-                    : "Goodbye! Wishing you all the best. Feel free to chat with us again if you have any questions about UCC.";
+                    ? "Kwaheri! Nakutakia kila la heri. Usisite kuzungumza nasi tena ukipo na maswali kuhusu UCC — info@ucc.co.tz au +255 22 2410641/5."
+                    : "Goodbye! Wishing you all the best. Feel free to chat with us again if you have any questions about UCC — info@ucc.co.tz or +255 22 2410641/5.";
             case "THANK_YOU" -> "sw".equals(lang)
-                    ? "Karibu sana! Niko hapa kukusaidia kila wakati. Kama una maswali mengine, usisite kuniuliza."
-                    : "You're welcome! I'm here to help anytime. If you have more questions, feel free to ask.";
+                    ? "Karibu sana! Niko hapa kukusaidia kila wakati. Kama una maswali mengine kuhusu programu, udahili, ada, au huduma za UCC, usisite kuniuliza."
+                    : "You're very welcome! I'm here to help anytime. If you have more questions about programmes, admissions, fees, or other UCC services, feel free to ask.";
             case "HELP_REQUEST" -> "sw".equals(lang)
-                    ? "Niko hapa kukusaidia! Unaweza kuniuliza kuhusu programu za UCC, maombi, ada, vigezo vya kujiunga, usajili, mawasiliano, na huduma nyingine za UCC. Jaribu kuniuliza chochote kuhusu UCC."
-                    : "I'm here to help! You can ask me about UCC programmes, admissions, fees, entry requirements, registration, contacts, and other UCC services. Feel free to ask anything about UCC.";
+                    ? "Niko hapa kukusaidia! Unaweza kuniuliza kuhusu:\n• Programu za UCC (DCIT, DBIT, CCIT, CBIT) na kozi za kitaalamu\n• Udaahili (dirisha wazi 1 Juni – 30 Septemba 2026)\n• Ada na malipo\n• Vigezo vya kujiunga, usajili, mawasiliano\n• Huduma nyingine za UCC\n\nJaribu kuniuliza chochote kuhusu UCC."
+                    : "I'm here to help! You can ask me about:\n• UCC programmes (DCIT, DBIT, CCIT, CBIT) and professional courses\n• Admissions (open 1 June – 30 Sept 2026, intake Sept 2026)\n• Tuition fees and payment\n• Entry requirements, registration, contacts\n• Other UCC services\n\nFeel free to ask anything about UCC.";
             default -> "sw".equals(lang)
-                    ? "Samahani, sikuweza kuthibitisha taarifa hii kutoka kwenye taarifa rasmi zilizopo kwenye mfumo wa UCC."
-                    : "I could not verify this information from the currently approved UCC knowledge base.";
+                    ? "Samahani, sikuweza kuthibitisha taarifa hii kutoka kwenye taarifa rasmi zilizopo kwenye mfumo wa UCC. Tafadhali wasiliana nasi kwa info@ucc.co.tz au +255 22 2410641/5."
+                    : "I could not verify this information from the currently approved UCC knowledge base. Please contact us at info@ucc.co.tz or +255 22 2410641/5.";
         };
 
         return ChatResponse.builder()

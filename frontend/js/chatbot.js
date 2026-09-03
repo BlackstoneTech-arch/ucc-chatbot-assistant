@@ -1,11 +1,97 @@
 let sessionId = crypto.randomUUID();
 let conversationHistory = [];
 let isProcessing = false;
+let welcomeLoaded = false;
+let detectedLang = 'en';
+
+function formatBotText(text) {
+  if (!text) return '';
+  const escaped = String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escaped.replace(/\n/g, '<br>');
+}
+
+async function loadWelcomeIfNeeded() {
+  if (welcomeLoaded) return;
+  welcomeLoaded = true;
+
+  const apiBase = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
+  const hasLiveApi = apiBase && apiBase.length > 0;
+
+  let welcome = null;
+  if (hasLiveApi) {
+    try {
+      const r = await fetch(`${apiBase}/chat/welcome?lang=${encodeURIComponent(detectedLang)}`, { method: 'GET' });
+      if (r.ok) welcome = await r.json();
+    } catch (_) { welcome = null; }
+  }
+
+  if (!welcome && typeof uccFallbackAnswer === 'function') {
+    try {
+      const fb = uccFallbackAnswer('hello', detectedLang);
+      if (fb) {
+        welcome = {
+          message: fb.answer,
+          language: fb.language || detectedLang,
+          quickReplies: detectedLang === 'sw'
+            ? [
+                { label: 'Programu zenu', message: 'Naomba kuona programu zenu' },
+                { label: 'Ada ya DCIT', message: 'Ada ya DCIT ni ngapi?' },
+                { label: 'Lini maombi yanafunguliwa?', message: 'Lini maombi yanafunguliwa na yanafungwa?' },
+                { label: 'DCIT vs DBIT', message: 'DCIT na DBIT, ni ipi bora kwangu?' }
+              ]
+            : [
+                { label: 'Programmes', message: 'What programmes do you offer?' },
+                { label: 'DCIT fees', message: 'How much is DCIT?' },
+                { label: 'Admission dates', message: 'When do applications open and close?' },
+                { label: 'DCIT vs DBIT', message: 'Which is better for me, DCIT or DBIT?' }
+              ],
+          intakeOpen: '2026-06-01',
+          intakeClose: '2026-09-30',
+          intakeStart: '2026-09-01',
+          applicationFee: 'TZS 10,000'
+        };
+      }
+    } catch (_) { welcome = null; }
+  }
+
+  if (!welcome) {
+    welcome = {
+      message: detectedLang === 'sw'
+        ? 'Habari! Karibu katika UCC. Naweza kukusaidia na programu, udahili, ada, na huduma nyingine za UCC.'
+        : "Hello! Welcome to UCC. I can help you with programmes, admissions, fees, and other UCC services.",
+      language: detectedLang,
+      quickReplies: [],
+      intakeOpen: '2026-06-01',
+      intakeClose: '2026-09-30'
+    };
+  }
+
+  if (welcome.language) detectedLang = welcome.language;
+  showIntakeBanner(welcome);
+  addMessage('assistant', welcome.message, [], '', 1.0, false, { quickReplies: welcome.quickReplies || [] });
+}
+
+function showIntakeBanner(welcome) {
+  if (!welcome) return;
+  const banner = document.createElement('div');
+  banner.className = 'intake-banner';
+  if (detectedLang === 'sw') {
+    banner.innerHTML = `📅 <strong>Udaahili 2026/2027:</strong> Maombi yanafunguliwa 1 Juni – 30 Septemba 2026. Intake: Septemba 2026. Ada ya maombi: ${welcome.applicationFee || 'TZS 10,000'}. <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener">Tuma maombi sasa →</a>`;
+  } else {
+    banner.innerHTML = `📅 <strong>2026/2027 Admissions:</strong> Applications open 1 June – 30 Sept 2026. Intake: September 2026. Application fee: ${welcome.applicationFee || 'TZS 10,000'}. <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener">Apply now →</a>`;
+  }
+  const messagesContainer = document.getElementById('chat-messages');
+  if (messagesContainer) messagesContainer.appendChild(banner);
+}
 
 function openChat() {
   document.getElementById('chat-widget').classList.remove('hidden');
   document.getElementById('chat-input').disabled = false;
   document.getElementById('send-btn').disabled = false;
+  if (!welcomeLoaded) loadWelcomeIfNeeded();
 }
 
 function closeChat() {
@@ -61,7 +147,7 @@ function detectLanguage(message) {
   return swScore > enScore ? 'sw' : 'en';
 }
 
-function addMessage(role, content, sources = [], intent = '', confidence = 0, escalated = false) {
+function addMessage(role, content, sources = [], intent = '', confidence = 0, escalated = false, opts = {}) {
   const messagesContainer = document.getElementById('chat-messages');
 
   const welcomeScreen = messagesContainer.querySelector('.welcome-screen');
@@ -75,9 +161,14 @@ function addMessage(role, content, sources = [], intent = '', confidence = 0, es
   const bubbleDiv = document.createElement('div');
   bubbleDiv.className = 'message-bubble';
 
-  const contentP = document.createElement('p');
-  contentP.textContent = content;
-  bubbleDiv.appendChild(contentP);
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'message-text';
+  if (role === 'assistant') {
+    contentDiv.innerHTML = formatBotText(content);
+  } else {
+    contentDiv.textContent = content;
+  }
+  bubbleDiv.appendChild(contentDiv);
 
   if (sources && sources.length > 0) {
     const sourcesDiv = document.createElement('div');
@@ -89,6 +180,31 @@ function addMessage(role, content, sources = [], intent = '', confidence = 0, es
       sourcesDiv.appendChild(sourceP);
     });
     bubbleDiv.appendChild(sourcesDiv);
+  }
+
+  if (escalated) {
+    const esc = document.createElement('p');
+    esc.className = 'escalation-note';
+    esc.textContent = (detectedLang === 'sw')
+      ? 'Ikiwa unahitaji msaada wa haraka, wasiliana nasi kwa info@ucc.co.tz au +255 22 2410641/5.'
+      : 'For urgent help, please contact us at info@ucc.co.tz or +255 22 2410641/5.';
+    bubbleDiv.appendChild(esc);
+  }
+
+  if (opts.quickReplies && opts.quickReplies.length) {
+    const qr = document.createElement('div');
+    qr.className = 'quick-replies';
+    opts.quickReplies.forEach((qr0) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'quick-reply-chip';
+      b.textContent = qr0.label;
+      b.addEventListener('click', () => {
+        if (qr0.message) sendMessage(qr0.message);
+      });
+      qr.appendChild(b);
+    });
+    bubbleDiv.appendChild(qr);
   }
 
   const timeP = document.createElement('p');
@@ -140,11 +256,11 @@ async function sendMessage(message) {
   showTypingIndicator();
 
   try {
-    const detectedLanguage = detectLanguage(message);
+    detectedLang = detectLanguage(message);
 
     let data;
     const apiBase = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
-    const hasLiveApi = apiBase && !apiBase.includes('YOUR-BACKEND-DOMAIN') && !apiBase.includes('localhost') || (apiBase && apiBase.includes('localhost'));
+    const hasLiveApi = apiBase && apiBase.length > 0;
 
     if (hasLiveApi) {
       try {
@@ -154,7 +270,7 @@ async function sendMessage(message) {
           body: JSON.stringify({
             message: message.trim(),
             conversationId: sessionId,
-            language: detectedLanguage
+            language: detectedLang
           }),
         });
         if (response.ok) {
@@ -168,30 +284,34 @@ async function sendMessage(message) {
     }
 
     if (!data) {
-      const lang = detectedLanguage || 'en';
+      const lang = detectedLang || 'en';
       let fallbackResult = null;
       if (typeof uccFallbackAnswer === 'function') {
         try {
           fallbackResult = uccFallbackAnswer(message, lang);
           if (fallbackResult && typeof fallbackResult === 'object' && fallbackResult.answer) {
-            fallbackResult = fallbackResult.answer;
+            data = {
+              answer: fallbackResult.answer,
+              language: fallbackResult.language || lang,
+              sources: fallbackResult.sources || [],
+              confidence: fallbackResult.confidence || 0.7,
+              escalationRequired: !!fallbackResult.escalationRequired
+            };
+            fallbackResult = null;
+          } else if (typeof fallbackResult === 'string') {
+            data = { answer: fallbackResult, language: lang, sources: [], confidence: 0.7, escalationRequired: false };
+            fallbackResult = null;
           }
         } catch (e) {
           fallbackResult = null;
         }
       }
-      const fallbackText = (typeof fallbackResult === 'string')
-        ? fallbackResult
-        : (lang === 'sw'
+      if (!data) {
+        const fallbackText = (detectedLang === 'sw')
           ? 'Samahani, huduma ya chat haipatikani kwa sasa. Tafadhali jaribu tena baadaye au tembelea https://ucc.co.tz/ kwa taarifa zaidi.'
-          : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.');
-      data = {
-        answer: fallbackText,
-        language: lang,
-        sources: [],
-        confidence: fallbackResult ? 0.7 : 0,
-        escalationRequired: !fallbackResult
-      };
+          : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.';
+        data = { answer: fallbackText, language: detectedLang, sources: [], confidence: 0, escalationRequired: true };
+      }
     }
 
     hideTypingIndicator();
@@ -240,4 +360,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  try {
+    const navLang = (navigator.language || 'en').toLowerCase();
+    if (navLang.startsWith('sw')) detectedLang = 'sw';
+  } catch (_) { detectedLang = 'en'; }
+
+  const htmlLang = (document.documentElement.getAttribute('lang') || '').toLowerCase();
+  if (htmlLang.startsWith('sw')) detectedLang = 'sw';
+
+  const widgetVisible = !document.getElementById('chat-widget').classList.contains('hidden');
+  if (widgetVisible) loadWelcomeIfNeeded();
 });
