@@ -1,11 +1,5 @@
 # UCC Chatbot — Netlify redirects
-# Privacy & legal pages are static
+# Clean URLs for the static legal pages
 /privacy  /privacy.html  200
 /terms    /terms.html    200
 /cookies  /cookies.html  200
-
-# API requests fall through to client-side KB if no backend is configured
-# (the frontend detects this and uses ucc-kb.js)
-
-# Everything else goes to index
-/*  /index.html  200
