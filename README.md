@@ -233,8 +233,23 @@ For a thorough step-by-step guide (including how to provision a real database, c
 - **Static KB fallback** — works fully offline if no LLM key is configured
 - **Confidence scoring** — every response includes a 0.0–1.0 confidence
 - **Escalation hint** — low-confidence answers flag for human handoff
-- **Feedback collection** — thumbs up/down + comments per message
+- **Feedback collection** — thumbs up/down + comments per message, queued offline and synced when online
+- **Welcome + quick-reply chips** — first open shows context-aware suggestions
+- **localStorage history** — last 200 messages persisted for 7 days; "Start new conversation" clears it
+- **Online/offline detection** — UI status indicator + graceful degradation
+- **Accessibility** — ARIA roles, live region, skip-link, focus management, `prefers-reduced-motion` support, 44×44 touch targets
+- **Legal pages** — Privacy / Terms / Cookie notice linked from the footer
+- **Security headers** — CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy
 - **Works without backend** — frontend has its own `ucc-kb.js` with the full UCC static knowledge for resilience
+
+### Backend security & reliability
+
+- **JWT auth** (HS256, 7-day expiry) for all `/api/admin/**` endpoints
+- **Role-based access control** — `ADMIN`, `STAFF`, `EDITOR`, `VIEWER` with method-level guards
+- **Rate limiting** — in-memory token-bucket filter: 30 req/min `/api/chat`, 60/min welcome, 20/min feedback, 10/min login, 5/min register
+- **AES-256-GCM encryption** of stored API secrets (12-byte random IV per message, fail-closed if no `ENCRYPTION_KEY` is set)
+- **CORS** locked to known frontend origins (localhost dev hosts + `uccchatbot.netlify.app` + Netlify deploy previews)
+- **No secrets in source** — every secret is env-var driven; defaults are placeholders that force explicit configuration in production
 
 ### For admins (admin dashboard)
 
@@ -619,9 +634,15 @@ Set all env vars from the [Environment variables](#environment-variables) table.
 
 **Before deploying**, edit `admin/js/admin-auth.js` and change `API_BASE_URL` to your backend URL.
 
-### Frontend — already deployed
+### Frontend (public chatbot) — Netlify
 
-The public chatbot is at **https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app/**. To redeploy, update `frontend/js/chatbot.js` with the backend URL and drop the `frontend/` folder on any static host.
+The public chatbot is at **https://uccchatbot.netlify.app/**.
+
+- **Publish dir:** `frontend/`
+- **Build cmd:** none (static files only)
+- **Headers / redirects:** `netlify.toml` at the repo root configures CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, immutable cache for `/js/*` and `/css/*`, and `_redirects` inside `frontend/`.
+- **Configuration:** `frontend/js/config.js` chooses the backend. If the hostname is `localhost` / `127.0.0.1` it uses `http://localhost:8081/api`; otherwise it runs in KB-only mode (the full UCC knowledge base is bundled in `ucc-kb.js` and answers every verified question without a backend).
+- **To connect to a live backend in production:** set `API_BASE_URL` in `frontend/js/config.js` to your deployed backend root, e.g. `"https://ucc-chatbot-api.example.com/api"`, and add that origin to `cors.allowed-origins` in `SecurityConfig.java`.
 
 ### All-in-one with Docker Compose
 
@@ -640,27 +661,29 @@ This starts MySQL 8 + the backend + nginx on a single host. Edit `nginx/conf.d/d
 | Concern | Mitigation |
 |---|---|
 | **Password storage** | BCrypt with strength 10 (Spring Security default) |
-| **API key storage** | AES-256 encryption (`EncryptionUtil`), 32-byte configurable key |
+| **API key storage** | **AES-256-GCM** with random 12-byte IV per message and 128-bit auth tag; key derived from `ENCRYPTION_KEY` env var via SHA-256; **fails closed** if env var is missing or left at the placeholder default |
 | **JWT secrets** | HS256, env-driven `JWT_SECRET` (must be ≥ 32 bytes in production) |
 | **Auth bypass** | Spring Security + `@PreAuthorize` on every admin controller, role check on every `JwtAuthFilter` invocation |
-| **CORS** | Whitelist of allowed origins, not `*` |
-| **CSRF** | Disabled (stateless API), only POST/PUT/DELETE are not safe but require valid JWT |
+| **CORS** | Whitelist of allowed origins (no wildcard): localhost dev hosts + `uccchatbot.netlify.app` + Netlify deploy previews |
+| **CSRF** | Disabled (stateless API), all admin endpoints require valid JWT |
 | **SQL injection** | JPA parameterized queries everywhere; no string concatenation |
 | **File upload** | 10 MB limit, content stored as text (not executed) |
-| **Brute force** | Account lockout field exists (`locked_until`, `failed_login_count`) — not yet auto-enforced |
-| **TLS** | Enforced by your reverse proxy (Caddy auto-TLS, or Let's Encrypt + nginx) |
+| **Brute force** | `RateLimitFilter` caps `/api/auth/login` at 10 req/min per IP; account lockout field also present for future use |
+| **Rate limiting** | In-memory token-bucket filter (60-second window): 30 req/min `/api/chat`, 60/min `/api/chat/welcome`, 20/min `/api/chat/feedback`, 10/min login, 5/min register — keyed by `X-Forwarded-For` (or `X-Real-IP` / `remoteAddr`) |
+| **TLS** | Enforced by your reverse proxy (Caddy auto-TLS, or Let's Encrypt + nginx); HSTS set by `netlify.toml` |
 | **Audit** | Every admin write is logged in `audit_logs` |
-| **Secret management** | All secrets env-driven; never committed (`.env` in `.gitignore`) |
+| **Secret management** | All secrets env-driven; `.env` in `.gitignore`; encryption keys fail closed |
 
 **Hardening checklist before going live:**
 - [ ] `JWT_SECRET` is at least 48 random bytes
+- [ ] `ENCRYPTION_KEY` is set to a 32+ char random value (otherwise the app refuses to encrypt any API key)
 - [ ] `ADMIN_PASSWORD` is at least 12 characters, not the default
 - [ ] TLS is enabled
 - [ ] `CORS_ALLOWED_ORIGINS` is restricted to your real domains
 - [ ] Database backups are running daily
 - [ ] Uploads directory is backed up
 - [ ] Logs are shipped off-host
-- [ ] Rate limiting is enabled (nginx `limit_req` or CDN)
+- [ ] Rate limiting is enabled (the in-app `RateLimitFilter` covers this; for multi-instance deployments also add nginx `limit_req` or a CDN)
 
 ---
 

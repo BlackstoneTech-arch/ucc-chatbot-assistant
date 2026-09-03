@@ -3,113 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Chat with UCC Chatbot Assistant - University of Dar es Salaam Computing Centre">
-  <title>Chat - UCC Chatbot Assistant</title>
+  <meta name="description" content="Chat with UCC Customer Care Assistant — University of Dar es Salaam Computing Centre.">
+  <title>Chat — UCC Customer Care Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/chatbot.css">
 </head>
 <body>
+  <a class="skip-link" href="#chat-widget">Skip to chat</a>
   <div id="app">
-    <!-- Header -->
     <header class="hero">
       <div class="container">
         <div class="logo">
-          <div class="logo-icon">
+          <div class="logo-icon" aria-hidden="true">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
           </div>
           <div>
-            <h1>UCC Chatbot Assistant</h1>
+            <h1>UCC Customer Care Assistant</h1>
             <p>University of Dar es Salaam Computing Centre</p>
           </div>
         </div>
-        <nav class="nav-links">
+        <nav class="nav-links" aria-label="Primary">
           <a href="index.html">Home</a>
           <a href="about.html">About</a>
-          <a href="courses.html">Courses</a>
+          <a href="courses.html">Programmes</a>
           <a href="services.html">Services</a>
           <a href="contact.html">Contact</a>
         </nav>
       </div>
     </header>
 
-    <!-- Chat Section -->
     <section class="chat-section">
       <div class="container">
-        <div id="chat-widget" class="chat-widget">
+        <div id="chat-widget" class="chat-widget" role="region" aria-label="UCC Customer Care chat">
           <div class="chat-container">
             <div class="chat-header">
               <div class="chat-header-info">
-                <div class="chat-avatar">
+                <div class="chat-avatar" aria-hidden="true">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                   </svg>
                 </div>
                 <div>
-                  <h3>UCC Chatbot Assistant</h3>
+                  <h3>UCC Customer Care Assistant</h3>
                   <p>University of Dar es Salaam Computing Centre</p>
                 </div>
               </div>
               <div class="chat-header-actions">
-                <span class="status-indicator"></span>
-                <span class="status-text">Online</span>
+                <span class="status-indicator" aria-hidden="true"></span>
+                <span class="status-text" aria-live="polite">Online</span>
               </div>
             </div>
 
-            <div id="chat-messages" class="chat-messages">
+            <div id="chat-messages" class="chat-messages" aria-live="polite" aria-relevant="additions text">
               <div class="welcome-screen">
-                <div class="welcome-icon">
+                <div class="welcome-icon" aria-hidden="true">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                   </svg>
                 </div>
-                <h3>Hello! I'm UCC Chatbot Assistant</h3>
-                <p>I can help you find information about programmes, admissions, fees, registration, student services, ICT services, and other UCC services.</p>
+                <h3>Hello! I'm the UCC Customer Care Assistant</h3>
+                <p>I can help you with information about programmes, admissions, fees, registration, ICT services, and other UCC services.</p>
                 <div class="quick-actions">
-                  <button class="quick-action" onclick="sendQuickAction('How can I apply to UCC?')">Admissions</button>
-                  <button class="quick-action" onclick="sendQuickAction('What programmes does UCC offer?')">Programmes</button>
-                  <button class="quick-action" onclick="sendQuickAction('What are the tuition fees?')">Fees</button>
-                  <button class="quick-action" onclick="sendQuickAction('How do I register for courses?')">Registration</button>
-                  <button class="quick-action" onclick="sendQuickAction('How can I get ICT support?')">ICT Support</button>
-                  <button class="quick-action" onclick="sendQuickAction('How can I contact UCC?')">Contact UCC</button>
+                  <button class="quick-action" type="button" onclick="sendQuickAction('How can I apply to UCC?')">Admissions</button>
+                  <button class="quick-action" type="button" onclick="sendQuickAction('What programmes does UCC offer?')">Programmes</button>
+                  <button class="quick-action" type="button" onclick="sendQuickAction('What are the tuition fees?')">Fees</button>
+                  <button class="quick-action" type="button" onclick="sendQuickAction('How do I register for courses?')">Registration</button>
+                  <button class="quick-action" type="button" onclick="sendQuickAction('How can I get ICT support?')">ICT Support</button>
+                  <button class="quick-action" type="button" onclick="sendQuickAction('How can I contact UCC?')">Contact UCC</button>
                 </div>
               </div>
             </div>
 
             <form class="chat-input-area" onsubmit="handleSubmit(event)">
               <div class="input-group">
+                <label class="sr-only" for="chat-input">Your question</label>
                 <input
                   type="text"
                   id="chat-input"
-                  placeholder="Ask UCC Assistant..."
+                  placeholder="Ask UCC Assistant…"
                   autocomplete="off"
+                  inputmode="text"
+                  enterkeyhint="send"
+                  aria-label="Your question"
                 >
-                <button type="submit" id="send-btn">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button type="submit" id="send-btn" aria-label="Send message">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                   </svg>
                 </button>
               </div>
-              <p class="disclaimer">UCC Chatbot Assistant may produce inaccurate information. Verify with official UCC sources.</p>
+              <p class="disclaimer">The UCC Customer Care Assistant is an AI and may produce inaccurate information. Please verify with official UCC sources for critical details.</p>
             </form>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <p>University of Dar es Salaam Computing Centre (UCC)</p>
         <p class="footer-links">
-          <a href="https://www.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Official Website</a> |
-          <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Admission Portal</a>
+          <a href="https://ucc.co.tz/" target="_blank" rel="noopener noreferrer">Official Website</a> |
+          <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Admission Portal</a> |
+          <a href="privacy.html">Privacy</a> |
+          <a href="terms.html">Terms</a> |
+          <a href="cookies.html">Cookies</a>
         </p>
-        <p class="footer-disclaimer">UCC Chatbot Assistant. This is an AI assistant and may produce inaccurate information. Always verify with official UCC sources.</p>
+        <p class="footer-disclaimer">© 2026 UCC Customer Care Assistant. This is an AI assistant and may produce inaccurate information. Always verify with official UCC sources.</p>
       </div>
     </footer>
   </div>

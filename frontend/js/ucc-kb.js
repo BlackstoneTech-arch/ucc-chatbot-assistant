@@ -25,6 +25,10 @@ const UCC_KB_EN = {
 
   cbit: "Certificate in Business Information Technology (CBIT):\n• Duration: 1 year (2 semesters) plus field work\n• Entry requirements: (1) Certificate of Secondary Education (CSEE) with at least 4 passes in non-religious subjects; OR (2) National Vocational Training Award Level III (Trade Test Grade I) from a recognized institution.\n• Fees for 2026/2027 (Total TZS 1,370,000):\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n• Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\n• Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/certificate-in-business-information-technology-cbit-173",
 
+  application: "UCC Admissions 2026/2027 — important dates:\n\n• Applications OPEN: 1st June 2026\n• Applications CLOSE: 30th September 2026\n• Intake / classes begin: September 2026\n• Application fee: TZS 10,000 (non-refundable, paid online via mobile money or bank card)\n• Apply at: https://admission.ucc.co.tz/\n\nHow to apply (4 steps):\n1. Visit https://admission.ucc.co.tz/ and create an account with your email and phone number.\n2. Select your preferred programme (DCIT, DBIT, CCIT or CBIT).\n3. Complete the application form and upload the required documents.\n4. Pay the application fee and submit. You will receive a confirmation SMS/email within 24 hours.\n\nRequired documents: CSEE/ACSEE certificates or equivalent, birth certificate, passport-size photo. For help, email admissions@ucc.co.tz or call +255 22 2410641/5 (Mon–Fri 8:00–17:00, Sat 8:00–13:00).",
+
+  join: "Joining UCC is easy. Here's the path:\n\n• Pick your programme: DCIT, DBIT, CCIT or CBIT.\n• Apply online between 1st June 2026 and 30th September 2026 at https://admission.ucc.co.tz/.\n• Pay the TZS 10,000 application fee and upload your certificates.\n• Once selected, complete registration at the campus (UDSM Mlimani in Dar es Salaam, or UCC Dodoma Branch).\n\nRequired documents: CSEE/ACSEE certificates, birth certificate, passport photo. For help, email admissions@ucc.co.tz or call +255 22 2410641/5.",
+
   apply: "UCC Admissions — 2026/2027 Academic Year:\n\n• Application window: 1st June 2026 — 30th September 2026 (intake: September 2026)\n• Online application portal: https://admission.ucc.co.tz/\n• Application fee: TZS 10,000 (non-refundable, paid online via mobile money or bank card)\n• Required documents: CSEE/ACSEE certificates or equivalent, birth certificate, passport-size photo.\n\nHow to apply (4 steps):\n1. Visit https://admission.ucc.co.tz/ and create an account with your email and phone number.\n2. Select your preferred programme (DCIT, DBIT, CCIT or CBIT).\n3. Complete the application form and upload the required documents.\n4. Pay the application fee and submit. You will receive a confirmation SMS/email within 24 hours.\n\nFor help, email admissions@ucc.co.tz or call +255 22 2410641/5 (Mon–Fri 8:00–17:00, Sat 8:00–13:00).",
 
   admission: "UCC Admissions 2026/2027 — important dates:\n\n• Applications OPEN: 1st June 2026\n• Applications CLOSE: 30th September 2026\n• Intake / classes begin: September 2026\n• Application fee: TZS 10,000\n• Apply at: https://admission.ucc.co.tz/\n\nEligible programmes and basic requirements:\n• DCIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in CS/IT/BIT/Computer Eng./Electronic Eng.\n• DBIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\n• CCIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n• CBIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n\nFor late or special intakes, contact admissions@ucc.co.tz or +255 22 2410641/5. Late applications may be considered if seats are still available.",
@@ -103,12 +107,60 @@ const UCC_KB_SW = {
 
   wasiliana: "Mawasiliano ya UCC:\n\n• Jumla: info@ucc.co.tz | +255 22 2410641/5 | +255 754782120\n• Ofisi Kuu (UDSM Mlimani): ucc@udsm.ac.tz | +255 754782120\n• Tawi la Dodoma: dodoma@udsm.ac.tz | +255 0747 626 619\n• Portal ya Udaahili: https://admission.ucc.co.tz/\n• Tovuti: https://ucc.co.tz/\n\nMasaa: Mon-Fri 8:00-17:00, Sat 8:00-13:00.",
 
-  usajili: "Usajili wa kozi za UCC:\n\n1. Tembelea portal ya udahili https://admission.ucc.co.tz/\n2. Ingia kwa akaunti yako\n3. Nenda kwenye sehemu ya usajili wa kozi\n4. Chagua kozi\n5. Kagua uteuzi\n6. Thibitisha usajili\n\nMsaada: info@ucc.co.tz | +255 22 2410641/5"
+  usajili: "Usajili wa kozi za UCC:\n\n1. Tembelea portal ya udahili https://admission.ucc.co.tz/\n2. Ingia kwa akaunti yako\n3. Nenda kwenye sehemu ya usajili wa kozi\n4. Chagua kozi\n5. Kagua uteuzi\n6. Thibitisha usajili\n\nMsaada: info@ucc.co.tz | +255 22 2410641/5",
+
+  bora: "DCIT vs DBIT — kulinganisha kwa ufupi:\n\n• DCIT — Diploma in Computing and Information Technology (miaka 2, jumla TZS 3,020,000) — Lengo: hardware, mitandao, programming, web, databases, server na mazoezi ya CCNA.\n• DBIT — Diploma in Business Information Technology (miaka 2, jumla TZS 3,020,000) — Lengo: biashara + IT (accounting packages, e-business, web services, business law, entrepreneurship).\n\nUamuzi:\n• Unapenda coding & mitandao → DCIT\n• Unapenda biashara + teknolojia → DBIT\n• Bado huna uhakika → DCIT inakuweka njia nyingi wazi za kujenga shahada.",
+
+  lini: "Udaahili wa UCC 2026/2027:\n\n• Maombi YANAFUNGULIWA: 1 Juni 2026\n• Maombi YANAFUNGWA: 30 Septemba 2026\n• Intake / masomo yanayoanza: Septemba 2026\n• Ada ya maombi: TZS 10,000\n• Portal: https://admission.ucc.co.tz/",
+
+  "application fee": "Ada ya maombi ya udahili wa UCC kwa mwaka wa masomo 2026/2027:\n\n• Ada ya maombi: TZS 10,000 (haitarejeshwa)\n• Hulipwa mtandaoni kupitia portal ya maombi kwa njia ya mobile money au kadi ya benki\n• Dirisha la maombi: 1 Juni 2026 — 30 Septemba 2026\n• Portal: https://admission.ucc.co.tz/\n\nKwa msaada zaidi kuhusu ada ya maombi, wasiliana na admissions@ucc.co.tz au piga +255 22 2410641/5.",
+
+  ada_ya_maombi: "Ada ya maombi ya udahili wa UCC kwa mwaka wa masomo 2026/2027:\n\n• Ada ya maombi: TZS 10,000 (haitarejeshwa)\n• Hulipwa mtandaoni kupitia portal ya maombi kwa njia ya mobile money au kadi ya benki\n• Dirisha la maombi: 1 Juni 2026 — 30 Septemba 2026\n• Portal: https://admission.ucc.co.tz/\n\nKwa msaada zaidi kuhusu ada ya maombi, wasiliana na admissions@ucc.co.tz au piga +255 22 2410641/5.",
+
+  jiunga: "Kujiunga na UCC ni rahisi:\n\n• Chagua programu yako: DCIT, DBIT, CCIT au CBIT.\n• Omba mtandaoni kati ya 1 Juni 2026 na 30 Septemba 2026 kwenye https://admission.ucc.co.tz/.\n• Lipa ada ya maombi ya TZS 10,000 na upakie vyeti vyako.\n• Ukichaguliwa, kamilisha usajili katika kampasi (UDSM Mlimani Dar es Salaam, au Tawi la UCC Dodoma).\n\nNyaraka zinazohitajika: vyeti vya CSEE/ACSEE, cheti cha kuzaliwa, picha ya paspoti. Msaada: admissions@ucc.co.tz au +255 22 2410641/5."
 };
 
 function uccFallbackAnswer(message, lang) {
   const lower = (message || '').toLowerCase().trim();
   const detectedLang = (typeof lang === 'string') ? lang : ((typeof detectLanguage === 'function') ? detectLanguage(message) : 'en');
+
+  // Comparison pre-check: if user mentions DCIT + DBIT + a comparison cue,
+  // return the comparison answer instead of the single-programme detail.
+  const hasDcit = lower.includes('dcit');
+  const hasDbit = lower.includes('dbit');
+  if (hasDcit && hasDbit) {
+    const enCue = /\b(better|compare|comparison|difference|versus|which|choose|or)\b/.test(lower) || lower.includes(' vs ') || lower.includes(' or ');
+    const swCue = /\b(bora|ipi|linganisha|tofauti|au)\b/.test(lower) || lower.includes(' vs ') || lower.includes(' au ');
+    const cue = detectedLang === 'sw' ? swCue : enCue;
+    if (cue) {
+      const kbs = [
+        { kb: UCC_KB_EN, lang: 'en' },
+        { kb: UCC_KB_SW, lang: 'sw' }
+      ];
+      for (const { kb, kbLang } of kbs) {
+        if (kbLang === detectedLang && kb.compare) {
+          return {
+            answer: kb.compare,
+            sources: [{ title: "UCC Knowledge Base", url: "https://ucc.co.tz/" }],
+            confidence: 0.9,
+            escalationRequired: false,
+            language: detectedLang
+          };
+        }
+      }
+      for (const { kb, kbLang } of kbs) {
+        if (kbLang === detectedLang && kb.linganisha) {
+          return {
+            answer: kb.linganisha,
+            sources: [{ title: "UCC Knowledge Base", url: "https://ucc.co.tz/" }],
+            confidence: 0.85,
+            escalationRequired: false,
+            language: detectedLang
+          };
+        }
+      }
+    }
+  }
 
   const kbs = [
     { kb: UCC_KB_EN, lang: 'en' },

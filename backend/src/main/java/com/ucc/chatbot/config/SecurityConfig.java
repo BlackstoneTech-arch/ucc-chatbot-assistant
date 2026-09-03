@@ -71,6 +71,8 @@ public class SecurityConfig {
                 "http://localhost:3001",
                 "http://localhost:8080",
                 "http://localhost:8081",
+                "https://uccchatbot.netlify.app",
+                "https://master--uccchatbot.netlify.app",
                 "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
