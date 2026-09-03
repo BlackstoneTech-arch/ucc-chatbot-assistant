@@ -270,17 +270,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
                     .escalationRequired(false)
                     .build();
         } catch (Exception e) {
-            // Graceful degradation: KB fallback
-            return ChatResponse.builder()
-                    .answer("sw".equals(language)
-                            ? "Nina shida za kiufundi kwa sasa. Tafadhali jaribu tena baadaye au wasiliana na UCC kwa info@ucc.co.tz / +255 22 2410641/5. (Kosa: " + e.getClass().getSimpleName() + ")"
-                            : "I'm experiencing temporary technical difficulties reaching the AI service. Please try again in a moment, or contact UCC at info@ucc.co.tz / +255 22 2410641/5. (" + e.getClass().getSimpleName() + ")")
-                    .language(language)
-                    .conversationId(request.getConversationId())
-                    .sources(List.of())
-                    .confidence(0.0)
-                    .escalationRequired(true)
-                    .build();
+            return kbOnlyResponse(language, request.getConversationId());
         }
     }
 
