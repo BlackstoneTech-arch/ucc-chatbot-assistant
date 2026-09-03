@@ -1,5 +1,5 @@
 # UCC Chatbot — Netlify redirects
-# Clean URLs for the static legal pages
+# Clean URLs for static legal pages
 /privacy  /privacy.html  200
 /terms    /terms.html    200
 /cookies  /cookies.html  200
