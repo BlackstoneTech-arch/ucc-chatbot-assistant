@@ -344,15 +344,6 @@
     return e;
   }
 
-  function formatBotText(text) {
-    if (!text) return '';
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\n/g, '<br>');
-  }
-
   // ---------- Welcome ----------
   async function loadWelcomeIfNeeded() {
     if (state.welcomeLoaded) return;
@@ -462,7 +453,41 @@
 
   function sendQuickAction(message) { sendMessage(message); }
 
-  // ---------- Render messages ----------
+  // ---------- Render messages (ChatGPT-style rows) ----------
+  const AVATAR_LABEL = { assistant: 'UCC', user: 'You' };
+
+  function makeAvatar(role) {
+    const a = el('div', { class: 'chat-avatar ' + (role === 'user' ? 'user-avatar' : 'bot-avatar'), 'aria-hidden': 'true' });
+    if (role === 'user') {
+      a.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    } else {
+      a.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
+    }
+    return a;
+  }
+
+  function renderMarkdownToHtml(text) {
+    if (!text) return '';
+    // Minimal markdown: escape first, then handle **bold**, *italic*, `code`, line breaks, links
+    const esc = (s) => String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    let html = esc(text);
+    // links [text](url)
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    // bare URLs
+    html = html.replace(/(?<!["'>])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+    // bold + italic
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+    // inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // line breaks (preserve paragraphs)
+    const paragraphs = html.split(/\n{2,}/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>');
+    return paragraphs.join('');
+  }
+
   function addMessage(role, content, sources = [], intent = '', confidence = 0, escalated = false, opts = {}) {
     const messagesContainer = $('chat-messages');
     if (!messagesContainer) return;
@@ -470,34 +495,49 @@
     const welcomeScreen = messagesContainer.querySelector('.welcome-screen');
     if (welcomeScreen) welcomeScreen.remove();
 
-    const messageDiv = el('div', { class: `message ${role}`, role: 'article', 'aria-label': role === 'user' ? 'Your message' : 'Assistant response' });
-    const bubbleDiv = el('div', { class: 'message-bubble' });
-    const contentDiv = el('div', { class: 'message-text' });
-    if (role === 'assistant') contentDiv.innerHTML = formatBotText(content);
-    else contentDiv.textContent = content;
-    bubbleDiv.appendChild(contentDiv);
+    const row = el('div', { class: `chat-row ${role}`, role: 'article', 'aria-label': role === 'user' ? 'Your message' : 'Assistant response' });
+    row.appendChild(makeAvatar(role));
+
+    const contentCol = el('div', { class: 'chat-content' });
+    const inner = el('div', { class: 'chat-content-inner' });
+    contentCol.appendChild(inner);
+
+    const label = el('div', { class: 'chat-role-label' });
+    label.textContent = AVATAR_LABEL[role] || role;
+    inner.appendChild(label);
+
+    const text = el('div', { class: 'chat-text' });
+    if (role === 'user') {
+      text.textContent = content;
+    } else {
+      text.innerHTML = renderMarkdownToHtml(content);
+    }
+    inner.appendChild(text);
 
     if (sources && sources.length > 0) {
       const sourcesDiv = el('div', { class: 'message-sources' });
-      const strong = el('strong', { text: 'Sources:' });
+      const strong = el('strong', { text: 'Sources' });
       sourcesDiv.appendChild(strong);
       sources.forEach((source, i) => {
-        const sourceP = el('p', { text: `${i + 1}. ${source.title || 'UCC Knowledge Base'}${source.url ? ' — ' : ''}` });
+        const sourceP = el('p');
         if (source.url) {
-          const a = el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer', text: source.url });
+          const a = el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' });
+          a.textContent = `${i + 1}. ${source.title || 'UCC Knowledge Base'}`;
           sourceP.appendChild(a);
+        } else {
+          sourceP.textContent = `${i + 1}. ${source.title || 'UCC Knowledge Base'}`;
         }
         sourcesDiv.appendChild(sourceP);
       });
-      bubbleDiv.appendChild(sourcesDiv);
+      inner.appendChild(sourcesDiv);
     }
 
     if (escalated) {
-      const esc = el('p', { class: 'escalation-note', role: 'note' });
-      esc.textContent = (state.detectedLang === 'sw')
+      const esc2 = el('div', { class: 'escalation-note', role: 'note' });
+      esc2.textContent = (state.detectedLang === 'sw')
         ? 'Ikiwa unahitaji msaada wa haraka, wasiliana nasi kwa info@ucc.co.tz au +255 22 2410641/5.'
         : 'For urgent help, please contact us at info@ucc.co.tz or +255 22 2410641/5.';
-      bubbleDiv.appendChild(esc);
+      inner.appendChild(esc2);
     }
 
     if (opts.quickReplies && opts.quickReplies.length) {
@@ -509,44 +549,135 @@
         b.addEventListener('click', () => { if (qr0.message) sendMessage(qr0.message); });
         qr.appendChild(b);
       });
-      bubbleDiv.appendChild(qr);
+      inner.appendChild(qr);
     }
 
     if (opts.downloads && opts.downloads.length) {
-      bubbleDiv.appendChild(buildDownloadsCard(opts.downloads));
+      inner.appendChild(buildDownloadsCard(opts.downloads));
     }
 
     if (role === 'assistant' && !opts.skipFeedback) {
-      bubbleDiv.appendChild(buildFeedbackRow(content));
+      const meta = el('div', { class: 'chat-meta' });
+      meta.appendChild(buildFeedbackRow(content));
+      const copyBtn = el('button', { type: 'button', 'aria-label': 'Copy response' });
+      copyBtn.textContent = '📋 Copy';
+      copyBtn.addEventListener('click', () => copyToClipboard(content, copyBtn));
+      meta.appendChild(copyBtn);
+      inner.appendChild(meta);
     }
 
-    const timeP = el('p', { class: 'message-time', 'aria-label': 'Sent at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-    timeP.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    bubbleDiv.appendChild(timeP);
+    row.appendChild(contentCol);
+    messagesContainer.appendChild(row);
+    scrollChatToBottom();
+  }
 
-    messageDiv.appendChild(bubbleDiv);
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  function scrollChatToBottom() {
+    const mc = $('chat-messages');
+    if (!mc) return;
+    window.requestAnimationFrame(() => {
+      // Use document scroll because the full-page chat is just a document flow
+      const rect = mc.getBoundingClientRect();
+      const composer = document.querySelector('.chat-composer');
+      const composerH = composer ? composer.offsetHeight : 0;
+      const target = window.scrollY + rect.bottom - window.innerHeight + composerH + 80;
+      window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+    });
+  }
+
+  function copyToClipboard(text, btn) {
+    if (!navigator.clipboard || !text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const prev = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(() => { btn.textContent = prev; }, 1500);
+    }).catch(() => {});
+  }
+
+  // ---------- Streaming reveal (word-by-word) ----------
+  // Creates a chat-row in 'streaming' mode and reveals `text` one word at a time.
+  // Returns an object { finish(), abort() } so callers can short-circuit.
+  function startStreamingReply() {
+    const messagesContainer = $('chat-messages');
+    if (!messagesContainer) return null;
+
+    const welcomeScreen = messagesContainer.querySelector('.welcome-screen');
+    if (welcomeScreen) welcomeScreen.remove();
+
+    const row = el('div', { class: 'chat-row assistant streaming', role: 'article', 'aria-label': 'Assistant response' });
+    row.appendChild(makeAvatar('assistant'));
+    const contentCol = el('div', { class: 'chat-content' });
+    const inner = el('div', { class: 'chat-content-inner' });
+    const label = el('div', { class: 'chat-role-label', text: AVATAR_LABEL.assistant });
+    inner.appendChild(label);
+    const textDiv = el('div', { class: 'chat-text streaming' });
+    inner.appendChild(textDiv);
+    contentCol.appendChild(inner);
+    row.appendChild(contentCol);
+    messagesContainer.appendChild(row);
+
+    let cancelled = false;
+    let finished = false;
+    let timer = null;
+    let onDone = null;
+
+    const reveal = (fullText) => {
+      if (cancelled) return;
+      textDiv.innerHTML = renderMarkdownToHtml(fullText);
+      scrollChatToBottom();
+    };
+
+    const streamWords = (fullText) => {
+      if (cancelled) return;
+      const tokens = fullText.split(/(\s+)/);
+      let idx = 0;
+      let acc = '';
+      const tick = () => {
+        if (cancelled) { finished = true; if (onDone) onDone(acc, true); return; }
+        // Reveal 2-3 tokens per frame for speed
+        const step = 2;
+        for (let i = 0; i < step && idx < tokens.length; i++) {
+          acc += tokens[idx++];
+        }
+        reveal(acc);
+        if (idx < tokens.length) {
+          timer = setTimeout(tick, 18);
+        } else {
+          finished = true;
+          textDiv.classList.remove('streaming');
+          if (onDone) onDone(acc, false);
+        }
+      };
+      tick();
+    };
+
+    return {
+      element: row,
+      textDiv: textDiv,
+      // Show a fully-formatted preview immediately (no animation) — used for fast / static responses
+      setText(t) { cancelled = true; if (timer) clearTimeout(timer); reveal(t); textDiv.classList.remove('streaming'); finished = true; if (onDone) onDone(t, false); },
+      // Reveal word-by-word
+      stream(t) { streamWords(t); },
+      onDone(cb) { onDone = cb; if (finished && onDone) onDone(textDiv.textContent, cancelled); },
+      abort() { cancelled = true; if (timer) clearTimeout(timer); textDiv.classList.remove('streaming'); }
+    };
   }
 
   // ---------- Feedback ----------
   function buildFeedbackRow(answerText) {
     const row = el('div', { class: 'message-feedback', role: 'group', 'aria-label': 'Rate this response' });
-    const upBtn = el('button', { type: 'button', class: 'feedback-btn', 'aria-label': 'Helpful' });
+    const upBtn = el('button', { type: 'button', class: 'fb-btn', 'aria-label': 'Helpful' });
     upBtn.innerHTML = '👍';
-    const downBtn = el('button', { type: 'button', class: 'feedback-btn', 'aria-label': 'Not helpful' });
+    const downBtn = el('button', { type: 'button', class: 'fb-btn', 'aria-label': 'Not helpful' });
     downBtn.innerHTML = '👎';
-    const status = el('span', { class: 'feedback-status', role: 'status' });
     const submitFeedback = (rating) => {
       upBtn.disabled = true; downBtn.disabled = true;
-      status.textContent = state.detectedLang === 'sw' ? 'Asante kwa maoni yako!' : 'Thanks for your feedback!';
+      upBtn.classList.add('active');
       queueFeedback({ sessionId: state.sessionId, rating, message: answerText, lang: state.detectedLang, ts: Date.now() });
     };
     upBtn.addEventListener('click', () => submitFeedback('up'));
     downBtn.addEventListener('click', () => submitFeedback('down'));
     row.appendChild(upBtn);
     row.appendChild(downBtn);
-    row.appendChild(status);
     return row;
   }
 
@@ -611,44 +742,52 @@
     });
   }
 
-  // ---------- Typing indicator ----------
+  // ---------- Typing indicator (ChatGPT-style bouncing dots) ----------
   function showTypingIndicator() {
     const messagesContainer = $('chat-messages');
     if (!messagesContainer) return;
-    const typingDiv = el('div', { id: 'typing-indicator', class: 'message assistant', 'aria-label': 'Assistant is typing' });
-    typingDiv.innerHTML = '<div class="message-bubble"><div class="typing-indicator" role="status" aria-label="Typing"><span></span><span></span><span></span></div></div>';
-    messagesContainer.appendChild(typingDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    const welcomeScreen = messagesContainer.querySelector('.welcome-screen');
+    if (welcomeScreen) welcomeScreen.remove();
+    const row = el('div', { id: 'typing-indicator', class: 'chat-typing', 'aria-label': 'Assistant is typing' });
+    row.appendChild(makeAvatar('assistant'));
+    const bubble = el('div', { class: 'chat-typing-bubble', role: 'status', 'aria-label': 'Typing' });
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+    const wrapper = el('div', { class: 'chat-content' });
+    const inner = el('div', { class: 'chat-content-inner' });
+    inner.appendChild(bubble);
+    wrapper.appendChild(inner);
+    row.appendChild(wrapper);
+    messagesContainer.appendChild(row);
+    scrollChatToBottom();
   }
   function hideTypingIndicator() {
     const indicator = $('typing-indicator');
     if (indicator) indicator.remove();
   }
 
-  // ---------- Send message ----------
+  // ---------- Send message (with streaming) ----------
   let activeRequest = null;
+  let activeStream = null;
   async function sendMessage(message) {
     if (!message || !message.trim() || state.isProcessing) return;
     state.isProcessing = true;
     const input = $('chat-input');
     const sendBtn = $('send-btn');
+    setSendButtonStop(true);
 
     const userText = message.trim();
     addMessage('user', userText);
     state.history.push({ role: 'user', content: userText, ts: Date.now() });
     saveHistory();
 
-    if (input) input.value = '';
-    if (input) input.disabled = true;
-    if (sendBtn) sendBtn.disabled = true;
+    if (input) { input.value = ''; autoResizeInput(input); }
+
     showTypingIndicator();
 
     try {
       saveLangPref(detectLanguage(userText));
 
       // 0) Try the local document / IT-help intent pre-check first
-      //    (so users always get rich responses with download links even when the
-      //    backend is unreachable, and these intents are answered with current data)
       const localResp = await buildAssistantResponse(userText);
       hideTypingIndicator();
       if (localResp) {
@@ -666,11 +805,43 @@
         return;
       }
 
-      let data = null;
+      // 1) Start the streaming reply shell up-front so the user sees the assistant typing
+      hideTypingIndicator();
+      const stream = startStreamingReply();
+      activeStream = stream;
+
+      let finalAnswer = null;
+      let finalSources = [];
+      let finalQuickReplies = null;
+      let finalDownloads = null;
+      let finalEscalation = false;
+      let finalConfidence = 0.85;
+
+      // 2) Fetch from API (or KB fallback) and stream the answer in
+      const onResolve = (data) => {
+        finalAnswer = data.answer || '';
+        finalSources = data.sources || [];
+        finalQuickReplies = data.quickReplies || null;
+        finalDownloads = data.downloads || null;
+        finalEscalation = !!data.escalationRequired;
+        finalConfidence = data.confidence || 0.85;
+        if (stream) {
+          if (STREAMING_ENABLED && finalAnswer) {
+            stream.stream(finalAnswer);
+            stream.onDone((txt, wasAborted) => {
+              attachExtrasToStreamRow(stream, finalSources, finalQuickReplies, finalDownloads, finalEscalation, finalAnswer, wasAborted);
+            });
+          } else {
+            stream.setText(finalAnswer);
+            attachExtrasToStreamRow(stream, finalSources, finalQuickReplies, finalDownloads, finalEscalation, finalAnswer, false);
+          }
+        }
+      };
+
       if (hasLiveApi() && navigator.onLine) {
         try {
           activeRequest = new AbortController();
-          const t = setTimeout(() => activeRequest && activeRequest.abort(), 15000);
+          const t = setTimeout(() => activeRequest && activeRequest.abort(), 20000);
           const response = await fetch(`${apiBase()}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -678,51 +849,65 @@
             signal: activeRequest.signal
           });
           clearTimeout(t);
-          if (response.ok) data = await response.json();
+          if (response.ok) {
+            onResolve(await response.json());
+          } else {
+            throw new Error('HTTP ' + response.status);
+          }
         } catch (networkErr) {
-          data = null;
+          if (stream) { stream.abort(); stream.element.remove(); }
+          // Try local KB
+          const lang = state.detectedLang || 'en';
+          let fb = null;
+          if (typeof uccFallbackAnswer === 'function') {
+            try { fb = uccFallbackAnswer(userText, lang); } catch (_) {}
+          }
+          if (fb && typeof fb === 'object' && fb.answer) {
+            onResolve({ answer: fb.answer, language: fb.language || lang, sources: fb.sources || [], confidence: fb.confidence || 0.7, escalationRequired: !!fb.escalationRequired });
+          } else if (typeof fb === 'string') {
+            onResolve({ answer: fb, language: lang, sources: [], confidence: 0.7, escalationRequired: false });
+          } else {
+            onResolve({
+              answer: (lang === 'sw')
+                ? 'Samahani, huduma ya chat haipatikani kwa sasa. Tafadhali jaribu tena baadaye au tembelea https://ucc.co.tz/ kwa taarifa zaidi.'
+                : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.',
+              language: lang,
+              sources: [],
+              confidence: 0,
+              escalationRequired: true
+            });
+          }
         } finally {
           activeRequest = null;
         }
-      }
-
-      if (!data) {
+      } else {
+        if (stream) { stream.abort(); stream.element.remove(); }
         const lang = state.detectedLang || 'en';
+        let fb = null;
         if (typeof uccFallbackAnswer === 'function') {
-          try {
-            const fb = uccFallbackAnswer(userText, lang);
-            if (fb && typeof fb === 'object' && fb.answer) {
-              data = {
-                answer: fb.answer,
-                language: fb.language || lang,
-                sources: fb.sources || [],
-                confidence: fb.confidence || 0.7,
-                escalationRequired: !!fb.escalationRequired
-              };
-            } else if (typeof fb === 'string') {
-              data = { answer: fb, language: lang, sources: [], confidence: 0.7, escalationRequired: false };
-            }
-          } catch (_) {}
+          try { fb = uccFallbackAnswer(userText, lang); } catch (_) {}
         }
-        if (!data) {
-          data = {
-            answer: (lang === 'sw')
-              ? 'Samahani, huduma ya chat haipatikani kwa sasa. Tafadhali jaribu tena baadaye au tembelea https://ucc.co.tz/ kwa taarifa zaidi.'
-              : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.',
-            language: lang,
-            sources: [],
-            confidence: 0,
-            escalationRequired: true
-          };
+        if (fb && typeof fb === 'object' && fb.answer) {
+          addMessage('assistant', fb.answer, fb.sources || [], '', fb.confidence || 0.7, !!fb.escalationRequired, { quickReplies: fb.quickReplies, downloads: fb.downloads });
+        } else if (typeof fb === 'string') {
+          addMessage('assistant', fb, [], '', 0.7, false);
+        } else {
+          addMessage('assistant', (lang === 'sw')
+            ? 'Samahani, huduma ya chat haipatikani kwa sasa. Tafadhali jaribu tena baadaye au tembelea https://ucc.co.tz/ kwa taarifa zaidi.'
+            : 'Sorry, the chat service is currently unavailable. Please try again shortly or visit https://ucc.co.tz/ for more information.', [], '', 0, true);
         }
+        state.history.push({ role: 'assistant', content: finalAnswer || (fb && (fb.answer || fb)) || '', ts: Date.now() });
+        saveHistory();
       }
 
-      hideTypingIndicator();
-      addMessage('assistant', data.answer || 'I couldn\'t generate a response. Please try again.', data.sources || [], '', data.confidence || 0, data.escalationRequired || false, { quickReplies: data.quickReplies, downloads: data.downloads });
-      state.history.push({ role: 'assistant', content: data.answer, ts: Date.now() });
-      saveHistory();
+      // Push final assistant text into history
+      if (finalAnswer) {
+        state.history.push({ role: 'assistant', content: finalAnswer, ts: Date.now() });
+        saveHistory();
+      }
     } catch (error) {
       hideTypingIndicator();
+      if (activeStream) { try { activeStream.abort(); activeStream.element.remove(); } catch (_) {} activeStream = null; }
       const offline = !navigator.onLine;
       const msg = offline
         ? (state.detectedLang === 'sw' ? 'Huna muunganisho wa intaneti. Tafadhali angalia muunganisho wako na ujaribu tena.' : 'You appear to be offline. Please check your connection and try again.')
@@ -732,9 +917,94 @@
       });
     } finally {
       state.isProcessing = false;
+      activeStream = null;
       if (input) input.disabled = false;
-      if (sendBtn) sendBtn.disabled = false;
+      setSendButtonStop(false);
       if (input) input.focus();
+    }
+  }
+
+  const STREAMING_ENABLED = true; // word-by-word reveal
+
+  function setSendButtonStop(isStop) {
+    const sendBtn = $('send-btn');
+    if (!sendBtn) return;
+    if (isStop) {
+      sendBtn.classList.add('is-stop');
+      sendBtn.setAttribute('aria-label', 'Stop generating');
+      sendBtn.setAttribute('title', 'Stop');
+      sendBtn.disabled = false;
+      sendBtn.onclick = (e) => { e.preventDefault(); stopGenerating(); };
+    } else {
+      sendBtn.classList.remove('is-stop');
+      sendBtn.removeAttribute('onclick');
+      sendBtn.setAttribute('aria-label', 'Send message');
+      sendBtn.setAttribute('title', 'Send (Enter)');
+    }
+  }
+
+  function stopGenerating() {
+    if (activeRequest) { try { activeRequest.abort(); } catch (_) {} }
+    if (activeStream) { try { activeStream.abort(); } catch (_) {} }
+  }
+
+  // Append sources / quick-replies / downloads / feedback to the streamed row's
+  // .chat-content-inner (instead of bubbleDiv, which no longer exists).
+  function attachExtrasToStreamRow(stream, sources, quickReplies, downloads, escalated, rawAnswer, wasAborted) {
+    if (!stream || !stream.element) return;
+    const inner = stream.element.querySelector('.chat-content-inner');
+    if (!inner) return;
+    if (sources && sources.length) {
+      const sourcesDiv = el('div', { class: 'message-sources' });
+      const strong = el('strong', { text: 'Sources' });
+      sourcesDiv.appendChild(strong);
+      sources.forEach((source, i) => {
+        const sourceP = el('p');
+        if (source.url) {
+          const a = el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' });
+          a.textContent = `${i + 1}. ${source.title || 'UCC Knowledge Base'}`;
+          sourceP.appendChild(a);
+        } else {
+          sourceP.textContent = `${i + 1}. ${source.title || 'UCC Knowledge Base'}`;
+        }
+        sourcesDiv.appendChild(sourceP);
+      });
+      inner.appendChild(sourcesDiv);
+    }
+    if (escalated) {
+      const esc2 = el('div', { class: 'escalation-note', role: 'note' });
+      esc2.textContent = (state.detectedLang === 'sw')
+        ? 'Ikiwa unahitaji msaada wa haraka, wasiliana nasi kwa info@ucc.co.tz au +255 22 2410641/5.'
+        : 'For urgent help, please contact us at info@ucc.co.tz or +255 22 2410641/5.';
+      inner.appendChild(esc2);
+    }
+    if (quickReplies && quickReplies.length) {
+      const qr = el('div', { class: 'quick-replies', role: 'group', 'aria-label': 'Suggested questions' });
+      quickReplies.forEach((qr0) => {
+        const b = el('button', { type: 'button', class: 'quick-reply-chip' });
+        b.textContent = qr0.label;
+        b.setAttribute('aria-label', `Ask: ${qr0.label}`);
+        b.addEventListener('click', () => { if (qr0.message) sendMessage(qr0.message); });
+        qr.appendChild(b);
+      });
+      inner.appendChild(qr);
+    }
+    if (downloads && downloads.length) {
+      inner.appendChild(buildDownloadsCard(downloads));
+    }
+    // feedback + copy
+    const meta = el('div', { class: 'chat-meta' });
+    meta.appendChild(buildFeedbackRow(rawAnswer || ''));
+    const copyBtn = el('button', { type: 'button', 'aria-label': 'Copy response' });
+    copyBtn.textContent = '📋 Copy';
+    copyBtn.addEventListener('click', () => copyToClipboard(rawAnswer || '', copyBtn));
+    meta.appendChild(copyBtn);
+    inner.appendChild(meta);
+
+    if (wasAborted) {
+      const note = el('div', { class: 'escalation-note', role: 'note' });
+      note.textContent = (state.detectedLang === 'sw') ? '⏹ Imesimamishwa.' : '⏹ Stopped.';
+      inner.appendChild(note);
     }
   }
 
@@ -775,19 +1045,37 @@
     }
     const input = $('chat-input');
     if (input) {
-      input.setAttribute('aria-label', 'Type your question to UCC Assistant');
+      input.setAttribute('aria-label', 'Message UCC Assistant');
       input.setAttribute('enterkeyhint', 'send');
       input.setAttribute('autocomplete', 'off');
-      input.setAttribute('inputmode', 'text');
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
           e.preventDefault();
           handleSubmit(e);
         }
       });
+      input.addEventListener('input', () => autoResizeInput(input));
+      autoResizeInput(input);
     }
     const sendBtn = $('send-btn');
     if (sendBtn) sendBtn.setAttribute('aria-label', 'Send message');
+
+    // Wire up topbar buttons
+    const newChatBtn = $('new-chat-btn');
+    if (newChatBtn) newChatBtn.addEventListener('click', startNewConversation);
+    const themeBtn = $('theme-toggle');
+    if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+
+    // Wire up welcome prompt cards
+    document.querySelectorAll('.prompt-card[data-prompt]').forEach(card => {
+      card.addEventListener('click', () => {
+        const p = card.getAttribute('data-prompt');
+        if (p) sendMessage(p);
+      });
+    });
+
+    // Initialise theme from storage or system pref
+    initTheme();
 
     // Detect language from browser / html
     try {
@@ -810,6 +1098,105 @@
     setOnlineStatus(navigator.onLine);
   }
 
+  function autoResizeInput(input) {
+    if (!input) return;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+  }
+
+  function startNewConversation() {
+    // Abort any in-flight request
+    if (activeRequest) { try { activeRequest.abort(); } catch (_) {} }
+    if (activeStream) { try { activeStream.abort(); } catch (_) {} }
+    state.isProcessing = false;
+    setSendButtonStop(false);
+
+    // Clear UI
+    const messagesContainer = $('chat-messages');
+    if (messagesContainer) messagesContainer.innerHTML = '';
+    // Re-add welcome screen
+    rebuildWelcomeScreen();
+
+    // Reset history
+    try { localStorage.removeItem(STORAGE_KEYS.HISTORY); } catch (_) {}
+    state.history = [];
+    state.welcomeLoaded = false;
+    loadWelcomeIfNeeded();
+
+    // Focus input
+    const input = $('chat-input');
+    if (input) input.focus();
+  }
+
+  function rebuildWelcomeScreen() {
+    const messagesContainer = $('chat-messages');
+    if (!messagesContainer) return;
+    const welcome = el('div', { class: 'welcome-screen welcome-screen--full' });
+    welcome.innerHTML = `
+      <div class="welcome-orb" aria-hidden="true">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M12 2a4 4 0 014 4v1.5a4 4 0 11-8 0V6a4 4 0 014-4zM5 11a7 7 0 1014 0M12 18v4M8 22h8"/>
+        </svg>
+      </div>
+      <h2 class="welcome-title">How can I help you today?</h2>
+      <p class="welcome-sub">I'm the UCC Customer Care Assistant. Ask me about programmes, admissions, fees, registration, ICT support, or download official documents.</p>
+      <div class="suggested-prompts" role="group" aria-label="Suggested questions">
+        <button class="prompt-card" type="button" data-prompt="I need the application pack for 2026/2027">
+          <span class="prompt-icon" aria-hidden="true">📥</span>
+          <span class="prompt-text">Get the 2026/2027 application pack</span>
+        </button>
+        <button class="prompt-card" type="button" data-prompt="How do I apply to UCC?">
+          <span class="prompt-icon" aria-hidden="true">🎓</span>
+          <span class="prompt-text">How do I apply to UCC?</span>
+        </button>
+        <button class="prompt-card" type="button" data-prompt="What programmes does UCC offer?">
+          <span class="prompt-icon" aria-hidden="true">📚</span>
+          <span class="prompt-text">What programmes does UCC offer?</span>
+        </button>
+        <button class="prompt-card" type="button" data-prompt="What are the tuition fees?">
+          <span class="prompt-icon" aria-hidden="true">💰</span>
+          <span class="prompt-text">What are the tuition fees?</span>
+        </button>
+        <button class="prompt-card" type="button" data-prompt="Compare DCIT and DBIT">
+          <span class="prompt-icon" aria-hidden="true">⚖️</span>
+          <span class="prompt-text">Compare DCIT and DBIT</span>
+        </button>
+        <button class="prompt-card" type="button" data-prompt="How can I contact UCC?">
+          <span class="prompt-icon" aria-hidden="true">📞</span>
+          <span class="prompt-text">How can I contact UCC?</span>
+        </button>
+      </div>`;
+    messagesContainer.appendChild(welcome);
+    // Re-wire prompt cards
+    welcome.querySelectorAll('.prompt-card[data-prompt]').forEach(card => {
+      card.addEventListener('click', () => {
+        const p = card.getAttribute('data-prompt');
+        if (p) sendMessage(p);
+      });
+    });
+  }
+
+  // ---------- Theme (light / dark) ----------
+  const THEME_KEY = 'ucc_chat_theme';
+  function initTheme() {
+    let stored = null;
+    try { stored = localStorage.getItem(THEME_KEY); } catch (_) {}
+    if (stored === 'light' || stored === 'dark') {
+      document.documentElement.setAttribute('data-theme', stored);
+    } else {
+      // No explicit choice — respect prefers-color-scheme via CSS @media
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme')
+      || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (_) {}
+  }
+
   function setOnlineStatus(online) {
     const indicators = document.querySelectorAll('.status-indicator');
     const texts = document.querySelectorAll('.status-text');
@@ -828,6 +1215,8 @@
     sendQuickAction,
     handleSubmit,
     clearHistory: clearHistoryAndRestart,
+    newChat: startNewConversation,
+    toggleTheme,
     setLanguage: (lang) => { if (lang === 'sw' || lang === 'en') saveLangPref(lang); }
   };
   // Back-compat for existing on-page onclick handlers
@@ -836,6 +1225,7 @@
   window.openChatWith = openChatWith;
   window.sendQuickAction = sendQuickAction;
   window.handleSubmit = handleSubmit;
+  window.startNewConversation = startNewConversation;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
