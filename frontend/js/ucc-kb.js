@@ -41,7 +41,7 @@ const UCC_KB_EN = {
 
   location: "UCC has two branches:\n\n1. Main Office (Headquarters):\n• University of Dar es Salaam, Mlimani Road\n• P.O. Box 35062, Dar es Salaam\n• Located at UDSM Mlimani Campus, Opp. NBC Bank\n• Phone: +255 22 2410641/5 | Mobile: +255 754782120\n• Email: ucc@udsm.ac.tz\n\n2. Dodoma Branch:\n• Plot No. 113, Mathias Street, Miyuji\n• P.O. Box 2501, Dodoma\n• Phone: +255 22 2410641/5 | Mobile: +255 0747 626 619\n• Email: dodoma@udsm.ac.tz\n\nOffice hours: Mon-Fri 8:00-17:00, Sat 8:00-13:00, Sun closed.",
 
-  registration: "Course registration at UCC:\n\n1. Visit the UCC admission portal at https://admission.ucc.co.tz/\n2. Log in with your account credentials\n3. Navigate to the course registration section\n4. Select your preferred courses from the available list\n5. Review your course selection\n6. Confirm and submit your registration\n\nIf you need help:\n• Email: info@ucc.co.tz\n• Phone: +255 22 2410641/5\n• Mobile: +255 754782120\n\nIn person:\n• Main Office: UDSM Mlimani Campus, Opp. NBC Bank, Dar es Salaam\n• Dodoma Branch: Plot No. 113, Mathias Street, Miyuji",
+  registration: "Course registration at UCC — for new students (October 2026/2027 intake):\n\n1. Visit the UCC admission portal at https://admission.ucc.co.tz/ and create an account with your email and phone number.\n2. Fill in the 4-step form: My Profile → Application Fee Payment → Academic Qualification → Programme Choices.\n3. Pay the application fee (TZS 15,000 local / TZS 30,000 foreign) via M-Pesa, Mix by Yas, Airtel Money ('Malipo ya Serikali' → reference number), or SWIFT to CRDB Bank (code CORUTZTZ, A/C 02J1020063300).\n4. Once admitted, complete on-campus registration at UCC HQ (UDSM Mlimani Campus, Opp. NBC Bank, Dar es Salaam) or UCC Dodoma Branch (Plot No. 113, Mathias Street, Miyuji). Reporting begins November 2026.\n\nRequired documents: CSEE/ACSEE certificates (or equivalent), birth certificate, passport-size photo. For help, contact info@ucc.co.tz or call +255 22 2410641/5 (Dar) / +255 754782120 (mobile) / +255 0747 626 619 (Dodoma). Office hours: Mon–Fri 8:00–17:00, Sat 8:00–13:00.",
 
   ict: "For ICT support: email ict@ucc.co.tz or call the UCC main line +255 22 2410641/5 (or mobile +255 754782120). UCC provides computer lab access, internet, email accounts, LMS support, and software installation assistance for staff and students.",
 
@@ -107,7 +107,7 @@ const UCC_KB_SW = {
 
   wasiliana: "Mawasiliano ya UCC:\n\n• Jumla: info@ucc.co.tz | +255 22 2410641/5 | +255 754782120\n• Ofisi Kuu (UDSM Mlimani): ucc@udsm.ac.tz | +255 754782120\n• Tawi la Dodoma: dodoma@udsm.ac.tz | +255 0747 626 619\n• Portal ya Udaahili: https://admission.ucc.co.tz/\n• Tovuti: https://ucc.co.tz/\n\nMasaa: Mon-Fri 8:00-17:00, Sat 8:00-13:00.",
 
-  usajili: "Usajili wa kozi za UCC:\n\n1. Tembelea portal ya udahili https://admission.ucc.co.tz/\n2. Ingia kwa akaunti yako\n3. Nenda kwenye sehemu ya usajili wa kozi\n4. Chagua kozi\n5. Kagua uteuzi\n6. Thibitisha usajili\n\nMsaada: info@ucc.co.tz | +255 22 2410641/5",
+  usajili: "Usajili wa kozi za UCC — kwa wanafunzi wapya (intake ya Oktoba 2026/2027):\n\n1. Tembelea portal ya udahili ya UCC https://admission.ucc.co.tz/ na ufungue akaunti kwa barua pepe na nambari ya simu.\n2. Kamilisha fomu ya hatua 4: Wasifu Wangu → Malipo ya Ada ya Maombi → Sifa za Kitaaluma → Chaguo la Programu.\n3. Lipa ada ya maombi (TZS 15,000 Watanzania / TZS 30,000 wageni) kupitia M-Pesa, Mix by Yas, au Airtel Money ('Malipo ya Serikali' → nambari ya reference), au SWIFT kwenda CRDB Bank (code CORUTZTZ, A/C 02J1020063300).\n4. Ukichaguliwa, kamilisha usajili wa kampasi katika UCC HQ (UDSM Mlimani, kando ya NBC Bank, Dar es Salaam) au Tawi la UCC Dodoma (Plot No. 113, Mathias Street, Miyuji). Kuanza masomo: Novemba 2026.\n\nNyaraka zinazohitajika: vyeti vya CSEE/ACSEE (au vinavyolingana), cheti cha kuzaliwa, picha ya paspoti. Msaada: info@ucc.co.tz au +255 22 2410641/5 (Dar) / +255 754782120 (simu) / +255 0747 626 619 (Dodoma).",
 
   bora: "DCIT vs DBIT — kulinganisha kwa ufupi:\n\n• DCIT — Diploma in Computing and Information Technology (miaka 2, jumla TZS 3,020,000) — Lengo: hardware, mitandao, programming, web, databases, server na mazoezi ya CCNA.\n• DBIT — Diploma in Business Information Technology (miaka 2, jumla TZS 3,020,000) — Lengo: biashara + IT (accounting packages, e-business, web services, business law, entrepreneurship).\n\nUamuzi:\n• Unapenda coding & mitandao → DCIT\n• Unapenda biashara + teknolojia → DBIT\n• Bado huna uhakika → DCIT inakuweka njia nyingi wazi za kujenga shahada.",
 
@@ -125,7 +125,7 @@ function uccFallbackAnswer(message, lang) {
   const detectedLang = (typeof lang === 'string') ? lang : ((typeof detectLanguage === 'function') ? detectLanguage(message) : 'en');
 
   // Comparison pre-check: if user mentions DCIT + DBIT + a comparison cue,
-  // return the comparison answer instead of the single-programme detail.
+  // return the comparison answer instead of any single-keyword match below.
   const hasDcit = lower.includes('dcit');
   const hasDbit = lower.includes('dbit');
   if (hasDcit && hasDbit) {
@@ -158,6 +158,65 @@ function uccFallbackAnswer(message, lang) {
             language: detectedLang
           };
         }
+      }
+    }
+  }
+
+  // -------- Synonym pre-check --------
+  // Maps common user phrasings to the canonical KB keys so that e.g.
+  // "How do I register for courses?" hits the 'registration' key, and
+  // "I want to apply" hits 'apply'. Matches whole words only.
+  const synonyms = {
+    en: [
+      { cue: /\bregist(er|ration|er for|er my|er the|er courses?|er online)\b/, key: 'registration' },
+      { cue: /\b(enroll|enrol|sign up|sign-up)\b/, key: 'registration' },
+      { cue: /\b(course|courses|unit|units|module|modules)\b.*\b(regist|enroll|sign up|enrol)/, key: 'registration' },
+      { cue: /\b(apply|applying|application|admission|admissions)\b/, key: 'apply' },
+      { cue: /\b(join|joining|attend)\b/, key: 'join' },
+      { cue: /\b(fee|fees|cost|price|tuition|charges|how much)\b/, key: 'fee' },
+      { cue: /\b(application fee)\b/, key: 'application fee' },
+      { cue: /\b(contact|contacts|phone|email|reach|call|address|number)\b/, key: 'contact' },
+      { cue: /\b(location|where|address|office|campus|branch)\b/, key: 'location' },
+      { cue: /\b(programme|program|course|courses)\b/, key: 'programme' },
+      { cue: /\b(dcit|computing and information technology|computing & it)\b/, key: 'dcit' },
+      { cue: /\b(dbit|business information technology|business it)\b/, key: 'dbit' },
+      { cue: /\b(ccit|certificate.*computing|certificate in computing)\b/, key: 'ccit' },
+      { cue: /\b(cbit|certificate.*business information|certificate in business information)\b/, key: 'cbit' },
+      { cue: /\b(ict|computer help|it support|tech support|software|hardware|network|email account|lms)\b/, key: 'ict' },
+      { cue: /\b(professional course|short course|pmp|cisa|cism|itil|cobit|ccna|ccnp|ethical hacking|mobile app dev|pearson vue)\b/, key: 'professional' },
+      { cue: /\b(help|what can you|what do you know|what can i ask)\b/, key: 'help' }
+    ],
+    sw: [
+      { cue: /\b(usajili|sajili|jiandikishe|andikisha|andikishaji|sajiliwa|andikishwe)\b/, key: 'usajili' },
+      { cue: /\b(omba|kuomba|maombi|maombi ya|form|application)\b/, key: 'omba' },
+      { cue: /\b(udahili|udahili wa|kujiunga|jiunge|kuhudhuria)\b/, key: 'udahili' },
+      { cue: /\b(ada|gharama|bei|malipo|pesa)\b/, key: 'ada' },
+      { cue: /\b(ada ya maombi)\b/, key: 'ada_ya_maombi' },
+      { cue: /\b(ada ya maombi|application fee)\b/, key: 'application fee' },
+      { cue: /\b(mawasiliano|wasiliana|simu|nambari|barua pepe|anwani)\b/, key: 'wasiliana' },
+      { cue: /\b(eneo|wapi|anwani|ofisi|tawi|kampasi)\b/, key: 'wasiliana' },
+      { cue: /\b(programu|kozi|mtaala|masomo)\b/, key: 'programme' },
+      { cue: /\b(dcit|computing and information)\b/, key: 'dcit' },
+      { cue: /\b(dbit|business information)\b/, key: 'dbit' },
+      { cue: /\b(ccit|cheti.*computing|computing.*cheti)\b/, key: 'ccit' },
+      { cue: /\b(cbit|cheti.*business|business.*cheti)\b/, key: 'cbit' },
+      { cue: /\b(ict|mteja wa it|mteja wa kompyuta|mtandao|barua pepe|akaunti ya)\b/, key: null },
+      { cue: /\b(msaada|nisaidie|usaidizi|nini unajua|unajua nini)\b/, key: 'msaada' },
+      { cue: /\b(lini|wakati gani|tarehe)\b/, key: 'lini' }
+    ]
+  };
+  const synLang = (detectedLang === 'sw') ? 'sw' : 'en';
+  for (const { cue, key } of (synonyms[synLang] || [])) {
+    if (key && cue.test(lower)) {
+      const kb = synLang === 'sw' ? UCC_KB_SW : UCC_KB_EN;
+      if (kb[key]) {
+        return {
+          answer: kb[key],
+          sources: [{ title: 'UCC Knowledge Base', url: 'https://ucc.co.tz/' }],
+          confidence: 0.9,
+          escalationRequired: false,
+          language: detectedLang
+        };
       }
     }
   }
