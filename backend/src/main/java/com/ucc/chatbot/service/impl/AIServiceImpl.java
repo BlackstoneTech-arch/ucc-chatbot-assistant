@@ -43,6 +43,9 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
     @Value("${ai.provider:openai}")
     private String provider;
 
+    @Value("${ai.always.call:true}")
+    private boolean alwaysCallAi;
+
     private static final Set<String> PROGRAMME_CODES = Set.of("DBIT", "DCIT", "CCIT", "CBIT");
 
     // UCC AI CUSTOMER CARE SYSTEM PROMPT
@@ -911,33 +914,76 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
         // Decide whether to call the LLM or fall back to KB-only
         boolean hasKey = aiApiKey != null && !aiApiKey.isBlank();
-        boolean usePollinationsFree = "pollinations".equalsIgnoreCase(provider) || !hasKey;
+        boolean usePollinationsFree = "pollinations".equalsIgnoreCase(provider);
+        boolean useGroq = "groq".equalsIgnoreCase(provider);
 
         if (!hasKey && !usePollinationsFree) {
-            // No key, no free provider: KB fallback
+            // No key and no free provider: KB fallback
             return kbOnlyResponse(language, request.getConversationId());
         }
 
+        // Build a richer system prompt:
+        //  - System persona
+        //  - Verified UCC knowledge-base snippets (so the model can answer accurately
+        //    instead of hallucinating, even when always-call is on)
+        //  - Retrieved RAG context (if any)
+        StringBuilder promptBuilder = new StringBuilder(SYSTEM_PROMPT);
+        String kbSnippet = pickBestStaticKBSnippet(staticKB, lowerMessage);
+        if (kbSnippet != null) {
+            promptBuilder.append("\n\nVERIFIED UCC KNOWLEDGE BASE SNIPPET (use these exact facts when relevant):\n")
+                    .append(kbSnippet);
+        }
+        if (context != null && !context.isBlank()) {
+            promptBuilder.append("\n\nADDITIONAL CONTEXT (verified UCC information):\n").append(context);
+        }
+        String fullSystemPrompt = promptBuilder.toString();
+
         try {
-            String fullSystemPrompt = SYSTEM_PROMPT
-                    + (context != null && !context.isBlank()
-                        ? "\n\nCONTEXT (verified UCC information):\n" + context
-                        : "");
-            String reply = usePollinationsFree
-                    ? callPollinations(fullSystemPrompt, request.getMessage(), language)
-                    : callOpenAI(fullSystemPrompt, request.getMessage());
+            String reply;
+            if (usePollinationsFree) {
+                reply = callPollinations(fullSystemPrompt, request.getMessage(), language);
+            } else if (useGroq) {
+                reply = callGroq(fullSystemPrompt, request.getMessage());
+            } else {
+                reply = callOpenAI(fullSystemPrompt, request.getMessage());
+            }
 
             return ChatResponse.builder()
                     .answer(reply)
                     .language(language)
                     .conversationId(request.getConversationId())
-                    .sources(List.of(Map.of("title", "UCC AI Assistant", "url", "https://ucc.co.tz/")))
+                    .sources(List.of(Map.of("title", "UCC AI Assistant (" + provider + ")", "url", "https://ucc.co.tz/")))
                     .confidence(0.85)
                     .escalationRequired(false)
                     .build();
         } catch (Exception e) {
+            // LLM failed — fall back to KB static answer if we have one, else escalation
+            if (kbSnippet != null) {
+                return ChatResponse.builder()
+                        .answer(kbSnippet)
+                        .language(language)
+                        .conversationId(request.getConversationId())
+                        .sources(List.of(Map.of("title", "UCC Static Knowledge Base", "url", "https://ucc.co.tz/")))
+                        .confidence(0.7)
+                        .escalationRequired(false)
+                        .build();
+            }
             return kbOnlyResponse(language, request.getConversationId());
         }
+    }
+
+    /**
+     * Pick the first static KB entry whose key is contained in the user message.
+     * Returns the answer string, or null if no match.
+     */
+    private String pickBestStaticKBSnippet(Map<String, List<String>> staticKB, String lowerMessage) {
+        for (Map.Entry<String, List<String>> entry : staticKB.entrySet()) {
+            if (containsKeyword(lowerMessage, entry.getKey())) {
+                List<String> vals = entry.getValue();
+                if (vals != null && !vals.isEmpty()) return vals.get(0);
+            }
+        }
+        return null;
     }
 
     /**
@@ -1158,6 +1204,46 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
             return choices.get(0).path("message").path("content").asText();
         }
         throw new RuntimeException("OpenAI returned no choices");
+    }
+
+    /**
+     * Call Groq's OpenAI-compatible Chat Completions API.
+     * Free tier: https://console.groq.com — generous limits on llama-3.1-70b,
+     * llama-3.3-70b, mixtral-8x7b, gemma2-9b. Sign up, grab GROQ_API_KEY, set:
+     *   AI_PROVIDER=groq
+     *   AI_API_KEY=<your-groq-key>
+     *   AI_MODEL=llama-3.3-70b-versatile   (or any Groq-supported model)
+     */
+    private String callGroq(String systemPrompt, String userMessage) throws Exception {
+        String url = (aiApiUrl == null || aiApiUrl.isBlank() || aiApiUrl.contains("api.openai.com"))
+                ? "https://api.groq.com/openai/v1"
+                : aiApiUrl;
+        String body = String.format(
+                "{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"%s\"},{\"role\":\"user\",\"content\":\"%s\"}],\"max_tokens\":1024,\"temperature\":0.4}",
+                model,
+                escapeJson(systemPrompt),
+                escapeJson(userMessage)
+        );
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(url + "/chat/completions"))
+                .timeout(Duration.ofSeconds(45))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + aiApiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() / 100 != 2) {
+            throw new RuntimeException("Groq status " + resp.statusCode() + ": "
+                    + resp.body().substring(0, Math.min(300, resp.body().length())));
+        }
+        JsonNode root = objectMapper.readTree(resp.body());
+        JsonNode choices = root.path("choices");
+        if (choices.isArray() && choices.size() > 0) {
+            return choices.get(0).path("message").path("content").asText();
+        }
+        throw new RuntimeException("Groq returned no choices: " + resp.body().substring(0, Math.min(200, resp.body().length())));
     }
 
     private String escapeJson(String input) {
