@@ -110,14 +110,215 @@
       'kabla ya', 'tena', 'tayari', 'kisha', 'halafu', 'sasa hivi',
       'mkuu', 'uchumi', 'biashara', 'afya', 'lugha', 'maneno', 'kitabu',
       'nataka', 'natafuta', 'kujiunga', 'nimehitaji', 'ningependa',
-      'maombi', 'ada ya', 'kiasi gani'
+      'maombi', 'ada ya', 'kiasi gani', 'pakua', 'hati', 'karatasi', 'kalenda', 'ratiba', 'muhtasari', 'brochure', 'brochure', 'wasiliana nasi'
     ];
     let swScore = 0, enScore = 0;
     for (const w of swStems) {
       if (lower.includes(w)) swScore += 2;
     }
-    if (/\b(the|what|how|when|where|why|which|can|could|would|should|will|may|tuition|fees|program|course|admission|application|apply|contact|email|address|university)\b/.test(lower)) enScore += 1;
+    if (/\b(the|what|how|when|where|why|which|can|could|would|should|will|may|tuition|fees|program|course|admission|application|apply|contact|email|address|university|download|brochure|prospectus|timetable|calendar)\b/.test(lower)) enScore += 1;
     return swScore > enScore ? 'sw' : 'en';
+  }
+
+  // ---------- Document / IT-help intent detection ----------
+  async function tryDocumentResponse(message) {
+    if (!message) return null;
+    const lower = message.toLowerCase();
+    const D = window.UCCDocuments;
+    if (!D) return null;
+    await D.render && (D._loaded || await D.render().then(() => { D._loaded = true; }).catch(() => {}));
+
+    const all = D.getAllDocs ? D.getAllDocs() : [];
+    if (!all.length) return null;
+
+    const lang = state.detectedLang || 'en';
+    const isSw = lang === 'sw';
+
+    // 1) Application pack
+    const packTriggers = [
+      'application pack', 'admission pack', 'apply pack', 'intake pack', 'app pack',
+      'all documents', 'all admission documents', 'documents for application',
+      'pakua', 'hati zote', 'hati za maombi', 'maombi pack', 'pakua zote', 'hati zangu'
+    ];
+    if (packTriggers.some(t => lower.includes(t)) || (lower.includes('documents') && lower.includes('apply'))) {
+      const pack = D.getIntakePack && D.getIntakePack();
+      if (pack && pack.documents && pack.documents.length) {
+        return {
+          answer: isSw
+            ? `Hapa kuna **Pak ya Maombi ya Oktoba 2026/2027** — ${pack.documents.length} hati rasmi za UCC. Bofya kila kiungo kupakua moja kwa moja kwenye ucc.co.tz.\n\n💡 Unaweza pia kuomba **msaada wa moja kwa moja wa maombi** — naomba tuambie kama unataka kuomba DCIT, DBIT, CCIT, au CBIT.`
+            : `Here is the **October 2026/2027 Application Pack** — ${pack.documents.length} official UCC documents. Click each link to download directly from ucc.co.tz.\n\n💡 I can also walk you through the application step-by-step — just tell me which programme you want to apply to (DCIT, DBIT, CCIT, or CBIT).`,
+          downloads: pack.documents,
+          quickReplies: isSw
+            ? [
+                { label: 'Naomba DCIT', message: 'Naomba kusaidiwa kuomba DCIT' },
+                { label: 'Ada ya maombi', message: 'Ada ya maombi ni kiasi gani?' },
+                { label: 'Lini maombi?', message: 'Lini maombi yanafunguliwa na yanafungwa?' }
+              ]
+            : [
+                { label: 'Apply for DCIT', message: 'Help me apply for DCIT' },
+                { label: 'Application fee', message: 'How much is the application fee?' },
+                { label: 'When do I apply?', message: 'When do applications open and close?' }
+              ],
+          confidence: 0.95
+        };
+      }
+    }
+
+    // 2) Calendar / timetable
+    const calendarTriggers = ['calendar', 'academic calendar', 'semester dates', 'term dates', 'school calendar', 'kalenda', 'kalenda ya masomo', 'tarehe za semesta'];
+    const timetableTriggers = ['timetable', 'class schedule', 'class timetable', 'my class', 'schedule of classes', 'ratiba', 'ratiba ya masomo', 'ratiba ya darasa'];
+    if (timetableTriggers.some(t => lower.includes(t))) {
+      return {
+        answer: isSw
+          ? `**Ratiba za madarasa** huchapishwa kwa kila semesta na kitivo. Kwa sasa ratiba rasmi za DCIT/DBIT/CCIT/CBIT haziko kwenye tovuti ya UCC — zinapostiwa kwenye mabango ya kampasi na kwenye portal ya wanafunzi mwanzoni mwa kila semesta.\n\n**Ili kupata ratiba yako:**\n1. Tembelea kampasi yako (UCC HQ Mlimani au Dodoma Branch) mwanzo wa semesta\n2. Angalia mabango ya matangazo ya idara\n3. Wasiliana na mratibu wako wa programu kwa barua pepe: **training@udsm.ac.tz**\n4. Piga simu: **+255 747 031 228** (Dar) / **+255 747 626 619** (Dodoma)\n\n💡 Kwa sasa unaweza kupakua **brochure ya programu yako** hapa chini kwa maelezo ya jumla ya kozi.`
+          : `**Class timetables** are published per semester by the academic office. The official timetables for DCIT, DBIT, CCIT, and CBIT are not currently hosted online — they are posted on the campus notice boards and the student portal at the start of each semester.\n\n**To get your timetable:**\n1. Visit your campus (UCC HQ Mlimani or Dodoma Branch) at the start of the semester\n2. Check the departmental notice boards\n3. Email your programme coordinator: **training@udsm.ac.tz**\n4. Call the help desk: **+255 747 031 228** (Dar) / **+255 747 626 619** (Dodoma)\n\n💡 In the meantime, you can download your **programme brochure** below for the full curriculum overview.`,
+        downloads: all.filter(d => d.category === 'prospectus'),
+        quickReplies: isSw
+          ? [
+              { label: 'Brochure ya DCIT', message: 'Naomba brochure ya DCIT' },
+              { label: 'Brochure ya DBIT', message: 'Naomba brochure ya DBIT' },
+              { label: 'Mratibu', message: 'Mratibu wa programu ni nani?' }
+            ]
+          : [
+              { label: 'DCIT brochure', message: 'Send me the DCIT brochure' },
+              { label: 'DBIT brochure', message: 'Send me the DBIT brochure' },
+              { label: 'Coordinator', message: 'Who is the programme coordinator?' }
+            ],
+        confidence: 0.85
+      };
+    }
+    if (calendarTriggers.some(t => lower.includes(t))) {
+      return {
+        answer: isSw
+          ? `**Kalenda rasmi ya kitaaluma ya UCC** haijasambazwa kwenye tovuti kwa umma. Inachapishwa kwa kila mwaka wa masomo na husambazwa kwa wanafunzi waliosajiliwa kupitia portal.\n\n**Tarehe muhimu za 2026/2027:**\n• Maombi YANAFUNGULIWA: 1 Juni 2026\n• Maombi YANAFUNGWA: 30 Septemba 2026\n• Kuripoti chuoni: Novemba 2026\n\n**Ili kupata kalenda kamili:**\n• Email: **training@udsm.ac.tz**\n• Simu: **+255 747 031 228** (Dar) / **+255 747 626 619** (Dodoma)`
+          : `The **official UCC academic calendar** is not currently published on the public website. It is released each academic year and distributed to registered students through the student portal.\n\n**Key dates for 2026/2027:**\n• Applications OPEN: 1 June 2026\n• Applications CLOSE: 30 September 2026\n• Reporting: November 2026\n\n**To get the full calendar:**\n• Email: **training@udsm.ac.tz**\n• Phone: **+255 747 031 228** (Dar) / **+255 747 626 619** (Dodoma)`,
+        quickReplies: isSw
+          ? [
+              { label: 'Pakua brochure', message: 'Naomba kupakua brochure za programu' }
+            ]
+          : [
+              { label: 'Download brochures', message: 'Send me the programme brochures' }
+            ],
+        confidence: 0.85
+      };
+    }
+
+    // 3) Programme-specific brochure (or 'all brochures')
+    const brochureTriggers = ['brochure', 'prospectus', 'flyer', 'flier', 'muhtasari', 'brochure', 'taarifa zaidi kuhusu'];
+    const wantsBrochure = brochureTriggers.some(t => lower.includes(t)) || lower.includes('download');
+    const wantAll = /all|every|all programmes|all the|programs|courses/.test(lower) && wantsBrochure;
+    if (wantsBrochure) {
+      const wantedProgs = [];
+      if (/\bdcit\b/.test(lower)) wantedProgs.push('DCIT');
+      if (/\bdbit\b/.test(lower)) wantedProgs.push('DBIT');
+      if (/\bccit\b/.test(lower)) wantedProgs.push('CCIT');
+      if (/\bcbit\b/.test(lower)) wantedProgs.push('CBIT');
+
+      let docs = [];
+      if (wantAll) {
+        docs = all.filter(d => d.category === 'prospectus');
+      } else if (wantedProgs.length) {
+        docs = all.filter(d => d.category === 'prospectus' && wantedProgs.includes(d.programme));
+      } else {
+        // No specific programme: return the most relevant single one or all
+        docs = all.filter(d => d.category === 'prospectus' && d.programme === 'DCIT');
+        if (!docs.length) docs = all.filter(d => d.category === 'prospectus').slice(0, 1);
+      }
+
+      if (docs.length) {
+        const intro = docs.length === 1
+          ? (isSw ? `Hapa kuna **brochure rasmi ya ${docs[0].programme}** — bofya kupakua kutoka ucc.co.tz.` : `Here is the **official ${docs[0].programme} brochure** — click to download from ucc.co.tz.`)
+          : (isSw ? `Hapa kuna **${docs.length} brochure rasmi za UCC** — bofya kila kiungo kupakua kutoka ucc.co.tz.` : `Here are the **${docs.length} official UCC brochures** — click each link to download from ucc.co.tz.`);
+        return {
+          answer: intro,
+          downloads: docs,
+          quickReplies: isSw
+            ? [
+                { label: 'Ada ya DCIT', message: 'Ada ya DCIT ni ngapi?' },
+                { label: 'Lini maombi?', message: 'Lini maombi yanafunguliwa na yanafungwa?' },
+                { label: 'DCIT vs DBIT', message: 'DCIT na DBIT, ni ipi bora kwangu?' }
+              ]
+            : [
+                { label: 'DCIT fees', message: 'How much is DCIT?' },
+                { label: 'Admission dates', message: 'When do applications open and close?' },
+                { label: 'DCIT vs DBIT', message: 'Which is better for me, DCIT or DBIT?' }
+              ],
+          confidence: 0.95
+        };
+      }
+    }
+
+    // 4) Generic "download" or "documents" with no specific target
+    if (lower.includes('download') || lower.includes('pakua') || (lower.includes('document') && !lower.includes('documented'))) {
+      const pack = D.getIntakePack && D.getIntakePack();
+      const docs = pack ? pack.documents : all.filter(d => d.category === 'prospectus');
+      return {
+        answer: isSw
+          ? `Hapa kuna **hati rasmi za UCC** — bofya kila kiungo kupakua kutoka ucc.co.tz. Ukihitaji hati nyingine, niambie tu.`
+          : `Here are the **official UCC documents** — click each link to download from ucc.co.tz. If you need a specific document, just tell me.`,
+        downloads: docs.slice(0, 6),
+        quickReplies: isSw
+          ? [
+              { label: 'Brochure ya DCIT', message: 'Naomba brochure ya DCIT' },
+              { label: 'Kozi za kitaalamu', message: 'Kozi za kitaalamu ni zipi?' }
+            ]
+          : [
+              { label: 'DCIT brochure', message: 'Send me the DCIT brochure' },
+              { label: 'Professional courses', message: 'What professional courses do you offer?' }
+            ],
+        confidence: 0.85
+      };
+    }
+
+    return null;
+  }
+
+  async function tryITHelpResponse(message) {
+    if (!message) return null;
+    const lower = message.toLowerCase();
+    const isSw = (state.detectedLang || 'en') === 'sw';
+
+    // IT education / tech notes / study help
+    const itTriggers = [
+      'computer help', 'tech support', 'it help', 'ict help', 'technology question', 'programming help',
+      'coding help', 'study help', 'tech note', 'tech notes', 'computer notes', 'ict notes',
+      'computer science', 'information technology', 'software help', 'network help', 'database help',
+      'how to code', 'learn programming', 'learn coding', 'learn networking',
+      'msaada wa kompyuta', 'msaada wa teknolojia', 'msaada wa it', 'usaidizi wa kiufundi', 'mambo ya teknolojia',
+      'coding', 'programming', 'python', 'java', 'javascript', 'html', 'css', 'networking', 'database',
+      'computer notes', 'it notes', 'teach me', 'explain', 'what is', 'how does', 'tutorial'
+    ];
+    if (!itTriggers.some(t => lower.includes(t))) return null;
+
+    // Be honest about scope
+    return {
+      answer: isSw
+        ? `Asante kwa swali lako la kiufundi! Naweza kukupa **majibu ya haraka ya jumla** kuhusu mada nyingi za IT, lakini kwa **maelezo kamili ya kitaaluma** (kama vile kozi maalum, mitihani, au nyenzo za kusoma) ninapendekeza hivi:\n\n📚 **Nyenzo zinazopendekezwa:**\n• **UCC inatoa kozi za kitaalamu** — CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Ethical Hacking, Mobile App Dev. Pakua brochure hapa chini.\n• Kwa maswali ya jumla ya IT, jaribu kuuliza kwa maneno mahususi (mfano: "What is a database?", "How does TCP/IP work?") — nitajibu kwa ufupi.\n• Kwa msaada wa kiufundi wa UCC (akaunti ya email, mtandao, LMS), wasiliana na **ict@ucc.co.tz** au piga **+255 22 2410 003**.\n\n⚠️ Kumbuka: Sio mtaalam wa IT — kwa maswali ya kina, thibitisha na chanzo rasmi au mwalimu.`
+        : `Thanks for your IT question! I can give **quick general answers** on many IT topics, but for **full academic depth** (specific courses, exams, or study material) I recommend:\n\n📚 **Recommended resources:**\n• **UCC offers professional IT courses** — CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Ethical Hacking, Mobile App Dev. Download the brochures below.\n• For general IT questions, try asking in specific terms (e.g. "What is a database?", "How does TCP/IP work?") and I'll give a short answer.\n• For UCC IT support (email account, network, LMS), contact **ict@ucc.co.tz** or call **+255 22 2410 003**.\n\n⚠️ I'm not a substitute for an IT instructor — for in-depth questions, verify with an authoritative source or your teacher.`,
+      downloads: (window.UCCDocuments && window.UCCDocuments.getAllDocs && window.UCCDocuments.getAllDocs().filter(d => d.category === 'prospectus' && d.programme === null)) || [],
+      quickReplies: isSw
+        ? [
+            { label: 'CCNA', message: 'Niambie kuhusu CCNA' },
+            { label: 'PMP', message: 'Niambie kuhusu PMP' },
+            { label: 'IT support', message: 'Ninahitaji msaada wa IT' }
+          ]
+        : [
+            { label: 'CCNA', message: 'Tell me about CCNA' },
+            { label: 'PMP', message: 'Tell me about PMP' },
+            { label: 'IT support', message: 'I need IT support' }
+          ],
+      confidence: 0.6
+    };
+  }
+
+  async function buildAssistantResponse(userText) {
+    // 1) Document / download intent (pre-empts API)
+    const docResp = await tryDocumentResponse(userText);
+    if (docResp) return docResp;
+    // 2) IT help intent
+    const itResp = await tryITHelpResponse(userText);
+    if (itResp) return itResp;
+    return null;
   }
 
   // ---------- API ----------
@@ -176,12 +377,14 @@
           language: fb.language || state.detectedLang,
           quickReplies: state.detectedLang === 'sw'
             ? [
+                { label: '📥 Pakua Hati', message: 'Naomba pakua hati zote za kuomba' },
                 { label: 'Programu zenu', message: 'Naomba kuona programu zenu' },
                 { label: 'Ada ya DCIT', message: 'Ada ya DCIT ni ngapi?' },
                 { label: 'Lini maombi?', message: 'Lini maombi yanafunguliwa na yanafungwa?' },
                 { label: 'DCIT vs DBIT', message: 'DCIT na DBIT, ni ipi bora kwangu?' }
               ]
             : [
+                { label: '📥 Download Documents', message: 'I need the application pack' },
                 { label: 'Programmes', message: 'What programmes do you offer?' },
                 { label: 'DCIT fees', message: 'How much is DCIT?' },
                 { label: 'Admission dates', message: 'When do applications open and close?' },
@@ -189,8 +392,8 @@
               ],
           intakeOpen: '2026-06-01',
           intakeClose: '2026-09-30',
-          intakeStart: '2026-09-01',
-          applicationFee: 'TZS 10,000'
+          intakeStart: '2026-11-01',
+          applicationFee: 'TZS 15,000 (local) / TZS 30,000 (foreign)'
         };
       }
     }
@@ -217,11 +420,11 @@
   function showIntakeBanner(welcome) {
     if (!welcome) return;
     const banner = el('div', { class: 'intake-banner', role: 'status' });
-    const fee = welcome.applicationFee || 'TZS 10,000';
+    const fee = welcome.applicationFee || 'TZS 15,000 (local) / TZS 30,000 (foreign)';
     if (state.detectedLang === 'sw') {
-      banner.innerHTML = `📅 <strong>Udaahili 2026/2027:</strong> Maombi yanafunguliwa 1 Juni – 30 Septemba 2026. Intake: Septemba 2026. Ada ya maombi: ${fee}. <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Tuma maombi sasa →</a>`;
+      banner.innerHTML = `📅 <strong>Udaahili Oktoba 2026/2027:</strong> Maombi yanafunguliwa 1 Juni – 30 Septemba 2026. Kuripoti: Novemba 2026. Ada ya maombi: ${fee}. <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Tuma maombi sasa →</a>`;
     } else {
-      banner.innerHTML = `📅 <strong>2026/2027 Admissions:</strong> Applications open 1 June – 30 Sept 2026. Intake: September 2026. Application fee: ${fee}. <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Apply now →</a>`;
+      banner.innerHTML = `📅 <strong>October 2026/2027 Admissions:</strong> Applications open 1 June – 30 Sept 2026. Reporting: November 2026. Application fee: ${fee}. <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Apply now →</a>`;
     }
     const messagesContainer = $('chat-messages');
     if (messagesContainer) messagesContainer.appendChild(banner);
@@ -309,6 +512,10 @@
       bubbleDiv.appendChild(qr);
     }
 
+    if (opts.downloads && opts.downloads.length) {
+      bubbleDiv.appendChild(buildDownloadsCard(opts.downloads));
+    }
+
     if (role === 'assistant' && !opts.skipFeedback) {
       bubbleDiv.appendChild(buildFeedbackRow(content));
     }
@@ -341,6 +548,31 @@
     row.appendChild(downBtn);
     row.appendChild(status);
     return row;
+  }
+
+  // ---------- Downloads card ----------
+  function buildDownloadsCard(downloads) {
+    const wrap = el('div', { class: 'message-downloads', role: 'group', 'aria-label': 'Downloadable documents' });
+    const heading = el('p', { class: 'downloads-heading' });
+    heading.textContent = state.detectedLang === 'sw' ? '📎 Hati za kupakua:' : '📎 Documents to download:';
+    wrap.appendChild(heading);
+    const list = el('ul', { class: 'downloads-list' });
+    downloads.forEach(d => {
+      const li = el('li', { class: 'downloads-item' });
+      const a = el('a', { href: d.downloadUrl, target: '_blank', rel: 'noopener noreferrer', class: 'downloads-link', 'data-id': d.id || '' });
+      a.setAttribute('download', '');
+      a.innerHTML = `<span class="downloads-icon" aria-hidden="true">⬇</span><span class="downloads-title">${escapeHtml(d.title)}</span><span class="downloads-meta">${escapeHtml(d.fileType || 'PDF')}</span>`;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    wrap.appendChild(list);
+    return wrap;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function queueFeedback(item) {
@@ -414,6 +646,26 @@
     try {
       saveLangPref(detectLanguage(userText));
 
+      // 0) Try the local document / IT-help intent pre-check first
+      //    (so users always get rich responses with download links even when the
+      //    backend is unreachable, and these intents are answered with current data)
+      const localResp = await buildAssistantResponse(userText);
+      hideTypingIndicator();
+      if (localResp) {
+        addMessage(
+          'assistant',
+          localResp.answer,
+          localResp.sources || [],
+          '',
+          localResp.confidence || 0.85,
+          !!localResp.escalationRequired,
+          { quickReplies: localResp.quickReplies, downloads: localResp.downloads }
+        );
+        state.history.push({ role: 'assistant', content: localResp.answer, ts: Date.now() });
+        saveHistory();
+        return;
+      }
+
       let data = null;
       if (hasLiveApi() && navigator.onLine) {
         try {
@@ -466,7 +718,7 @@
       }
 
       hideTypingIndicator();
-      addMessage('assistant', data.answer || 'I couldn\'t generate a response. Please try again.', data.sources || [], '', data.confidence || 0, data.escalationRequired || false);
+      addMessage('assistant', data.answer || 'I couldn\'t generate a response. Please try again.', data.sources || [], '', data.confidence || 0, data.escalationRequired || false, { quickReplies: data.quickReplies, downloads: data.downloads });
       state.history.push({ role: 'assistant', content: data.answer, ts: Date.now() });
       saveHistory();
     } catch (error) {

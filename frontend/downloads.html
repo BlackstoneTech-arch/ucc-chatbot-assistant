@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Download official UCC documents — programme brochures, admission guides, academic calendar, and company profile.">
+  <title>Downloads — UCC Customer Care Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/downloads.css">
+</head>
+<body>
+  <a class="skip-link" href="#documents-main">Skip to content</a>
+  <div id="app">
+    <header class="site-header">
+      <div class="container nav">
+        <a class="logo" href="/"><span class="logo-icon" aria-hidden="true">UCC</span><span class="logo-text">Customer Care</span></a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="chat.html">Chat</a>
+          <a href="downloads.html" aria-current="page">Downloads</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="documents-main" class="container documents-page">
+      <header class="page-header">
+        <h1>UCC Documents &amp; Downloads</h1>
+        <p class="lead">Everything you need to apply, plan your studies, and learn about UCC. All documents are official and hosted on <a href="https://ucc.co.tz/downloads" target="_blank" rel="noopener noreferrer">ucc.co.tz</a>.</p>
+      </header>
+
+      <section class="intake-pack" aria-labelledby="intake-pack-heading">
+        <h2 id="intake-pack-heading">📥 October 2026/2027 — Application Pack</h2>
+        <p>Get every document you need to apply in one place. Open the chatbot (bottom-right) and ask <em>"I need the application pack"</em> to receive these as quick-download links inside the chat.</p>
+        <div class="intake-pack-grid" id="intake-pack-grid"></div>
+      </section>
+
+      <section class="categories" aria-labelledby="categories-heading">
+        <h2 id="categories-heading">Browse by category</h2>
+        <div class="category-filters" role="tablist" aria-label="Document categories">
+          <button class="cat-chip active" type="button" data-cat="all" role="tab" aria-selected="true">All</button>
+        </div>
+        <div class="document-grid" id="document-grid"></div>
+      </section>
+
+      <section class="how-to" aria-labelledby="how-to-heading">
+        <h2 id="how-to-heading">How to apply — step by step</h2>
+        <ol class="how-to-steps">
+          <li><strong>Download a programme brochure</strong> above (DCIT, DBIT, CCIT, or CBIT) and read it carefully.</li>
+          <li><strong>Create an account</strong> at <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">admission.ucc.co.tz</a> using your email and phone number. Activate via the link sent to your email.</li>
+          <li><strong>Pay the application fee</strong>: <strong>TZS 15,000</strong> for local applicants, <strong>TZS 30,000</strong> for foreign applicants. Use the reference number from the admission portal via M-Pesa, Tigo Pesa (Mix by Yas), or Airtel Money (Malipo ya Serikali → Reference no). Foreign applicants pay by SWIFT to CRDB Bank (code: <code>CORUTZTZ</code>, A/C: <code>02J1020063300</code>).</li>
+          <li><strong>Complete the 4-step form</strong>: My Profile → Application Fee Payment → Academic Qualification → Programme Choices. Add your CSEE / ACSEE index numbers (or upload foreign certificates + NECTA equivalence letter) and rank your programme choices.</li>
+          <li><strong>Submit and await selection</strong>. Successful applicants will be notified by SMS / email and must <strong>report in November 2026</strong> for the October 2026/2027 intake.</li>
+        </ol>
+        <p class="muted">Need help? Email <a href="mailto:training@udsm.ac.tz">training@udsm.ac.tz</a> or call the help desk: +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) / +255 686 434 520 (tech support) / +255 735 737 668 (payments).</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© 2026 University Computing Centre (UCC), University of Dar es Salaam. <a href="terms.html">Terms</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="cookies.html">Cookies</a></p>
+        <p class="muted">Documents are sourced from <a href="https://ucc.co.tz/downloads" target="_blank" rel="noopener noreferrer">ucc.co.tz/downloads</a> and refreshed whenever UCC publishes a new version. If a link does not work, please email <a href="mailto:info@ucc.co.tz">info@ucc.co.tz</a>.</p>
+      </div>
+    </footer>
+  </div>
+
+  <div id="chat-widget" class="chat-widget hidden" role="region" aria-label="UCC Customer Care chat" aria-hidden="true">
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <div class="chat-avatar" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          </div>
+          <div>
+            <h3>UCC Customer Care Assistant</h3>
+            <p>University of Dar es Salaam Computing Centre</p>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <span class="status-indicator" aria-hidden="true"></span>
+          <span class="status-text" aria-live="polite">Online</span>
+          <button class="chat-close" type="button" onclick="closeChat()" aria-label="Close chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="chat-messages" class="chat-messages" aria-live="polite" aria-relevant="additions text"></div>
+      <form class="chat-input-area" onsubmit="handleSubmit(event)">
+        <div class="input-group">
+          <label class="sr-only" for="chat-input">Your question</label>
+          <input type="text" id="chat-input" placeholder="Ask UCC Assistant…" autocomplete="off" inputmode="text" enterkeyhint="send" disabled aria-label="Your question">
+          <button type="submit" id="send-btn" disabled aria-label="Send message">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          </button>
+        </div>
+        <p class="disclaimer">The UCC Customer Care Assistant is an AI and may produce inaccurate information. Please verify with official UCC sources for critical details.</p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/ucc-kb.js"></script>
+  <script src="js/documents.js"></script>
+  <script src="js/chatbot.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () { if (window.UCCDocuments) window.UCCDocuments.render(); });
+  </script>
+</body>
+</html>

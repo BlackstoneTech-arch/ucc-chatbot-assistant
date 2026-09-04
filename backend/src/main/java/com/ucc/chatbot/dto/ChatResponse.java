@@ -10,6 +10,8 @@ public class ChatResponse {
     private List<Map<String, String>> sources;
     private double confidence;
     private boolean escalationRequired;
+    private List<Map<String, Object>> downloads;
+    private List<Map<String, String>> quickReplies;
 
     public ChatResponse() {}
 
@@ -32,6 +34,8 @@ public class ChatResponse {
     public ChatResponse sources(List<Map<String, String>> sources) { this.sources = sources; return this; }
     public ChatResponse confidence(double confidence) { this.confidence = confidence; return this; }
     public ChatResponse escalationRequired(boolean escalationRequired) { this.escalationRequired = escalationRequired; return this; }
+    public ChatResponse downloads(List<Map<String, Object>> downloads) { this.downloads = downloads; return this; }
+    public ChatResponse quickReplies(List<Map<String, String>> quickReplies) { this.quickReplies = quickReplies; return this; }
     public ChatResponse build() { return this; }
 
     public String getAnswer() { return answer; }
@@ -46,4 +50,8 @@ public class ChatResponse {
     public void setConfidence(double confidence) { this.confidence = confidence; }
     public boolean isEscalationRequired() { return escalationRequired; }
     public void setEscalationRequired(boolean escalationRequired) { this.escalationRequired = escalationRequired; }
+    public List<Map<String, Object>> getDownloads() { return downloads; }
+    public void setDownloads(List<Map<String, Object>> downloads) { this.downloads = downloads; }
+    public List<Map<String, String>> getQuickReplies() { return quickReplies; }
+    public void setQuickReplies(List<Map<String, String>> quickReplies) { this.quickReplies = quickReplies; }
 }

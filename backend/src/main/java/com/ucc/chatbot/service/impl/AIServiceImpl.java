@@ -1,4 +1,4 @@
-package com.ucc.chatbot.service.impl;
+﻿package com.ucc.chatbot.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +25,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
     private final KnowledgeDocumentRepository knowledgeRepository;
     private final FeedbackRepository feedbackRepository;
+    private final com.ucc.chatbot.service.DocumentCatalogService documentCatalogService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -109,7 +110,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
             BETTER:
 
-            > Certainly! I can help you with the UCC application process. The application fee is TZS 10,000 according to the current UCC admissions information. You can pay through the payment options provided in the application portal.
+            > Certainly! I can help you with the UCC application process. The application fee is TZS 15,000 (local) / TZS 30,000 (foreign) according to the current UCC admissions information. You can pay through the payment options provided in the application portal.
 
             If payment instructions are available in the knowledge base, provide them.
 
@@ -270,11 +271,11 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
             If the knowledge base states:
 
-            Application fee = TZS 10,000
+            Application fee = TZS 15,000 (local) / TZS 30,000 (foreign)
 
             answer:
 
-            "The current UCC information in my knowledge base indicates an application fee of TZS 10,000."
+            "The current UCC information in my knowledge base indicates an application fee of TZS 15,000 (local) / TZS 30,000 (foreign)."
 
             If the knowledge base also contains payment instructions, provide them.
 
@@ -304,9 +305,9 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
             "What is the application fee?"
 
-            and the knowledge base says TZS 10,000,
+            and the knowledge base says TZS 15,000 (local) / TZS 30,000 (foreign),
 
-            answer consistently with TZS 10,000.
+            answer consistently with TZS 15,000 (local) / TZS 30,000 (foreign).
 
             If the user asks:
 
@@ -316,7 +317,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
             If the user asks:
 
-            "Is the application fee TZS 10,000?"
+            "Is the application fee TZS 15,000 (local) / TZS 30,000 (foreign)?"
 
             confirm it only if the knowledge base supports it.
 
@@ -440,7 +441,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
             Response:
 
-            "Application fee ya UCC ni TZS 10,000, kulingana na taarifa iliyothibitishwa kwenye mfumo."
+            "Application fee ya UCC ni TZS 15,000 (local) / TZS 30,000 (foreign), kulingana na taarifa iliyothibitishwa kwenye mfumo."
 
             Do not translate technical UCC names unnecessarily.
 
@@ -493,7 +494,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
             Application portal:
             [verified portal]
 
-            The application fee is TZS 10,000.
+            The application fee is TZS 15,000 (local) / TZS 30,000 (foreign).
 
             To apply:
 
@@ -536,13 +537,13 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
             If the system knows:
 
-            Application fee = TZS 10,000
+            Application fee = TZS 15,000 (local) / TZS 30,000 (foreign)
 
             but does not know the exact mobile-money procedure:
 
             Say:
 
-            "The application fee is TZS 10,000. For the exact mobile-money payment steps, please follow the payment instructions shown in the official application portal, as I don't want to provide an incorrect payment procedure."
+            "The application fee is TZS 15,000 (local) / TZS 30,000 (foreign). For the exact mobile-money payment steps, please follow the payment instructions shown in the official application portal, as I don't want to provide an incorrect payment procedure."
 
             Do NOT reject the entire question.
 
@@ -687,43 +688,43 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
     static {
         STATIC_KB_EN.put("compare", Arrays.asList(
-                "DCIT vs DBIT — quick comparison:\n\n• DCIT — Diploma in Computing and Information Technology (2 years, total TZS 3,020,000)\n   - Focus: hardware, networking, programming, web, databases, server & CCNA-aligned practicals.\n   - Best for: students who want a strong technical / software-development / network-engineering career path, or who plan to bridge to a CS/IT degree.\n\n• DBIT — Diploma in Business Information Technology (2 years, total TZS 3,020,000)\n   - Focus: business + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Best for: students who want to work at the intersection of business and IT — business analyst, IT sales, e-commerce, ERP/SAP, or run their own IT business.\n\nBoth lead to the same Diploma-level jobs but DBIT is the better choice if you enjoy business subjects, and DCIT is the better choice for pure software / hardware / networking careers.\n\nQuick decision guide:\n• Love coding & networks → DCIT\n• Love business + tech → DBIT\n• Not sure yet → DCIT keeps more doors open for degree bridging."
+                "DCIT vs DBIT â€” quick comparison:\n\nâ€¢ DCIT â€” Diploma in Computing and Information Technology (2 years, total TZS 3,020,000)\n   - Focus: hardware, networking, programming, web, databases, server & CCNA-aligned practicals.\n   - Best for: students who want a strong technical / software-development / network-engineering career path, or who plan to bridge to a CS/IT degree.\n\nâ€¢ DBIT â€” Diploma in Business Information Technology (2 years, total TZS 3,020,000)\n   - Focus: business + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Best for: students who want to work at the intersection of business and IT â€” business analyst, IT sales, e-commerce, ERP/SAP, or run their own IT business.\n\nBoth lead to the same Diploma-level jobs but DBIT is the better choice if you enjoy business subjects, and DCIT is the better choice for pure software / hardware / networking careers.\n\nQuick decision guide:\nâ€¢ Love coding & networks â†’ DCIT\nâ€¢ Love business + tech â†’ DBIT\nâ€¢ Not sure yet â†’ DCIT keeps more doors open for degree bridging."
         ));
         STATIC_KB_EN.put("better", Arrays.asList(
-                "DCIT vs DBIT — quick comparison:\n\n• DCIT — Diploma in Computing and Information Technology (2 years, total TZS 3,020,000)\n   - Focus: hardware, networking, programming, web, databases, server & CCNA-aligned practicals.\n   - Best for: students who want a strong technical / software-development / network-engineering career path, or who plan to bridge to a CS/IT degree.\n\n• DBIT — Diploma in Business Information Technology (2 years, total TZS 3,020,000)\n   - Focus: business + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Best for: students who want to work at the intersection of business and IT — business analyst, IT sales, e-commerce, ERP/SAP, or run their own IT business.\n\nBoth lead to the same Diploma-level jobs but DBIT is the better choice if you enjoy business subjects, and DCIT is the better choice for pure software / hardware / networking careers.\n\nQuick decision guide:\n• Love coding & networks → DCIT\n• Love business + tech → DBIT\n• Not sure yet → DCIT keeps more doors open for degree bridging."
+                "DCIT vs DBIT â€” quick comparison:\n\nâ€¢ DCIT â€” Diploma in Computing and Information Technology (2 years, total TZS 3,020,000)\n   - Focus: hardware, networking, programming, web, databases, server & CCNA-aligned practicals.\n   - Best for: students who want a strong technical / software-development / network-engineering career path, or who plan to bridge to a CS/IT degree.\n\nâ€¢ DBIT â€” Diploma in Business Information Technology (2 years, total TZS 3,020,000)\n   - Focus: business + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Best for: students who want to work at the intersection of business and IT â€” business analyst, IT sales, e-commerce, ERP/SAP, or run their own IT business.\n\nBoth lead to the same Diploma-level jobs but DBIT is the better choice if you enjoy business subjects, and DCIT is the better choice for pure software / hardware / networking careers.\n\nQuick decision guide:\nâ€¢ Love coding & networks â†’ DCIT\nâ€¢ Love business + tech â†’ DBIT\nâ€¢ Not sure yet â†’ DCIT keeps more doors open for degree bridging."
         ));
         STATIC_KB_EN.put("programme", Arrays.asList(
-                "UCC offers the following verified academic programmes for 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), and Certificate in Business Information Technology (CBIT). UCC also lists professional and short courses such as CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, and Microsoft Certified Solutions Developer. For the complete approved list, visit https://ucc.co.tz/ or contact admissions@ucc.co.tz."
+                "UCC offers the following verified academic programmes for 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), and Certificate in Business Information Technology (CBIT). UCC also lists professional and short courses such as CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, and Microsoft Certified Solutions Developer. For the complete approved list, visit https://ucc.co.tz/ or contact training@udsm.ac.tz."
         ));
         STATIC_KB_EN.put("dcit", Arrays.asList(
-                "Diploma in Computing and Information Technology (DCIT):\n• Duration: 2 years (4 semesters)\n• Entry requirements: (1) ACSEE with at least 1 principal pass and 1 subsidiary pass; OR (2) Basic Technician Certificate (NTA Level 4) in Computer Science, Information Technology, Business Information Technology, Computer Engineering, or Electronic Engineering.\n• Fees for 2026/2027 (Total TZS 3,020,000):\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n• Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\n• Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/diploma-in-computing-and-information-technology-dcit-81"
+                "Diploma in Computing and Information Technology (DCIT):\nâ€¢ Duration: 2 years (4 semesters)\nâ€¢ Entry requirements: (1) ACSEE with at least 1 principal pass and 1 subsidiary pass; OR (2) Basic Technician Certificate (NTA Level 4) in Computer Science, Information Technology, Business Information Technology, Computer Engineering, or Electronic Engineering.\nâ€¢ Fees for 2026/2027 (Total TZS 3,020,000):\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\nâ€¢ Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\nâ€¢ Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/diploma-in-computing-and-information-technology-dcit-81"
         ));
         STATIC_KB_EN.put("dbit", Arrays.asList(
-                "Diploma in Business Information Technology (DBIT):\n• Duration: 2 years (4 semesters) plus project work\n• Entry requirements: (1) ACSEE with at least 1 principal pass and 1 subsidiary pass; OR (2) Basic Technician Certificate (NTA Level 4) in Business Administration, Accountancy, Computer Science, Information Technology, Business Information Technology, or Computer Engineering.\n• Fees for 2026/2027 (Total TZS 3,020,000):\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n• Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\n• Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/diploma-in-business-information-technology-dbit-82"
+                "Diploma in Business Information Technology (DBIT):\nâ€¢ Duration: 2 years (4 semesters) plus project work\nâ€¢ Entry requirements: (1) ACSEE with at least 1 principal pass and 1 subsidiary pass; OR (2) Basic Technician Certificate (NTA Level 4) in Business Administration, Accountancy, Computer Science, Information Technology, Business Information Technology, or Computer Engineering.\nâ€¢ Fees for 2026/2027 (Total TZS 3,020,000):\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\nâ€¢ Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\nâ€¢ Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/diploma-in-business-information-technology-dbit-82"
         ));
         STATIC_KB_EN.put("ccit", Arrays.asList(
-                "Certificate in Computing and Information Technology (CCIT):\n• Duration: 1 year (2 semesters) plus field work\n• Entry requirements: (1) Certificate of Secondary Education (CSEE) with at least 4 passes in non-religious subjects; OR (2) National Vocational Training Award Level III (Trade Test Grade I) from a recognized institution.\n• Fees for 2026/2027 (Total TZS 1,370,000):\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n• Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\n• Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/certificate-in-computing-and-information-technology-ccit-172"
+                "Certificate in Computing and Information Technology (CCIT):\nâ€¢ Duration: 1 year (2 semesters) plus field work\nâ€¢ Entry requirements: (1) Certificate of Secondary Education (CSEE) with at least 4 passes in non-religious subjects; OR (2) National Vocational Training Award Level III (Trade Test Grade I) from a recognized institution.\nâ€¢ Fees for 2026/2027 (Total TZS 1,370,000):\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\nâ€¢ Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\nâ€¢ Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/certificate-in-computing-and-information-technology-ccit-172"
         ));
         STATIC_KB_EN.put("cbit", Arrays.asList(
-                "Certificate in Business Information Technology (CBIT):\n• Duration: 1 year (2 semesters) plus field work\n• Entry requirements: (1) Certificate of Secondary Education (CSEE) with at least 4 passes in non-religious subjects; OR (2) National Vocational Training Award Level III (Trade Test Grade I) from a recognized institution.\n• Fees for 2026/2027 (Total TZS 1,370,000):\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n• Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\n• Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/certificate-in-business-information-technology-cbit-173"
+                "Certificate in Business Information Technology (CBIT):\nâ€¢ Duration: 1 year (2 semesters) plus field work\nâ€¢ Entry requirements: (1) Certificate of Secondary Education (CSEE) with at least 4 passes in non-religious subjects; OR (2) National Vocational Training Award Level III (Trade Test Grade I) from a recognized institution.\nâ€¢ Fees for 2026/2027 (Total TZS 1,370,000):\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\nâ€¢ Locations: UCC HQ at UDSM Mlimani Campus (opposite NBC Bank), Dar es Salaam, and UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.\nâ€¢ Apply online: https://admission.ucc.co.tz/\nSource: https://ucc.co.tz/course/certificate-in-business-information-technology-cbit-173"
         ));
         STATIC_KB_EN.put("join", Arrays.asList(
-                "Joining UCC is easy. Here's the path:\n\n• Pick your programme: DCIT, DBIT, CCIT or CBIT.\n• Apply online between 1st June 2026 and 30th September 2026 at https://admission.ucc.co.tz/.\n• Pay the TZS 10,000 application fee and upload your certificates.\n• Once selected, complete registration at the campus (UDSM Mlimani in Dar es Salaam, or UCC Dodoma Branch).\n\nRequired documents: CSEE/ACSEE certificates, birth certificate, passport photo. For help, email admissions@ucc.co.tz or call +255 22 2410641/5."
+                "Joining UCC is easy. Here's the path:\n\nâ€¢ Pick your programme: DCIT, DBIT, CCIT or CBIT.\nâ€¢ Apply online between 1st June 2026 and 30th September 2026 at https://admission.ucc.co.tz/.\nâ€¢ Pay the TZS 15,000 (local) / TZS 30,000 (foreign) application fee and upload your certificates.\nâ€¢ Once selected, complete registration at the campus (UDSM Mlimani in Dar es Salaam, or UCC Dodoma Branch).\n\nRequired documents: CSEE/ACSEE certificates, birth certificate, passport photo. For help, email training@udsm.ac.tz or call +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma)."
         ));
         STATIC_KB_EN.put("application", Arrays.asList(
-                "UCC Admissions 2026/2027 — important dates:\n\n• Applications OPEN: 1st June 2026\n• Applications CLOSE: 30th September 2026\n• Intake / classes begin: September 2026\n• Application fee: TZS 10,000 (non-refundable, paid online via mobile money or bank card)\n• Apply at: https://admission.ucc.co.tz/\n\nHow to apply (4 steps):\n1. Visit https://admission.ucc.co.tz/ and create an account with your email and phone number.\n2. Select your preferred programme (DCIT, DBIT, CCIT or CBIT).\n3. Complete the application form and upload the required documents.\n4. Pay the application fee and submit. You will receive a confirmation SMS/email within 24 hours.\n\nRequired documents: CSEE/ACSEE certificates or equivalent, birth certificate, passport-size photo. For help, email admissions@ucc.co.tz or call +255 22 2410641/5 (Mon–Fri 8:00–17:00, Sat 8:00–13:00)."
+                "UCC Admissions 2026/2027 â€” important dates:\n\nâ€¢ Applications OPEN: 1st June 2026\nâ€¢ Applications CLOSE: 30th September 2026\nâ€¢ Reporting / classes begin: November 2026\nâ€¢ Application fee: TZS 15,000 (local) / TZS 30,000 (foreign) (non-refundable, paid online via mobile money or bank card)\nâ€¢ Apply at: https://admission.ucc.co.tz/\n\nHow to apply (4 steps):\n1. Visit https://admission.ucc.co.tz/ and create an account with your email and phone number.\n2. Select your preferred programme (DCIT, DBIT, CCIT or CBIT).\n3. Complete the application form and upload the required documents.\n4. Pay the application fee and submit. You will receive a confirmation SMS/email within 24 hours.\n\nRequired documents: CSEE/ACSEE certificates or equivalent, birth certificate, passport-size photo. For help, email training@udsm.ac.tz or call +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) (Monâ€“Fri 8:00â€“17:00, Sat 8:00â€“13:00)."
         ));
         STATIC_KB_EN.put("admission", Arrays.asList(
-                "UCC Admissions 2026/2027 — important dates:\n\n• Applications OPEN: 1st June 2026\n• Applications CLOSE: 30th September 2026\n• Intake / classes begin: September 2026\n• Application fee: TZS 10,000\n• Apply at: https://admission.ucc.co.tz/\n\nEligible programmes and basic requirements:\n• DCIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in CS/IT/BIT/Computer Eng./Electronic Eng.\n• DBIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\n• CCIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n• CBIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n\nFor late or special intakes, contact admissions@ucc.co.tz or +255 22 2410641/5. Late applications may be considered if seats are still available."
+                "UCC Admissions 2026/2027 â€” important dates:\n\nâ€¢ Applications OPEN: 1st June 2026\nâ€¢ Applications CLOSE: 30th September 2026\nâ€¢ Reporting / classes begin: November 2026\nâ€¢ Application fee: TZS 15,000 (local) / TZS 30,000 (foreign)\nâ€¢ Apply at: https://admission.ucc.co.tz/\n\nEligible programmes and basic requirements:\nâ€¢ DCIT (Diploma, 2 years) â€” ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in CS/IT/BIT/Computer Eng./Electronic Eng.\nâ€¢ DBIT (Diploma, 2 years) â€” ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\nâ€¢ CCIT (Certificate, 1 year) â€” CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\nâ€¢ CBIT (Certificate, 1 year) â€” CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n\nFor late or special intakes, contact training@udsm.ac.tz or +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma). Late applications may be considered if seats are still available."
         ));
         STATIC_KB_EN.put("apply", Arrays.asList(
-                "UCC Admissions — 2026/2027 Academic Year:\n\n• Application window: 1st June 2026 — 30th September 2026 (intake: September 2026)\n• Online application portal: https://admission.ucc.co.tz/\n• Application fee: TZS 10,000 (non-refundable, paid online via mobile money or bank card)\n• Required documents: CSEE/ACSEE certificates or equivalent, birth certificate, passport-size photo.\n\nHow to apply (4 steps):\n1. Visit https://admission.ucc.co.tz/ and create an account with your email and phone number.\n2. Select your preferred programme (DCIT, DBIT, CCIT or CBIT).\n3. Complete the application form and upload the required documents.\n4. Pay the application fee and submit. You will receive a confirmation SMS/email within 24 hours.\n\nSelection and joining instructions are released on a rolling basis. For help, email admissions@ucc.co.tz or call +255 22 2410641/5 (Mon–Fri 8:00–17:00, Sat 8:00–13:00)."
+                "UCC Admissions â€” 2026/2027 Academic Year:\n\nâ€¢ Application window: 1st June 2026 â€” 30th September 2026 (reporting: November 2026)\nâ€¢ Online application portal: https://admission.ucc.co.tz/\nâ€¢ Application fee: TZS 15,000 (local) / TZS 30,000 (foreign) (non-refundable, paid online via mobile money or bank card)\nâ€¢ Required documents: CSEE/ACSEE certificates or equivalent, birth certificate, passport-size photo.\n\nHow to apply (4 steps):\n1. Visit https://admission.ucc.co.tz/ and create an account with your email and phone number.\n2. Select your preferred programme (DCIT, DBIT, CCIT or CBIT).\n3. Complete the application form and upload the required documents.\n4. Pay the application fee and submit. You will receive a confirmation SMS/email within 24 hours.\n\nSelection and joining instructions are released on a rolling basis. For help, email training@udsm.ac.tz or call +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) (Monâ€“Fri 8:00â€“17:00, Sat 8:00â€“13:00)."
         ));
         STATIC_KB_EN.put("contact", Arrays.asList(
-                "Here's how to reach us — we'd love to hear from you:\n\n• General: info@ucc.co.tz | +255 22 2410641/5 | +255 754782120\n• Main Office (UDSM Mlimani): ucc@udsm.ac.tz | +255 754782120\n• Dodoma Branch: dodoma@udsm.ac.tz | +255 0747 626 619\n• Admission Portal: https://admission.ucc.co.tz/\n• Website: https://ucc.co.tz/\n\nOur friendly team is available Monday to Friday (8:00 AM - 5:00 PM) and Saturday (8:00 AM - 1:00 PM)."
+                "Here's how to reach us â€” we'd love to hear from you:\n\nâ€¢ General: info@ucc.co.tz | +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) | +255 754782120\nâ€¢ Main Office (UDSM Mlimani): ucc@udsm.ac.tz | +255 754782120\nâ€¢ Dodoma Branch: dodoma@udsm.ac.tz | +255 0747 626 619\nâ€¢ Admission Portal: https://admission.ucc.co.tz/\nâ€¢ Website: https://ucc.co.tz/\n\nOur friendly team is available Monday to Friday (8:00 AM - 5:00 PM) and Saturday (8:00 AM - 1:00 PM)."
         ));
         STATIC_KB_EN.put("fee", Arrays.asList(
-                "Official UCC fee structure for academic year 2026/2027:\n\n• Diploma in Computing and Information Technology (DCIT) — Total TZS 3,020,000:\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\n• Diploma in Business Information Technology (DBIT) — Total TZS 3,020,000:\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\n• Certificate in Computing and Information Technology (CCIT) — Total TZS 1,370,000:\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\n• Certificate in Business Information Technology (CBIT) — Total TZS 1,370,000:\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\nFor professional and short courses (PMP, CISA, CISM, ITIL, COBIT, CCNA, CCNP, etc.) please contact info@ucc.co.tz or +255 22 2410641/5 for current fees and intake dates."
+                "Official UCC fee structure for academic year 2026/2027:\n\nâ€¢ Diploma in Computing and Information Technology (DCIT) â€” Total TZS 3,020,000:\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\nâ€¢ Diploma in Business Information Technology (DBIT) â€” Total TZS 3,020,000:\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\nâ€¢ Certificate in Computing and Information Technology (CCIT) â€” Total TZS 1,370,000:\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\nâ€¢ Certificate in Business Information Technology (CBIT) â€” Total TZS 1,370,000:\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\nFor professional and short courses (PMP, CISA, CISM, ITIL, COBIT, CCNA, CCNP, etc.) please contact info@ucc.co.tz or +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) for current fees and intake dates."
         ));
         STATIC_KB_EN.put("ict", Arrays.asList(
                 "For ICT support: email ict@ucc.co.tz or call +255 22 2410 003. UCC provides computer lab access, internet, email accounts, LMS support, and software installation assistance."
@@ -732,7 +733,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
                 "To register for courses: 1. Log in to the UCC student portal 2. Navigate to the registration section 3. Select courses 4. Review selection 5. Confirm registration."
         ));
         STATIC_KB_EN.put("hello", Arrays.asList(
-                "Hello! 👋 Welcome to the University of Dar es Salaam Computing Centre (UCC). I'm your UCC Customer Care Assistant.\n\nHere's what I can help you with right now:\n• Programmes and fees (DCIT, DBIT, CCIT, CBIT, professional courses)\n• Admissions (open 1 June – 30 Sept 2026, intake September 2026)\n• How to apply, entry requirements, locations\n• Contacts and campus info\n\nJust type your question or pick one of the quick options below."
+                "Hello! ðŸ‘‹ Welcome to the University of Dar es Salaam Computing Centre (UCC). I'm your UCC Customer Care Assistant.\n\nHere's what I can help you with right now:\nâ€¢ Programmes and fees (DCIT, DBIT, CCIT, CBIT, professional courses)\nâ€¢ Admissions (open 1 June â€“ 30 Sept 2026, intake September 2026)\nâ€¢ How to apply, entry requirements, locations\nâ€¢ Contacts and campus info\n\nJust type your question or pick one of the quick options below."
         ));
         STATIC_KB_EN.put("hi", Arrays.asList(
                 "Hello! I'm the UCC AI Assistant. How can I help you today?"
@@ -741,16 +742,16 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
                 "You're welcome. If you have any other questions about UCC programmes, admissions, or services, feel free to ask."
         ));
         STATIC_KB_EN.put("bye", Arrays.asList(
-                "Goodbye. For further assistance, please contact UCC at info@ucc.co.tz or +255 22 2410641/5."
+                "Goodbye. For further assistance, please contact UCC at info@ucc.co.tz or +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma)."
         ));
         STATIC_KB_EN.put("help", Arrays.asList(
-                "I can help you with information about:\n• Academic programmes (DCIT, DBIT, CCIT, CBIT)\n• Professional courses (PMP, CISA, CISM, ITIL, COBIT and more)\n• Admissions and applications (open 1 June – 30 Sept 2026)\n• Tuition fees and payment\n• IT services and software products\n• Campus locations and contacts\n\nWhat would you like to know?"
+                "I can help you with information about:\nâ€¢ Academic programmes (DCIT, DBIT, CCIT, CBIT)\nâ€¢ Professional courses (PMP, CISA, CISM, ITIL, COBIT and more)\nâ€¢ Admissions and applications (open 1 June â€“ 30 Sept 2026)\nâ€¢ Tuition fees and payment\nâ€¢ IT services and software products\nâ€¢ Campus locations and contacts\n\nWhat would you like to know?"
         ));
         STATIC_KB_EN.put("when", Arrays.asList(
-                "UCC Admissions 2026/2027 — important dates:\n\n• Applications OPEN: 1st June 2026\n• Applications CLOSE: 30th September 2026\n• Intake / classes begin: September 2026\n• Application fee: TZS 10,000\n• Apply at: https://admission.ucc.co.tz/\n\nEligible programmes and basic requirements:\n• DCIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in CS/IT/BIT/Computer Eng./Electronic Eng.\n• DBIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\n• CCIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n• CBIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n\nFor late or special intakes, contact admissions@ucc.co.tz or +255 22 2410641/5. Late applications may be considered if seats are still available."
+                "UCC Admissions 2026/2027 â€” important dates:\n\nâ€¢ Applications OPEN: 1st June 2026\nâ€¢ Applications CLOSE: 30th September 2026\nâ€¢ Reporting / classes begin: November 2026\nâ€¢ Application fee: TZS 15,000 (local) / TZS 30,000 (foreign)\nâ€¢ Apply at: https://admission.ucc.co.tz/\n\nEligible programmes and basic requirements:\nâ€¢ DCIT (Diploma, 2 years) â€” ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in CS/IT/BIT/Computer Eng./Electronic Eng.\nâ€¢ DBIT (Diploma, 2 years) â€” ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\nâ€¢ CCIT (Certificate, 1 year) â€” CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\nâ€¢ CBIT (Certificate, 1 year) â€” CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n\nFor late or special intakes, contact training@udsm.ac.tz or +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma). Late applications may be considered if seats are still available."
         ));
         STATIC_KB_EN.put("intake", Arrays.asList(
-                "UCC Admissions 2026/2027 — important dates:\n\n• Applications OPEN: 1st June 2026\n• Applications CLOSE: 30th September 2026\n• Intake / classes begin: September 2026\n• Application fee: TZS 10,000\n• Apply at: https://admission.ucc.co.tz/\n\nEligible programmes and basic requirements:\n• DCIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in CS/IT/BIT/Computer Eng./Electronic Eng.\n• DBIT (Diploma, 2 years) — ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\n• CCIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n• CBIT (Certificate, 1 year) — CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n\nFor late or special intakes, contact admissions@ucc.co.tz or +255 22 2410641/5. Late applications may be considered if seats are still available."
+                "UCC Admissions 2026/2027 â€” important dates:\n\nâ€¢ Applications OPEN: 1st June 2026\nâ€¢ Applications CLOSE: 30th September 2026\nâ€¢ Reporting / classes begin: November 2026\nâ€¢ Application fee: TZS 15,000 (local) / TZS 30,000 (foreign)\nâ€¢ Apply at: https://admission.ucc.co.tz/\n\nEligible programmes and basic requirements:\nâ€¢ DCIT (Diploma, 2 years) â€” ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in CS/IT/BIT/Computer Eng./Electronic Eng.\nâ€¢ DBIT (Diploma, 2 years) â€” ACSEE with 1 principal + 1 subsidiary pass, OR NTA Level 4 in Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\nâ€¢ CCIT (Certificate, 1 year) â€” CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\nâ€¢ CBIT (Certificate, 1 year) â€” CSEE with 4 passes in non-religious subjects, OR NVTA Level III / Trade Test Grade I.\n\nFor late or special intakes, contact training@udsm.ac.tz or +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma). Late applications may be considered if seats are still available."
         ));
         STATIC_KB_EN.put("ccna", Arrays.asList(
                 "UCC lists professional and short courses including Cisco Certified Network Associate (CCNA). For current schedules, fees, and intake dates, please contact UCC directly or visit https://ucc.co.tz/."
@@ -760,43 +761,43 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
         ));
 
         STATIC_KB_SW.put("programme", Arrays.asList(
-                "UCC inatoa programu zifuatazo zilizothibitishwa kwa mwaka wa masomo 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), na Certificate in Business Information Technology (CBIT). UCC pia inaorodhesha kozi za kitaalamu na masomo mafupi kama CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, na Microsoft Certified Solutions Developer. Kwa orodha kamili iliyoidhinishwa, tembelea https://ucc.co.tz/ au wasiliana na admissions@ucc.co.tz."
+                "UCC inatoa programu zifuatazo zilizothibitishwa kwa mwaka wa masomo 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), na Certificate in Business Information Technology (CBIT). UCC pia inaorodhesha kozi za kitaalamu na masomo mafupi kama CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, na Microsoft Certified Solutions Developer. Kwa orodha kamili iliyoidhinishwa, tembelea https://ucc.co.tz/ au wasiliana na training@udsm.ac.tz."
         ));
         STATIC_KB_SW.put("programu", Arrays.asList(
-                "UCC inatoa programu zifuatazo zilizothibitishwa kwa mwaka wa masomo 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), na Certificate in Business Information Technology (CBIT). UCC pia inaorodhesha kozi za kitaalamu na masomo mafupi kama CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, na Microsoft Certified Solutions Developer. Kwa orodha kamili iliyoidhinishwa, tembelea https://ucc.co.tz/ au wasiliana na admissions@ucc.co.tz."
+                "UCC inatoa programu zifuatazo zilizothibitishwa kwa mwaka wa masomo 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), na Certificate in Business Information Technology (CBIT). UCC pia inaorodhesha kozi za kitaalamu na masomo mafupi kama CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, na Microsoft Certified Solutions Developer. Kwa orodha kamili iliyoidhinishwa, tembelea https://ucc.co.tz/ au wasiliana na training@udsm.ac.tz."
         ));
         STATIC_KB_SW.put("kozi", Arrays.asList(
-                "UCC inatoa programu zifuatazo zilizothibitishwa kwa mwaka wa masomo 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), na Certificate in Business Information Technology (CBIT). UCC pia inaorodhesha kozi za kitaalamu na masomo mafupi kama CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, na Microsoft Certified Solutions Developer. Kwa orodha kamili iliyoidhinishwa, tembelea https://ucc.co.tz/ au wasiliana na admissions@ucc.co.tz."
+                "UCC inatoa programu zifuatazo zilizothibitishwa kwa mwaka wa masomo 2026/2027: Diploma in Computing and Information Technology (DCIT), Diploma in Business Information Technology (DBIT), Certificate in Computing and Information Technology (CCIT), na Certificate in Business Information Technology (CBIT). UCC pia inaorodhesha kozi za kitaalamu na masomo mafupi kama CCNA, CCNP, PMP, CISA, CISM, ITIL, COBIT, Java Certified Programmer, na Microsoft Certified Solutions Developer. Kwa orodha kamili iliyoidhinishwa, tembelea https://ucc.co.tz/ au wasiliana na training@udsm.ac.tz."
         ));
         STATIC_KB_SW.put("dcit", Arrays.asList(
-                "Diploma in Computing and Information Technology (DCIT):\n• Muda: miaka 2 (semesta 4)\n• Vigezo vya kujiunga: (1) ACSEE na angalau pass 1 ya kiini na 1 ya subsidiary; AU (2) Basic Technician Certificate (NTA Level 4) katika Computer Science, Information Technology, Business Information Technology, Computer Engineering, au Electronic Engineering.\n• Ada ya 2026/2027 (Jumla TZS 3,020,000):\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n• Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\n• Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/diploma-in-computing-and-information-technology-dcit-81"
+                "Diploma in Computing and Information Technology (DCIT):\nâ€¢ Muda: miaka 2 (semesta 4)\nâ€¢ Vigezo vya kujiunga: (1) ACSEE na angalau pass 1 ya kiini na 1 ya subsidiary; AU (2) Basic Technician Certificate (NTA Level 4) katika Computer Science, Information Technology, Business Information Technology, Computer Engineering, au Electronic Engineering.\nâ€¢ Ada ya 2026/2027 (Jumla TZS 3,020,000):\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\nâ€¢ Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\nâ€¢ Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/diploma-in-computing-and-information-technology-dcit-81"
         ));
         STATIC_KB_SW.put("dbit", Arrays.asList(
-                "Diploma in Business Information Technology (DBIT):\n• Muda: miaka 2 (semesta 4) pamoja na mradi\n• Vigezo vya kujiunga: (1) ACSEE na angalau pass 1 ya kiini na 1 ya subsidiary; AU (2) Basic Technician Certificate (NTA Level 4) katika Business Administration, Accountancy, Computer Science, Information Technology, Business Information Technology, au Computer Engineering.\n• Ada ya 2026/2027 (Jumla TZS 3,020,000):\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n• Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\n• Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/diploma-in-business-information-technology-dbit-82"
+                "Diploma in Business Information Technology (DBIT):\nâ€¢ Muda: miaka 2 (semesta 4) pamoja na mradi\nâ€¢ Vigezo vya kujiunga: (1) ACSEE na angalau pass 1 ya kiini na 1 ya subsidiary; AU (2) Basic Technician Certificate (NTA Level 4) katika Business Administration, Accountancy, Computer Science, Information Technology, Business Information Technology, au Computer Engineering.\nâ€¢ Ada ya 2026/2027 (Jumla TZS 3,020,000):\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\nâ€¢ Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\nâ€¢ Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/diploma-in-business-information-technology-dbit-82"
         ));
         STATIC_KB_SW.put("ccit", Arrays.asList(
-                "Certificate in Computing and Information Technology (CCIT):\n• Muda: mwaka 1 (semesta 2) pamoja na kazi ya uwandani\n• Vigezo vya kujiunga: (1) Certificate of Secondary Education (CSEE) na angalau passes 4 katika masomo yasiyo ya dini; AU (2) National Vocational Training Award Level III (Trade Test Grade I) kutoka taasisi iliyoidhinishwa.\n• Ada ya 2026/2027 (Jumla TZS 1,370,000):\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n• Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\n• Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/certificate-in-computing-and-information-technology-ccit-172"
+                "Certificate in Computing and Information Technology (CCIT):\nâ€¢ Muda: mwaka 1 (semesta 2) pamoja na kazi ya uwandani\nâ€¢ Vigezo vya kujiunga: (1) Certificate of Secondary Education (CSEE) na angalau passes 4 katika masomo yasiyo ya dini; AU (2) National Vocational Training Award Level III (Trade Test Grade I) kutoka taasisi iliyoidhinishwa.\nâ€¢ Ada ya 2026/2027 (Jumla TZS 1,370,000):\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\nâ€¢ Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\nâ€¢ Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/certificate-in-computing-and-information-technology-ccit-172"
         ));
         STATIC_KB_SW.put("cbit", Arrays.asList(
-                "Certificate in Business Information Technology (CBIT):\n• Muda: mwaka 1 (semesta 2) pamoja na kazi ya uwandani\n• Vigezo vya kujiunga: (1) Certificate of Secondary Education (CSEE) na angalau passes 4 katika masomo yasiyo ya dini; AU (2) National Vocational Training Award Level III (Trade Test Grade I) kutoka taasisi iliyoidhinishwa.\n• Ada ya 2026/2027 (Jumla TZS 1,370,000):\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n• Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\n• Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/certificate-in-business-information-technology-cbit-173"
+                "Certificate in Business Information Technology (CBIT):\nâ€¢ Muda: mwaka 1 (semesta 2) pamoja na kazi ya uwandani\nâ€¢ Vigezo vya kujiunga: (1) Certificate of Secondary Education (CSEE) na angalau passes 4 katika masomo yasiyo ya dini; AU (2) National Vocational Training Award Level III (Trade Test Grade I) kutoka taasisi iliyoidhinishwa.\nâ€¢ Ada ya 2026/2027 (Jumla TZS 1,370,000):\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\nâ€¢ Maeneo: UCC HQ kwenye UDSM Mlimani Campus (kando ya NBC Bank), Dar es Salaam, na UCC Dodoma Branch kwenye Capital Compound, Mathias Street, Miyuji.\nâ€¢ Jiandikishe mtandaoni: https://admission.ucc.co.tz/\nChanzo: https://ucc.co.tz/course/certificate-in-business-information-technology-cbit-173"
         ));
         STATIC_KB_SW.put("omba", Arrays.asList(
-                "Udaahili wa UCC — Mwaka wa Masomo 2026/2027:\n\n• Dirisha la maombi: 1 Juni 2026 — 30 Septemba 2026 (intake: Septemba 2026)\n• Portal ya maombi mtandaoni: https://admission.ucc.co.tz/\n• Ada ya maombi: TZS 10,000 (haitarejeshwa, hulipwa mtandaoni kwa njia ya mobile money au kadi ya benki)\n• Nyaraka zinazohitajika: vyeti vya CSEE/ACSEE au sawa na hivyo, cheti cha kuzaliwa, picha ya paspoti.\n\nJinsi ya kuomba (hatua 4):\n1. Tembelea https://admission.ucc.co.tz/ na ufungue akaunti kwa kutumia email na nambari yako ya simu.\n2. Chagua programu unayotaka (DCIT, DBIT, CCIT au CBIT).\n3. Kamilisha fomu ya maombi na upakie nyaraka zinazohitajika.\n4. Lipa ada ya maombi na uwasilishe. Utapokea ujumbe wa kuthibitisha ndani ya masaa 24.\n\nMaelekezo ya uchaguzi na kujiunga yanatolewa kwa awamu. Kwa msaada, tuma email kwa admissions@ucc.co.tz au piga +255 22 2410641/5 (Jumatatu–Ijumaa 8:00–17:00, Jumamosi 8:00–13:00)."
+                "Udaahili wa UCC â€” Mwaka wa Masomo 2026/2027:\n\nâ€¢ Dirisha la maombi: 1 Juni 2026 â€” 30 Septemba 2026 (kuripoti: Novemba 2026)\nâ€¢ Portal ya maombi mtandaoni: https://admission.ucc.co.tz/\nâ€¢ Ada ya maombi: TZS 15,000 (local) / TZS 30,000 (foreign) (haitarejeshwa, hulipwa mtandaoni kwa njia ya mobile money au kadi ya benki)\nâ€¢ Nyaraka zinazohitajika: vyeti vya CSEE/ACSEE au sawa na hivyo, cheti cha kuzaliwa, picha ya paspoti.\n\nJinsi ya kuomba (hatua 4):\n1. Tembelea https://admission.ucc.co.tz/ na ufungue akaunti kwa kutumia email na nambari yako ya simu.\n2. Chagua programu unayotaka (DCIT, DBIT, CCIT au CBIT).\n3. Kamilisha fomu ya maombi na upakie nyaraka zinazohitajika.\n4. Lipa ada ya maombi na uwasilishe. Utapokea ujumbe wa kuthibitisha ndani ya masaa 24.\n\nMaelekezo ya uchaguzi na kujiunga yanatolewa kwa awamu. Kwa msaada, tuma email kwa training@udsm.ac.tz au piga +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) (Jumatatuâ€“Ijumaa 8:00â€“17:00, Jumamosi 8:00â€“13:00)."
         ));
         STATIC_KB_SW.put("jiunga", Arrays.asList(
-                "Kujiunga na UCC ni rahisi. Hapa kuna njia:\n\n• Chagua programu yako: DCIT, DBIT, CCIT au CBIT.\n• Omba mtandaoni kati ya 1 Juni 2026 na 30 Septemba 2026 kwenye https://admission.ucc.co.tz/.\n• Lipa ada ya maombi ya TZS 10,000 na upakie vyeti vyako.\n• Ukichaguliwa, kamilisha usajili katika kampasi (UDSM Mlimani Dar es Salaam, au Tawi la UCC Dodoma).\n\nNyaraka zinazohitajika: vyeti vya CSEE/ACSEE, cheti cha kuzaliwa, picha ya paspoti. Kwa msaada, tuma email kwa admissions@ucc.co.tz au piga +255 22 2410641/5."
+                "Kujiunga na UCC ni rahisi. Hapa kuna njia:\n\nâ€¢ Chagua programu yako: DCIT, DBIT, CCIT au CBIT.\nâ€¢ Omba mtandaoni kati ya 1 Juni 2026 na 30 Septemba 2026 kwenye https://admission.ucc.co.tz/.\nâ€¢ Lipa ada ya maombi ya TZS 15,000 (local) / TZS 30,000 (foreign) na upakie vyeti vyako.\nâ€¢ Ukichaguliwa, kamilisha usajili katika kampasi (UDSM Mlimani Dar es Salaam, au Tawi la UCC Dodoma).\n\nNyaraka zinazohitajika: vyeti vya CSEE/ACSEE, cheti cha kuzaliwa, picha ya paspoti. Kwa msaada, tuma email kwa training@udsm.ac.tz au piga +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma)."
         ));
         STATIC_KB_SW.put("application fee", Arrays.asList(
-                "Ada ya maombi ya udahili wa UCC kwa mwaka wa masomo 2026/2027:\n\n• Ada ya maombi: TZS 10,000 (haitarejeshwa)\n• Hulipwa mtandaoni kupitia portal ya maombi kwa njia ya mobile money au kadi ya benki\n• Dirisha la maombi: 1 Juni 2026 — 30 Septemba 2026\n• Portal: https://admission.ucc.co.tz/\n\nKwa msaada zaidi kuhusu ada ya maombi, wasiliana na admissions@ucc.co.tz au piga +255 22 2410641/5."
+                "Ada ya maombi ya udahili wa UCC kwa mwaka wa masomo 2026/2027:\n\nâ€¢ Ada ya maombi: TZS 15,000 (local) / TZS 30,000 (foreign) (haitarejeshwa)\nâ€¢ Hulipwa mtandaoni kupitia portal ya maombi kwa njia ya mobile money au kadi ya benki\nâ€¢ Dirisha la maombi: 1 Juni 2026 â€” 30 Septemba 2026\nâ€¢ Portal: https://admission.ucc.co.tz/\n\nKwa msaada zaidi kuhusu ada ya maombi, wasiliana na training@udsm.ac.tz au piga +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma)."
         ));
         STATIC_KB_SW.put("ada_ya_maombi", Arrays.asList(
-                "Ada ya maombi ya udahili wa UCC kwa mwaka wa masomo 2026/2027:\n\n• Ada ya maombi: TZS 10,000 (haitarejeshwa)\n• Hulipwa mtandaoni kupitia portal ya maombi kwa njia ya mobile money au kadi ya benki\n• Dirisha la maombi: 1 Juni 2026 — 30 Septemba 2026\n• Portal: https://admission.ucc.co.tz/\n\nKwa msaada zaidi kuhusu ada ya maombi, wasiliana na admissions@ucc.co.tz au piga +255 22 2410641/5."
+                "Ada ya maombi ya udahili wa UCC kwa mwaka wa masomo 2026/2027:\n\nâ€¢ Ada ya maombi: TZS 15,000 (local) / TZS 30,000 (foreign) (haitarejeshwa)\nâ€¢ Hulipwa mtandaoni kupitia portal ya maombi kwa njia ya mobile money au kadi ya benki\nâ€¢ Dirisha la maombi: 1 Juni 2026 â€” 30 Septemba 2026\nâ€¢ Portal: https://admission.ucc.co.tz/\n\nKwa msaada zaidi kuhusu ada ya maombi, wasiliana na training@udsm.ac.tz au piga +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma)."
         ));
         STATIC_KB_SW.put("ada", Arrays.asList(
-                "Muundo rasmi wa ada wa UCC kwa mwaka wa masomo 2026/2027:\n\n• Diploma in Computing and Information Technology (DCIT) — Jumla TZS 3,020,000:\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\n• Diploma in Business Information Technology (DBIT) — Jumla TZS 3,020,000:\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\n• Certificate in Computing and Information Technology (CCIT) — Jumla TZS 1,370,000:\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\n• Certificate in Business Information Technology (CBIT) — Jumla TZS 1,370,000:\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\nKwa kozi za kitaalamu na mafunzo mafupi (PMP, CISA, CISM, ITIL, COBIT, CCNA, CCNP, n.k.) tafadhali wasiliana na info@ucc.co.tz au +255 22 2410641/5 kwa ada ya sasa na tarehe za kujiunga."
+                "Muundo rasmi wa ada wa UCC kwa mwaka wa masomo 2026/2027:\n\nâ€¢ Diploma in Computing and Information Technology (DCIT) â€” Jumla TZS 3,020,000:\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\nâ€¢ Diploma in Business Information Technology (DBIT) â€” Jumla TZS 3,020,000:\n   - Ada ya masomo: TZS 2,800,000\n   - Mitihani: TZS 60,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\nâ€¢ Certificate in Computing and Information Technology (CCIT) â€” Jumla TZS 1,370,000:\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\nâ€¢ Certificate in Business Information Technology (CBIT) â€” Jumla TZS 1,370,000:\n   - Ada ya masomo: TZS 1,200,000\n   - Mitihani: TZS 30,000\n   - Kadi ya Utambulisho (mara moja): TZS 20,000\n   - Huduma za ICT: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\nKwa kozi za kitaalamu na mafunzo mafupi (PMP, CISA, CISM, ITIL, COBIT, CCNA, CCNP, n.k.) tafadhali wasiliana na info@ucc.co.tz au +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) kwa ada ya sasa na tarehe za kujiunga."
         ));
         STATIC_KB_SW.put("wasiliana", Arrays.asList(
-                "Hivi ndivyo unavyoweza kutupata — tungependa kusikia kutoka kwako:\n\n• Jumla: info@ucc.co.tz | +255 22 2410641/5 | +255 754782120\n• Ofisi Kuu (UDSM Mlimani): ucc@udsm.ac.tz | +255 754782120\n• Tawi la Dodoma: dodoma@udsm.ac.tz | +255 0747 626 619\n• Portal ya Udaahili: https://admission.ucc.co.tz/\n• Tovuti: https://ucc.co.tz/\n\nTimu yetu ya urafiki inapatikana Jumatatu hadi Ijumaa (saa 3:00 asubuhi - saa 11:00 jioni) na Jumamosi (saa 3:00 asubuhi - saa 7:00 mchana)."
+                "Hivi ndivyo unavyoweza kutupata â€” tungependa kusikia kutoka kwako:\n\nâ€¢ Jumla: info@ucc.co.tz | +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma) | +255 754782120\nâ€¢ Ofisi Kuu (UDSM Mlimani): ucc@udsm.ac.tz | +255 754782120\nâ€¢ Tawi la Dodoma: dodoma@udsm.ac.tz | +255 0747 626 619\nâ€¢ Portal ya Udaahili: https://admission.ucc.co.tz/\nâ€¢ Tovuti: https://ucc.co.tz/\n\nTimu yetu ya urafiki inapatikana Jumatatu hadi Ijumaa (saa 3:00 asubuhi - saa 11:00 jioni) na Jumamosi (saa 3:00 asubuhi - saa 7:00 mchana)."
         ));
         STATIC_KB_SW.put("msaada", Arrays.asList(
                 "Kwa msaada wa ICT: tuma email kwa ict@ucc.co.tz au piga +255 22 2410 003. UCC inatoa ufikiaji wa maabara ya kompyuta, intaneti, akaunti za email, msaada wa LMS, na usaidizi wa usakinishaji wa programu."
@@ -805,31 +806,31 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
                 "Kujiandikisha kwa masomo: 1. Ingia kwenye portal ya wanafunzi wa UCC 2. Nenda kwenye sehemu ya usajili 3. Chagua masomo 4. Kagua uteuzi wako 5. Thibitisha usajili."
         ));
         STATIC_KB_SW.put("habari", Arrays.asList(
-                "Habari! 👋 Karibu katika Kituo cha Kompyuta cha Chuo Kikuu cha Dar es Salaam (UCC). Mimi ni Msaidizi wako wa Huduma kwa Wateja wa UCC.\n\nHivi ndivyo ninavyoweza kukusaidia sasa hivi:\n• Programu na ada (DCIT, DBIT, CCIT, CBIT, kozi za kitaalamu)\n• Udaahili (dirisha wazi 1 Juni – 30 Septemba 2026, intake Septemba 2026)\n• Jinsi ya kuomba, vigezo vya kujiunga, maeneo\n• Mawasiliano na taarifa za kampasi\n\nAndika swali lako au chagua chaguo la haraka hapa chini."
+                "Habari! ðŸ‘‹ Karibu katika Kituo cha Kompyuta cha Chuo Kikuu cha Dar es Salaam (UCC). Mimi ni Msaidizi wako wa Huduma kwa Wateja wa UCC.\n\nHivi ndivyo ninavyoweza kukusaidia sasa hivi:\nâ€¢ Programu na ada (DCIT, DBIT, CCIT, CBIT, kozi za kitaalamu)\nâ€¢ Udaahili (dirisha wazi 1 Juni â€“ 30 Septemba 2026, intake Septemba 2026)\nâ€¢ Jinsi ya kuomba, vigezo vya kujiunga, maeneo\nâ€¢ Mawasiliano na taarifa za kampasi\n\nAndika swali lako au chagua chaguo la haraka hapa chini."
         ));
         STATIC_KB_SW.put("hujambo", Arrays.asList(
-                "Hujambo! 👋 Karibu katika UCC. Mimi ni Msaidizi wako wa Huduma kwa Wateja. Naweza kukusaidia na programu, udahili, ada, na huduma nyingine za UCC. Andika swali lako au chagua chaguo la haraka."
+                "Hujambo! ðŸ‘‹ Karibu katika UCC. Mimi ni Msaidizi wako wa Huduma kwa Wateja. Naweza kukusaidia na programu, udahili, ada, na huduma nyingine za UCC. Andika swali lako au chagua chaguo la haraka."
         ));
         STATIC_KB_SW.put("udahili", Arrays.asList(
-                "Udaahili wa UCC 2026/2027 — tarehe muhimu:\n\n• Maombi YANAFUNGULIWA: 1 Juni 2026\n• Maombi YANAFUNGWA: 30 Septemba 2026\n• Intake / masomo yanayoanza: Septemba 2026\n• Ada ya maombi: TZS 10,000\n• Tuma maombi kwa: https://admission.ucc.co.tz/\n\nProgramu zinazokubaliwa na vigezo vya msingi:\n• DCIT (Diploma, miaka 2) — ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika CS/IT/BIT/Computer Eng./Electronic Eng.\n• DBIT (Diploma, miaka 2) — ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\n• CCIT (Cheti, mwaka 1) — CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I.\n• CBIT (Cheti, mwaka 1) — CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I.\n\nKwa maombi ya kuchelewa au intake maalum, wasiliana na admissions@ucc.co.tz au +255 22 2410641/5. Maombi ya kuchelewa yanaweza kuzingatiwa kama bado kuna nafasi."
+                "Udaahili wa UCC 2026/2027 â€” tarehe muhimu:\n\nâ€¢ Maombi YANAFUNGULIWA: 1 Juni 2026\nâ€¢ Maombi YANAFUNGWA: 30 Septemba 2026\nâ€¢ Kuripoti / masomo yanayoanza: Novemba 2026\nâ€¢ Ada ya maombi: TZS 15,000 (local) / TZS 30,000 (foreign)\nâ€¢ Tuma maombi kwa: https://admission.ucc.co.tz/\n\nProgramu zinazokubaliwa na vigezo vya msingi:\nâ€¢ DCIT (Diploma, miaka 2) â€” ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika CS/IT/BIT/Computer Eng./Electronic Eng.\nâ€¢ DBIT (Diploma, miaka 2) â€” ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\nâ€¢ CCIT (Cheti, mwaka 1) â€” CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I.\nâ€¢ CBIT (Cheti, mwaka 1) â€” CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I.\n\nKwa maombi ya kuchelewa au intake maalum, wasiliana na training@udsm.ac.tz au +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma). Maombi ya kuchelewa yanaweza kuzingatiwa kama bado kuna nafasi."
         ));
         STATIC_KB_SW.put("linganisha", Arrays.asList(
-                "DCIT vs DBIT — kulinganisha kwa ufupi:\n\n• DCIT — Diploma in Computing and Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: hardware, mitandao, programming, web, databases, server na mazoezi ya CCNA.\n   - Kwa: wanafunzi wanaotaka njia ya kiufundi / software development / network engineering, au wanaopanga kuendelea na shahada ya CS/IT.\n\n• DBIT — Diploma in Business Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: biashara + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Kwa: wanafunzi wanaotaka kufanya kazi katika mwingiliano wa biashara na IT — business analyst, mauzo ya IT, e-commerce, ERP/SAP, au kuendesha biashara yao wenyewe ya IT.\n\nZote zinafikia kazi za Diploma lakini DBIT ni chaguo bora ikiwa unapenda masomo ya biashara, na DCIT ni chaguo bora kwa kazi za software / hardware / mitandao.\n\nMwongozo wa haraka wa uamuzi:\n• Unapenda coding & mitandao → DCIT\n• Unapenda biashara + teknolojia → DBIT\n• Bado huna uhakika → DCIT inakuweka njia nyingi wazi za kujenga shahada."
+                "DCIT vs DBIT â€” kulinganisha kwa ufupi:\n\nâ€¢ DCIT â€” Diploma in Computing and Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: hardware, mitandao, programming, web, databases, server na mazoezi ya CCNA.\n   - Kwa: wanafunzi wanaotaka njia ya kiufundi / software development / network engineering, au wanaopanga kuendelea na shahada ya CS/IT.\n\nâ€¢ DBIT â€” Diploma in Business Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: biashara + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Kwa: wanafunzi wanaotaka kufanya kazi katika mwingiliano wa biashara na IT â€” business analyst, mauzo ya IT, e-commerce, ERP/SAP, au kuendesha biashara yao wenyewe ya IT.\n\nZote zinafikia kazi za Diploma lakini DBIT ni chaguo bora ikiwa unapenda masomo ya biashara, na DCIT ni chaguo bora kwa kazi za software / hardware / mitandao.\n\nMwongozo wa haraka wa uamuzi:\nâ€¢ Unapenda coding & mitandao â†’ DCIT\nâ€¢ Unapenda biashara + teknolojia â†’ DBIT\nâ€¢ Bado huna uhakika â†’ DCIT inakuweka njia nyingi wazi za kujenga shahada."
         ));
         STATIC_KB_SW.put("bora", Arrays.asList(
-                "DCIT vs DBIT — kulinganisha kwa ufupi:\n\n• DCIT — Diploma in Computing and Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: hardware, mitandao, programming, web, databases, server na mazoezi ya CCNA.\n   - Kwa: wanafunzi wanaotaka njia ya kiufundi / software development / network engineering, au wanaopanga kuendelea na shahada ya CS/IT.\n\n• DBIT — Diploma in Business Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: biashara + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Kwa: wanafunzi wanaotaka kufanya kazi katika mwingiliano wa biashara na IT — business analyst, mauzo ya IT, e-commerce, ERP/SAP, au kuendesha biashara yao wenyewe ya IT.\n\nZote zinafikia kazi za Diploma lakini DBIT ni chaguo bora ikiwa unapenda masomo ya biashara, na DCIT ni chaguo bora kwa kazi za software / hardware / mitandao.\n\nMwongozo wa haraka wa uamuzi:\n• Unapenda coding & mitandao → DCIT\n• Unapenda biashara + teknolojia → DBIT\n• Bado huna uhakika → DCIT inakuweka njia nyingi wazi za kujenga shahada."
+                "DCIT vs DBIT â€” kulinganisha kwa ufupi:\n\nâ€¢ DCIT â€” Diploma in Computing and Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: hardware, mitandao, programming, web, databases, server na mazoezi ya CCNA.\n   - Kwa: wanafunzi wanaotaka njia ya kiufundi / software development / network engineering, au wanaopanga kuendelea na shahada ya CS/IT.\n\nâ€¢ DBIT â€” Diploma in Business Information Technology (miaka 2, jumla TZS 3,020,000)\n   - Lengo: biashara + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).\n   - Kwa: wanafunzi wanaotaka kufanya kazi katika mwingiliano wa biashara na IT â€” business analyst, mauzo ya IT, e-commerce, ERP/SAP, au kuendesha biashara yao wenyewe ya IT.\n\nZote zinafikia kazi za Diploma lakini DBIT ni chaguo bora ikiwa unapenda masomo ya biashara, na DCIT ni chaguo bora kwa kazi za software / hardware / mitandao.\n\nMwongozo wa haraka wa uamuzi:\nâ€¢ Unapenda coding & mitandao â†’ DCIT\nâ€¢ Unapenda biashara + teknolojia â†’ DBIT\nâ€¢ Bado huna uhakika â†’ DCIT inakuweka njia nyingi wazi za kujenga shahada."
         ));
         STATIC_KB_SW.put("lini", Arrays.asList(
-                "Udaahili wa UCC 2026/2027 — tarehe muhimu:\n\n• Maombi YANAFUNGULIWA: 1 Juni 2026\n• Maombi YANAFUNGWA: 30 Septemba 2026\n• Intake / masomo yanayoanza: Septemba 2026\n• Ada ya maombi: TZS 10,000\n• Tuma maombi kwa: https://admission.ucc.co.tz/\n\nProgramu zinazokubaliwa na vigezo vya msingi:\n• DCIT (Diploma, miaka 2) — ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika CS/IT/BIT/Computer Eng./Electronic Eng.\n• DBIT (Diploma, miaka 2) — ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\n• CCIT (Cheti, mwaka 1) — CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I.\n• CBIT (Cheti, mwaka 1) — CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I."
+                "Udaahili wa UCC 2026/2027 â€” tarehe muhimu:\n\nâ€¢ Maombi YANAFUNGULIWA: 1 Juni 2026\nâ€¢ Maombi YANAFUNGWA: 30 Septemba 2026\nâ€¢ Kuripoti / masomo yanayoanza: Novemba 2026\nâ€¢ Ada ya maombi: TZS 15,000 (local) / TZS 30,000 (foreign)\nâ€¢ Tuma maombi kwa: https://admission.ucc.co.tz/\n\nProgramu zinazokubaliwa na vigezo vya msingi:\nâ€¢ DCIT (Diploma, miaka 2) â€” ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika CS/IT/BIT/Computer Eng./Electronic Eng.\nâ€¢ DBIT (Diploma, miaka 2) â€” ACSEE na pass 1 ya kiini + 1 ya subsidiary, AU NTA Level 4 katika Business Admin/Accountancy/CS/IT/BIT/Computer Eng.\nâ€¢ CCIT (Cheti, mwaka 1) â€” CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I.\nâ€¢ CBIT (Cheti, mwaka 1) â€” CSEE na passes 4 katika masomo yasiyo ya dini, AU NVTA Level III / Trade Test Grade I."
         ));
         STATIC_KB_SW.put("asante", Arrays.asList(
                 "Karibu. Ukiwa na maswali mengine kuhusu programu, udahili, au huduma za UCC, usisite kuuliza."
         ));
         STATIC_KB_SW.put("kwaheri", Arrays.asList(
-                "Kwaheri. Kwa msaada zaidi, wasiliana na UCC kwa info@ucc.co.tz au +255 22 2410641/5."
+                "Kwaheri. Kwa msaada zaidi, wasiliana na UCC kwa info@ucc.co.tz au +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma)."
         ));
         STATIC_KB_SW.put("msaada_help", Arrays.asList(
-                "Naweza kukusaidia na taarifa kuhusu:\n• Programu za masomo (DCIT, DBIT, CCIT, CBIT)\n• Kozi za kitaalamu (PMP, CISA, CISM, ITIL, COBIT na nyinginezo)\n• Udaahili na maombi\n• Ada na malipo\n• Huduma za IT na programu za kompyuta\n• Maeneo ya kampasi na mawasiliano\n\nUnataka kujua nini?"
+                "Naweza kukusaidia na taarifa kuhusu:\nâ€¢ Programu za masomo (DCIT, DBIT, CCIT, CBIT)\nâ€¢ Kozi za kitaalamu (PMP, CISA, CISM, ITIL, COBIT na nyinginezo)\nâ€¢ Udaahili na maombi\nâ€¢ Ada na malipo\nâ€¢ Huduma za IT na programu za kompyuta\nâ€¢ Maeneo ya kampasi na mawasiliano\n\nUnataka kujua nini?"
         ));
         STATIC_KB_SW.put("ccna", Arrays.asList(
                 "UCC inaorodhesha kozi za kitaalamu na mafunzo mafupi kama Cisco Certified Network Associate (CCNA). Kwa ratiba za sasa, ada, na tarehe za kujiunga, wasiliana na UCC moja kwa moja au tembelea https://ucc.co.tz/."
@@ -840,9 +841,11 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
     }
 
     @Autowired
-    public AIServiceImpl(KnowledgeDocumentRepository knowledgeRepository, FeedbackRepository feedbackRepository) {
+    public AIServiceImpl(KnowledgeDocumentRepository knowledgeRepository, FeedbackRepository feedbackRepository,
+                          com.ucc.chatbot.service.DocumentCatalogService documentCatalogService) {
         this.knowledgeRepository = knowledgeRepository;
         this.feedbackRepository = feedbackRepository;
+        this.documentCatalogService = documentCatalogService;
     }
 
     @Override
@@ -867,6 +870,13 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
         }
 
         Map<String, List<String>> staticKB = "sw".equals(language) ? STATIC_KB_SW : STATIC_KB_EN;
+
+        // Document / download pre-check (returns rich response with download links)
+        ChatResponse docResp = tryDocumentResponse(lowerMessage, language);
+        if (docResp != null) {
+            docResp.setConversationId(request.getConversationId());
+            return docResp;
+        }
 
         // Special pre-check: if user is comparing DCIT and DBIT, return the comparison
         // (handled here so it wins over the generic dcit/dbit static entries)
@@ -930,10 +940,154 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
         }
     }
 
+    /**
+     * Document / download pre-check: detect messages that ask for brochures, the
+     * application pack, or downloads, and return a rich response that includes
+     * the matching document links (sourced from /data/documents.json on the
+     * classpath). The frontend renders the `downloads` field as inline cards.
+     */
+    private ChatResponse tryDocumentResponse(String lowerMessage, String language) {
+        if (lowerMessage == null || documentCatalogService == null) return null;
+        boolean isSw = "sw".equals(language);
+
+        boolean wantsPack = (lowerMessage.contains("application pack") || lowerMessage.contains("admission pack")
+                || lowerMessage.contains("intake pack") || lowerMessage.contains("app pack")
+                || lowerMessage.contains("hati zote") || lowerMessage.contains("pakua hati")
+                || lowerMessage.contains("pakua zote") || lowerMessage.contains("maombi pack")
+                || (lowerMessage.contains("documents") && lowerMessage.contains("apply")));
+        if (wantsPack) {
+            var pack = documentCatalogService.getIntakePack();
+            if (!pack.isEmpty()) {
+                String answer = isSw
+                        ? "Hapa kuna **Pak ya Maombi ya Oktoba 2026/2027** — " + pack.size() + " hati rasmi za UCC. Bofya kila kiungo kupakua moja kwa moja kwenye ucc.co.tz."
+                        : "Here is the **October 2026/2027 Application Pack** — " + pack.size() + " official UCC documents. Click each link to download directly from ucc.co.tz.";
+                List<Map<String, String>> qr = isSw
+                        ? List.of(Map.of("label", "Naomba DCIT", "message", "Naomba kusaidiwa kuomba DCIT"),
+                                  Map.of("label", "Ada ya maombi", "message", "Ada ya maombi ni kiasi gani?"))
+                        : List.of(Map.of("label", "Apply for DCIT", "message", "Help me apply for DCIT"),
+                                  Map.of("label", "Application fee", "message", "How much is the application fee?"));
+                return ChatResponse.builder()
+                        .answer(answer)
+                        .language(language)
+                        .sources(List.of(Map.of("title", "UCC Downloads", "url", "https://ucc.co.tz/downloads")))
+                        .downloads(serializeDocs(pack))
+                        .quickReplies(qr)
+                        .confidence(0.95)
+                        .escalationRequired(false)
+                        .build();
+            }
+        }
+
+        boolean wantsTimetable = lowerMessage.contains("timetable") || lowerMessage.contains("class schedule")
+                || lowerMessage.contains("ratiba") || lowerMessage.contains("ratiba ya masomo") || lowerMessage.contains("ratiba ya darasa");
+        if (wantsTimetable) {
+            String answer = isSw
+                    ? "**Ratiba za madarasa** huchapishwa kwa kila semesta na kitivo. Kwa sasa haziko mtandaoni — zinapostiwa kwenye mabango ya kampasi na kwenye portal ya wanafunzi mwanzoni mwa kila semesta.\n\nMratibu: **training@udsm.ac.tz** | Simu: **+255 747 031 228** (Dar) / **+255 747 626 619** (Dodoma)."
+                    : "**Class timetables** are published per semester. They are not currently hosted online — they are posted on the campus notice boards and the student portal at the start of each semester.\n\nEmail your coordinator: **training@udsm.ac.tz** | Help desk: **+255 747 031 228** (Dar) / **+255 747 626 619** (Dodoma).";
+            var brochures = documentCatalogService.getDocumentsByCategory("prospectus");
+            return ChatResponse.builder()
+                    .answer(answer)
+                    .language(language)
+                    .sources(List.of(Map.of("title", "UCC Help Desk", "url", "https://ucc.co.tz/contact-us")))
+                    .downloads(serializeDocs(brochures))
+                    .confidence(0.85)
+                    .escalationRequired(false)
+                    .build();
+        }
+        boolean wantsCalendar = lowerMessage.contains("calendar") || lowerMessage.contains("kalenda") || lowerMessage.contains("kalenda ya masomo")
+                || lowerMessage.contains("semester dates") || lowerMessage.contains("term dates");
+        if (wantsCalendar) {
+            String answer = isSw
+                    ? "**Kalenda rasmi ya kitaaluma ya UCC** haijasambazwa kwenye tovuti kwa umma. Inachapishwa kwa kila mwaka wa masomo.\n\n**Tarehe muhimu za 2026/2027:**\n• Maombi YANAFUNGULIWA: 1 Juni 2026\n• Maombi YANAFUNGWA: 30 Septemba 2026\n• Kuripoti: Novemba 2026\n\nEmail: **training@udsm.ac.tz** | Simu: **+255 747 031 228**"
+                    : "The **official UCC academic calendar** is not currently published on the public website. It is released each academic year.\n\n**Key dates for 2026/2027:**\n• Applications OPEN: 1 June 2026\n• Applications CLOSE: 30 September 2026\n• Reporting: November 2026\n\nEmail: **training@udsm.ac.tz** | Help desk: **+255 747 031 228**";
+            return ChatResponse.builder()
+                    .answer(answer)
+                    .language(language)
+                    .sources(List.of(Map.of("title", "UCC Help Desk", "url", "https://ucc.co.tz/contact-us")))
+                    .confidence(0.85)
+                    .escalationRequired(false)
+                    .build();
+        }
+
+        boolean wantsBrochure = lowerMessage.contains("brochure") || lowerMessage.contains("prospectus")
+                || lowerMessage.contains("flyer") || lowerMessage.contains("flier") || lowerMessage.contains("muhtasari")
+                || lowerMessage.contains("download");
+        boolean wantAll = (lowerMessage.contains("all") || lowerMessage.contains("programmes") || lowerMessage.contains("programs") || lowerMessage.contains("courses")) && wantsBrochure;
+        if (wantsBrochure) {
+            List<String> wantedProgs = new ArrayList<>();
+            if (lowerMessage.contains("dcit")) wantedProgs.add("DCIT");
+            if (lowerMessage.contains("dbit")) wantedProgs.add("DBIT");
+            if (lowerMessage.contains("ccit")) wantedProgs.add("CCIT");
+            if (lowerMessage.contains("cbit")) wantedProgs.add("CBIT");
+            var docs = new ArrayList<com.fasterxml.jackson.databind.JsonNode>();
+            if (wantAll) {
+                docs.addAll(documentCatalogService.getDocumentsByCategory("prospectus"));
+            } else if (!wantedProgs.isEmpty()) {
+                var all = documentCatalogService.getDocumentsByCategory("prospectus");
+                for (var d : all) if (wantedProgs.contains(d.path("programme").asText())) docs.add(d);
+            } else {
+                var all = documentCatalogService.getDocumentsByCategory("prospectus");
+                for (var d : all) if ("DCIT".equals(d.path("programme").asText())) { docs.add(d); break; }
+                if (docs.isEmpty() && !all.isEmpty()) docs.add(all.get(0));
+            }
+            if (!docs.isEmpty()) {
+                String intro = docs.size() == 1
+                        ? (isSw ? "Hapa kuna brochure rasmi ya " + docs.get(0).path("programme").asText() + " — bofya kupakua kutoka ucc.co.tz."
+                                : "Here is the official " + docs.get(0).path("programme").asText() + " brochure — click to download from ucc.co.tz.")
+                        : (isSw ? "Hapa kuna " + docs.size() + " brochure rasmi za UCC — bofya kila kiungo kupakua kutoka ucc.co.tz."
+                                : "Here are the " + docs.size() + " official UCC brochures — click each link to download from ucc.co.tz.");
+                return ChatResponse.builder()
+                        .answer(intro)
+                        .language(language)
+                        .sources(List.of(Map.of("title", "UCC Downloads", "url", "https://ucc.co.tz/downloads")))
+                        .downloads(serializeDocs(docs))
+                        .confidence(0.95)
+                        .escalationRequired(false)
+                        .build();
+            }
+        }
+
+        if (lowerMessage.contains("download") || lowerMessage.contains("pakua")
+                || (lowerMessage.contains("document") && !lowerMessage.contains("documented"))) {
+            var pack = documentCatalogService.getIntakePack();
+            if (!pack.isEmpty()) {
+                int n = Math.min(6, pack.size());
+                return ChatResponse.builder()
+                        .answer(isSw
+                                ? "Hapa kuna **hati rasmi za UCC** — bofya kila kiungo kupakua kutoka ucc.co.tz. Ukihitaji hati nyingine, niambie tu."
+                                : "Here are the **official UCC documents** — click each link to download from ucc.co.tz. If you need a specific document, just tell me.")
+                        .language(language)
+                        .sources(List.of(Map.of("title", "UCC Downloads", "url", "https://ucc.co.tz/downloads")))
+                        .downloads(serializeDocs(pack.subList(0, n)))
+                        .confidence(0.85)
+                        .escalationRequired(false)
+                        .build();
+            }
+        }
+
+        return null;
+    }
+
+    private List<Map<String, Object>> serializeDocs(List<com.fasterxml.jackson.databind.JsonNode> docs) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (var d : docs) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", d.path("id").asText());
+            m.put("title", d.path("title").asText());
+            m.put("description", d.path("description").asText());
+            m.put("category", d.path("category").asText());
+            m.put("programme", d.path("programme").asText());
+            m.put("fileType", d.path("fileType").asText("PDF"));
+            m.put("downloadUrl", d.path("downloadUrl").asText());
+            out.add(m);
+        }
+        return out;
+    }
+
     private ChatResponse kbOnlyResponse(String language, String conversationId) {
         String msg = "sw".equals(language)
-                ? "Samahani, sina taarifa maalum kuhusu hilo kwa sasa, lakini timu yetu ya UCC itafurahi kukusaidia. Unaweza kuwasiliana nasi kwa info@ucc.co.tz au +255 22 2410641/5, au tembelea https://ucc.co.tz/."
-                : "I don't have that specific detail at hand, but our team at UCC will be happy to help. You can reach them at info@ucc.co.tz or +255 22 2410641/5, or visit https://ucc.co.tz/.";
+                ? "Samahani, sina taarifa maalum kuhusu hilo kwa sasa, lakini timu yetu ya UCC itafurahi kukusaidia. Unaweza kuwasiliana nasi kwa info@ucc.co.tz au +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma), au tembelea https://ucc.co.tz/."
+                : "I don't have that specific detail at hand, but our team at UCC will be happy to help. You can reach them at info@ucc.co.tz or +255 747 031 228 (Dar) / +255 747 626 619 (Dodoma), or visit https://ucc.co.tz/.";
         return ChatResponse.builder()
                 .answer(msg)
                 .language(language)
