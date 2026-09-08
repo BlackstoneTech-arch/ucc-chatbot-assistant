@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="UCC Admin — News management">
+  <title>News Admin — UCC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+    .admin-header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+    .admin-header h1 { font-size: 1.6rem; color: var(--ucc-primary); }
+    .admin-header .muted { color: var(--ucc-gray); margin-top: 4px; }
+    .admin-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+    .admin-card h2 { font-size: 1.05rem; color: var(--ucc-primary); margin-bottom: 12px; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .admin-table th, .admin-table td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--gray-200); vertical-align: top; }
+    .admin-table th { font-weight: 600; color: var(--gray-700); background: var(--gray-50); }
+    .admin-table tr:hover td { background: var(--gray-50); }
+    .tag { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .tag-published { background: #d1fae5; color: #065f46; }
+    .tag-draft { background: #fef3c7; color: #92400e; }
+    .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .admin-form .field { margin-bottom: 12px; }
+    .admin-form label { display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 5px; color: var(--gray-700); }
+    .admin-form input, .admin-form textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--gray-300); border-radius: 8px; font-family: inherit; font-size: 0.88rem; }
+    .admin-form textarea { resize: vertical; min-height: 90px; }
+    .admin-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .flash { padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.88rem; }
+    .flash-ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .flash-err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .empty { text-align: center; padding: 36px 14px; color: var(--ucc-gray); }
+    .hidden { display: none !important; }
+    @media (max-width: 720px) {
+      .admin-form .row { grid-template-columns: 1fr; }
+      .admin-table th:nth-child(2), .admin-table td:nth-child(2),
+      .admin-table th:nth-child(4), .admin-table td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="admin-gate" class="admin-wrap">
+    <div class="admin-card" style="max-width:400px;margin:60px auto;text-align:center">
+      <h1>🔒 Admin Access</h1>
+      <p class="muted" style="margin-top:8px">You must log in as an admin to manage news.</p>
+      <div class="btn-row" style="justify-content:center;margin-top:18px">
+        <a class="btn-primary" href="login.html" style="text-decoration:none">Go to Login</a>
+        <a class="btn-secondary" href="../index.html" style="text-decoration:none">Back to site</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-main" class="admin-wrap hidden">
+    <div class="admin-header">
+      <div>
+        <h1>📰 News Admin</h1>
+        <p class="muted">Manage UCC news &amp; updates</p>
+      </div>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn-primary" id="refresh-btn">Refresh</button>
+        <button class="btn-secondary" id="logout-btn">Logout</button>
+        <a class="btn-secondary" href="../index.html" style="text-decoration:none">Back to site</a>
+      </div>
+    </div>
+
+    <div id="flash-area"></div>
+
+    <div class="admin-card">
+      <h2>Create news item</h2>
+      <form id="news-form" class="admin-form">
+        <div class="field">
+          <label for="n-title">Title</label>
+          <input id="n-title" type="text" placeholder="Short headline" required>
+        </div>
+        <div class="field">
+          <label for="n-summary">Summary</label>
+          <input id="n-summary" type="text" placeholder="One-line teaser">
+        </div>
+        <div class="field">
+          <label for="n-content">Content</label>
+          <textarea id="n-content" placeholder="Full body text" required></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="n-image">Image URL</label>
+            <input id="n-image" type="url" placeholder="https://...">
+          </div>
+          <div class="field">
+            <label for="n-source">Source URL</label>
+            <input id="n-source" type="url" placeholder="https://...">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="n-pub">Published date</label>
+            <input id="n-pub" type="datetime-local">
+          </div>
+          <div class="field">
+            <label for="n-exp">Expires (optional)</label>
+            <input id="n-exp" type="datetime-local">
+          </div>
+        </div>
+        <div class="field">
+          <label>
+            <input id="n-published" type="checkbox"> Published (visible to public)
+          </label>
+        </div>
+        <input type="hidden" id="n-id">
+        <div class="btn-row">
+          <button type="submit" class="btn-primary" id="form-submit">Create</button>
+          <button type="button" class="btn-secondary hidden" id="form-cancel">Cancel edit</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2>All items</h2>
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Published</th>
+              <th>Source</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="news-tbody"></tbody>
+        </table>
+        <div id="news-empty" class="empty hidden">No news yet. Use the form above to create one.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/news.js"></script>
+  <script src="js/news-admin.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const apiBase = () => (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
+
+    function flash(msg, ok) {
+      const el = $('#flash-area');
+      if (!el) return;
+      const d = document.createElement('div');
+      d.className = 'flash ' + (ok ? 'flash-ok' : 'flash-err');
+      d.textContent = msg;
+      el.appendChild(d);
+      setTimeout(() => d.remove(), 4000);
+    }
+
+    async function api(endpoint, opts = {}) {
+      const base = apiBase();
+      if (!base) return null;
+      const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+      const token = localStorage.getItem('ucc_auth_token');
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      const ctrl = new AbortController();
+      const tmo = setTimeout(() => ctrl.abort(), 8000);
+      try {
+        const r = await fetch(base + endpoint, { signal: ctrl.signal, headers, ...opts });
+        clearTimeout(tmo);
+        const txt = await r.text();
+        if (!r.ok) throw new Error(r.status + ': ' + txt);
+        return txt ? JSON.parse(txt) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function verifyAdmin() {
+      const base = apiBase();
+      const token = localStorage.getItem('ucc_auth_token');
+      if (!base || !token) return false;
+      const data = await api('/api/auth/me');
+      if (!data || !data.success) { localStorage.removeItem('ucc_auth_token'); return false; }
+      const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+      if (role !== 'ADMIN' && role !== 'SUPERADMIN') return false;
+      return true;
+    }
+
+    function logout() {
+      localStorage.removeItem('ucc_auth_token');
+      localStorage.removeItem('ucc_auth_role');
+      localStorage.removeItem('ucc_auth_user');
+      window.location.href = 'login.html';
+    }
+
+    async function loadItems() {
+      const data = await api('/api/news/all');
+      if (!data) { flash('Backend unreachable or not authorized.', false); return; }
+      const items = Array.isArray(data) ? data : (data.items || data.news || []);
+      renderTable(items);
+    }
+
+    function renderTable(items) {
+      const tbody = $('#news-tbody');
+      const empty = $('#news-empty');
+      if (!items.length) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      tbody.innerHTML = items.map(it => {
+        const date = it.publishedAt ? new Date(it.publishedAt).toLocaleString() : '—';
+        const exp = it.expiresAt ? new Date(it.expiresAt).toLocaleString() : '—';
+        const pub = it.isPublished ? '<span class="tag tag-published">Published</span>' : '<span class="tag tag-draft">Draft</span>';
+        return '<tr data-id="' + it.id + '">' +
+          '<td><strong>' + esc(it.title) + '</strong><br><span class="muted">' + esc(it.summary || '') + '</span></td>' +
+          '<td>' + pub + '</td>' +
+          '<td>' + esc(date) + '</td>' +
+          '<td><a href="' + esc(it.sourceUrl || '#') + '" target="_blank" rel="noopener">' + esc(it.sourceUrl || '—') + '</a><br><span class="muted">exp: ' + esc(exp) + '</span></td>' +
+          '<td class="btn-row"><button class="btn-secondary" data-act="edit" data-id="' + it.id + '">Edit</button>' +
+          '<button class="btn-secondary" data-act="toggle" data-id="' + it.id + '">' + (it.isPublished ? 'Unpublish' : 'Publish') + '</button>' +
+          '<button class="btn-secondary" style="border-color:#b91c1c;color:#b91c1c" data-act="del" data-id="' + it.id + '">Delete</button></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function esc(s) { return (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    async function save(form) {
+      const payload = {
+        title: $('#n-title').value.trim(),
+        summary: $('#n-summary').value.trim(),
+        content: $('#n-content').value.trim(),
+        imageUrl: $('#n-image').value.trim(),
+        sourceUrl: $('#n-source').value.trim(),
+        publishedAt: $('#n-pub').value ? new Date($('#n-pub').value).toISOString() : new Date().toISOString(),
+        expiresAt: $('#n-exp').value ? new Date($('#n-exp').value).toISOString() : null,
+        isPublished: $('#n-published').checked
+      };
+      if (!payload.title || !payload.content) { flash('Title and content are required', false); return; }
+      const id = $('#n-id').value;
+      const base = apiBase();
+      if (!base) { flash('Backend not configured.', false); return; }
+      let url = base + '/api/news';
+      let method = 'POST';
+      if (id) { url += '/' + encodeURIComponent(id); method = 'PUT'; }
+      const r = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('ucc_auth_token') },
+        body: JSON.stringify(payload)
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) { flash((data.message || 'Save failed') + ' (' + r.status + ')', false); return; }
+      flash(method === 'POST' ? 'Created' : 'Updated', true);
+      resetForm();
+      await loadItems();
+    }
+
+    async function togglePublish(id) {
+      if (!confirm('Toggle published state?')) return;
+      const r = await api('/api/news/' + encodeURIComponent(id) + '/publish', {
+        method: 'PATCH',
+        body: JSON.stringify({ isPublished: true, publishedAt: new Date().toISOString() })
+      });
+      if (!r) { flash('Failed', false); return; }
+      flash('Published', true);
+      await loadItems();
+    }
+
+    async function removeItem(id) {
+      if (!confirm('Delete this item permanently?')) return;
+      const r = await api('/api/news/' + encodeURIComponent(id), { method: 'DELETE' });
+      if (!r) { flash('Failed', false); return; }
+      flash('Deleted', true);
+      await loadItems();
+    }
+
+    async function editItem(id) {
+      const r = await api('/api/news/' + encodeURIComponent(id));
+      if (!r) { flash('Failed to load', false); return; }
+      $('#n-id').value = r.id || id;
+      $('#n-title').value = r.title || '';
+      $('#n-summary').value = r.summary || '';
+      $('#n-content').value = r.content || '';
+      $('#n-image').value = r.imageUrl || '';
+      $('#n-source').value = r.sourceUrl || '';
+      $('#n-pub').value = r.publishedAt ? r.publishedAt.slice(0, 16) : new Date().toISOString().slice(0, 16);
+      $('#n-exp').value = r.expiresAt ? r.expiresAt.slice(0, 16) : '';
+      $('#n-published').checked = r.isPublished !== false;
+      $('#form-submit').textContent = 'Update';
+      $('#form-cancel').classList.remove('hidden');
+      $('#news-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+      $('#news-form').reset();
+      $('#n-id').value = '';
+      $('#n-pub').value = new Date().toISOString().slice(0, 16);
+      $('#form-submit').textContent = 'Create';
+      $('#form-cancel').classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const authed = await verifyAdmin();
+      if (!authed) {
+        $('#admin-gate').classList.remove('hidden');
+        $('#admin-main').classList.add('hidden');
+        return;
+      }
+      $('#admin-gate').classList.add('hidden');
+      $('#admin-main').classList.remove('hidden');
+      $('#logout-btn').addEventListener('click', logout);
+      $('#news-form').addEventListener('submit', function (e) { e.preventDefault(); save(this); });
+      $('#form-cancel').addEventListener('click', resetForm);
+      $('#refresh-btn').addEventListener('click', loadItems);
+      $('#news-tbody').addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-act]');
+        if (!btn) return;
+        const act = btn.getAttribute('data-act');
+        const id = btn.getAttribute('data-id');
+        if (act === 'edit') editItem(id);
+        else if (act === 'toggle') togglePublish(id);
+        else if (act === 'del') removeItem(id);
+      });
+      await loadItems();
+    });
+  </script>
+</body>
+</html>

@@ -12,6 +12,9 @@
 </head>
 <body>
   <a class="skip-link" href="#chat-widget">Skip to chat</a>
+  <div id="news-marquee" class="news-marquee" role="status" aria-live="polite" aria-label="UCC news and updates">
+    <div class="news-marquee-track" id="news-marquee-track"></div>
+  </div>
   <div id="app">
     <header class="hero">
       <div class="container">
@@ -32,6 +35,7 @@
             <a href="downloads.html">Downloads</a>
             <a href="services.html">Services</a>
             <a href="contact.html">Contact</a>
+            <a href="login.html" class="btn-primary" style="padding:8px 14px;border-radius:8px;color:#fff;text-decoration:none">Login</a>
           </nav>
         </div>
         <p class="hero-subtitle">Your intelligent assistant for UCC programmes, admissions, fees, registration, ICT support, and student services.</p>
@@ -139,7 +143,9 @@
           <a href="downloads.html">Downloads</a> |
           <a href="privacy.html">Privacy</a> |
           <a href="terms.html">Terms</a> |
-          <a href="cookies.html">Cookies</a>
+          <a href="cookies.html">Cookies</a> |
+          <a href="login.html">Login</a> |
+          <a href="admin/news.html">Admin</a>
         </p>
         <p class="footer-disclaimer">© 2026 UCC Customer Care Assistant. This is an AI assistant and may produce inaccurate information. Always verify with official UCC sources.</p>
       </div>
@@ -179,6 +185,11 @@
           <button class="chat-close" type="button" onclick="closeChat()" aria-label="Close chat">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+          <button type="button" class="icon-btn" id="widget-auth-btn" aria-label="Student login" title="Student login">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
             </svg>
           </button>
         </div>
@@ -234,6 +245,7 @@
   <script src="js/config.js"></script>
   <script src="js/ucc-kb.js"></script>
   <script src="js/documents.js"></script>
+  <script src="js/news.js"></script>
   <script src="js/chatbot.js"></script>
 </body>
 </html>

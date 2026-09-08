@@ -842,15 +842,34 @@
         try {
           activeRequest = new AbortController();
           const t = setTimeout(() => activeRequest && activeRequest.abort(), 20000);
+          const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('ucc_auth_token') : null;
+          const userRaw = (typeof localStorage !== 'undefined') ? localStorage.getItem('ucc_auth_user') : null;
+          const user = userRaw ? JSON.parse(userRaw) : null;
           const response = await fetch(`${apiBase()}/chat`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: userText, conversationId: state.sessionId, language: state.detectedLang }),
+            headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
+            body: JSON.stringify({ message: userText, conversationId: state.sessionId, language: state.detectedLang, user: user || null }),
             signal: activeRequest.signal
           });
           clearTimeout(t);
           if (response.ok) {
-            onResolve(await response.json());
+            const data = await response.json();
+            const answerText = (data && data.answer) ? String(data.answer) : '';
+            const isEscalation = /couldn't find verified information|please contact ucc|visit https:\/\/ucc\.co\.tz\//i.test(answerText);
+            if (isEscalation && typeof uccFallbackAnswer === 'function') {
+              try {
+                const fb = uccFallbackAnswer(userText, state.detectedLang || 'en');
+                if (fb && fb.answer) {
+                  onResolve({ answer: fb.answer, language: fb.language || (state.detectedLang || 'en'), sources: fb.sources || [], confidence: fb.confidence || 0.75, escalationRequired: !!fb.escalationRequired });
+                } else {
+                  onResolve(data);
+                }
+              } catch (_) {
+                onResolve(data);
+              }
+            } else {
+              onResolve(data);
+            }
           } else {
             throw new Error('HTTP ' + response.status);
           }
@@ -1065,6 +1084,40 @@
     if (newChatBtn) newChatBtn.addEventListener('click', startNewConversation);
     const themeBtn = $('theme-toggle');
     if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+    const authBtn = $('auth-btn');
+    if (authBtn) {
+      const hasToken = !!localStorage.getItem('ucc_auth_token');
+      authBtn.setAttribute('aria-label', hasToken ? 'Student menu' : 'Student login');
+      authBtn.addEventListener('click', () => {
+        if (hasToken) {
+          if (confirm('Logout from student account?')) {
+            localStorage.removeItem('ucc_auth_token');
+            localStorage.removeItem('ucc_auth_role');
+            localStorage.removeItem('ucc_auth_user');
+            location.reload();
+          }
+        } else {
+          location.href = 'login.html';
+        }
+      });
+    }
+    const widgetAuthBtn = $('widget-auth-btn');
+    if (widgetAuthBtn) {
+      const hasToken = !!localStorage.getItem('ucc_auth_token');
+      widgetAuthBtn.setAttribute('aria-label', hasToken ? 'Student menu' : 'Student login');
+      widgetAuthBtn.addEventListener('click', () => {
+        if (hasToken) {
+          if (confirm('Logout from student account?')) {
+            localStorage.removeItem('ucc_auth_token');
+            localStorage.removeItem('ucc_auth_role');
+            localStorage.removeItem('ucc_auth_user');
+            location.reload();
+          }
+        } else {
+          location.href = 'login.html';
+        }
+      });
+    }
 
     // Wire up welcome prompt cards
     document.querySelectorAll('.prompt-card[data-prompt]').forEach(card => {

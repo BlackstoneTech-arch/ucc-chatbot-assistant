@@ -37,6 +37,8 @@ const UCC_KB_EN = {
 
   fee: "Official UCC fee structure for academic year 2026/2027:\n\n• Diploma in Computing and Information Technology (DCIT) — Total TZS 3,020,000:\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\n• Diploma in Business Information Technology (DBIT) — Total TZS 3,020,000:\n   - Tuition: TZS 2,800,000\n   - Examination: TZS 60,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 40,000\n\n• Certificate in Computing and Information Technology (CCIT) — Total TZS 1,370,000:\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\n• Certificate in Business Information Technology (CBIT) — Total TZS 1,370,000:\n   - Tuition: TZS 1,200,000\n   - Examination: TZS 30,000\n   - Identity Card (one-time): TZS 20,000\n   - ICT Services: TZS 100,000\n   - NACTE Quality Assurance: TZS 20,000\n\nFor professional and short courses (PMP, CISA, CISM, ITIL, COBIT, CCNA, CCNP, etc.) please contact info@ucc.co.tz or +255 22 2410641/5 for current fees and intake dates.",
 
+  applicationFee: "The UCC application fee for 2026/2027 is:\n\n• Local applicants: TZS 15,000 (non-refundable)\n• Foreign applicants: TZS 30,000 (non-refundable)\n\nPayment methods:\n• Local: M-Pesa (*150*01# → LIPA kwa M-Pesa → Malipo ya Serikali → reference number), Mix by Yas, or Airtel Money (*150*60# → Lipia bili → Malipo ya Serikali)\n• Foreign: SWIFT to CRDB Bank, code CORUTZTZ, A/C 02J1020063300, University of Dar es Salaam, HOLLAND Branch\n\nApply at: https://admission.ucc.co.tz/\n\nFor help, email ucc@udsm.ac.tz or call +255 22 2410641/5 (Dar) / +255 754782120 (mobile) / +255 0747 626 619 (Dodoma).",
+
   contact: "Here's how to reach us — we'd love to hear from you:\n\n• General: info@ucc.co.tz | +255 22 2410641/5 | +255 754782120\n• Main Office (UDSM Mlimani): ucc@udsm.ac.tz | +255 754782120\n• Dodoma Branch: dodoma@udsm.ac.tz | +255 0747 626 619\n• Admission Portal: https://admission.ucc.co.tz/\n• Website: https://ucc.co.tz/\n\nOur friendly team is available Monday to Friday (8:00 AM - 5:00 PM) and Saturday (8:00 AM - 1:00 PM).",
 
   location: "UCC has two branches:\n\n1. Main Office (Headquarters):\n• University of Dar es Salaam, Mlimani Road\n• P.O. Box 35062, Dar es Salaam\n• Located at UDSM Mlimani Campus, Opp. NBC Bank\n• Phone: +255 22 2410641/5 | Mobile: +255 754782120\n• Email: ucc@udsm.ac.tz\n\n2. Dodoma Branch:\n• Plot No. 113, Mathias Street, Miyuji\n• P.O. Box 2501, Dodoma\n• Phone: +255 22 2410641/5 | Mobile: +255 0747 626 619\n• Email: dodoma@udsm.ac.tz\n\nOffice hours: Mon-Fri 8:00-17:00, Sat 8:00-13:00, Sun closed.",
@@ -171,10 +173,11 @@ function uccFallbackAnswer(message, lang) {
       { cue: /\bregist(er|ration|er for|er my|er the|er courses?|er online)\b/, key: 'registration' },
       { cue: /\b(enroll|enrol|sign up|sign-up)\b/, key: 'registration' },
       { cue: /\b(course|courses|unit|units|module|modules)\b.*\b(regist|enroll|sign up|enrol)/, key: 'registration' },
+      { cue: /\b(application fee)\b/, key: 'applicationFee' },
       { cue: /\b(apply|applying|application|admission|admissions)\b/, key: 'apply' },
       { cue: /\b(join|joining|attend)\b/, key: 'join' },
       { cue: /\b(fee|fees|cost|price|tuition|charges|how much)\b/, key: 'fee' },
-      { cue: /\b(application fee)\b/, key: 'application fee' },
+      { cue: /\b(fee|fees|cost|price|tuition|charges|how much)\b/, key: 'fee' },
       { cue: /\b(contact|contacts|phone|email|reach|call|address|number)\b/, key: 'contact' },
       { cue: /\b(location|where|address|office|campus|branch)\b/, key: 'location' },
       { cue: /\b(programme|program|course|courses)\b/, key: 'programme' },
@@ -200,7 +203,7 @@ function uccFallbackAnswer(message, lang) {
       { cue: /\b(dbit|business information)\b/, key: 'dbit' },
       { cue: /\b(ccit|cheti.*computing|computing.*cheti)\b/, key: 'ccit' },
       { cue: /\b(cbit|cheti.*business|business.*cheti)\b/, key: 'cbit' },
-      { cue: /\b(ict|mteja wa it|mteja wa kompyuta|mtandao|barua pepe|akaunti ya)\b/, key: null },
+      { cue: /\b(ict|mteja wa it|mteja wa kompyuta|mtandao|barua pepe|akaunti ya)\b/, key: 'ict' },
       { cue: /\b(msaada|nisaidie|usaidizi|nini unajua|unajua nini)\b/, key: 'msaada' },
       { cue: /\b(lini|wakati gani|tarehe)\b/, key: 'lini' }
     ]

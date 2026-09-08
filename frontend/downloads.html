@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="css/downloads.css">
 </head>
 <body>
+  <div id="news-marquee" class="news-marquee" role="status" aria-live="polite" aria-label="UCC news and updates">
+    <div class="news-marquee-track" id="news-marquee-track"></div>
+  </div>
   <a class="skip-link" href="#documents-main">Skip to content</a>
   <div id="app">
     <header class="site-header">
@@ -23,6 +26,7 @@
           <a href="downloads.html" aria-current="page">Downloads</a>
           <a href="about.html">About</a>
           <a href="contact.html">Contact</a>
+          <a href="login.html" class="btn-primary" style="padding:8px 14px;border-radius:8px;color:#fff;text-decoration:none">Login</a>
         </nav>
       </div>
     </header>
@@ -110,9 +114,11 @@
   <script src="js/config.js"></script>
   <script src="js/ucc-kb.js"></script>
   <script src="js/documents.js"></script>
+  <script src="js/news.js"></script>
   <script src="js/chatbot.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () { if (window.UCCDocuments) window.UCCDocuments.render(); });
   </script>
+  <p style="text-align:center;padding:10px;font-size:0.75rem;color:var(--ucc-gray)"><a href="login.html" style="color:inherit">Login</a> · <a href="admin/news.html" style="color:inherit">Admin</a></p>
 </body>
 </html>

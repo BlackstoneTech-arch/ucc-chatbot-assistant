@@ -971,6 +971,79 @@ main.legal code { background: var(--gray-100); padding: 2px 6px; border-radius: 
 }
 
 /* ============================================================
+   UCC NEWS / UPDATES MARQUEE
+   ============================================================ */
+
+.news-marquee {
+  width: 100%;
+  background: linear-gradient(90deg, var(--ucc-primary) 0%, var(--ucc-accent) 100%);
+  color: #ffffff;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.86rem;
+  position: relative;
+  z-index: 60;
+}
+[data-theme="dark"] .news-marquee {
+  background: linear-gradient(90deg, #001f3f 0%, #003366 100%);
+}
+.news-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  padding: 9px 0;
+  animation: newsScroll 42s linear infinite;
+}
+.news-marquee-track:hover { animation-play-state: paused; }
+.news-marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 28px;
+}
+.news-marquee-dot {
+  width: 6px; height: 6px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.news-marquee-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: text-decoration 0.15s;
+}
+.news-marquee-link:hover { text-decoration: underline; }
+.news-marquee-tag {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.news-marquee-empty {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-style: italic;
+}
+@keyframes newsScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@media (max-width: 640px) {
+  .news-marquee { font-size: 0.78rem; }
+  .news-marquee-item { padding: 0 20px; }
+  .news-marquee-tag { display: none; }
+}
+
+/* ============================================================
    CHATGPT-STYLE FULL-PAGE LAYOUT  +  DARK MODE
    ============================================================ */
 
@@ -1721,3 +1794,84 @@ body:not(.chat-page-body) .chat-widget .intake-banner { font-size: 0.72rem; padd
 body:not(.chat-page-body) .chat-widget .chat-meta { font-size: 0.66rem; }
 body:not(.chat-page-body) .chat-widget .quick-reply-chip { font-size: 0.72rem; padding: 4px 10px; }
 body:not(.chat-page-body) .chat-widget .history-restore { font-size: 0.72rem; padding: 8px; }
+
+/* ---------- Admin panel ---------- */
+.admin-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.admin-header h1 { font-size: 1.8rem; color: var(--ucc-primary); }
+.admin-header .muted { color: var(--ucc-gray); margin-top: 4px; }
+.admin-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.admin-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.admin-card h2 { font-size: 1.1rem; color: var(--ucc-primary); margin-bottom: 14px; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.admin-table th, .admin-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gray-200);
+  vertical-align: top;
+}
+.admin-table th { font-weight: 600; color: var(--gray-700); background: var(--gray-50); }
+.admin-table tr:hover td { background: var(--gray-50); }
+.admin-table .muted { color: var(--ucc-gray); font-size: 0.8rem; }
+.admin-table .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.admin-table .tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.admin-table .tag-published { background: #d1fae5; color: #065f46; }
+.admin-table .tag-draft { background: #fef3c7; color: #92400e; }
+.admin-form .field { margin-bottom: 14px; }
+.admin-form label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--gray-700); }
+.admin-form input, .admin-form textarea, .admin-form select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: var(--white);
+  color: var(--gray-900);
+}
+.admin-form textarea { resize: vertical; min-height: 90px; }
+.admin-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.admin-form .hint { font-size: 0.75rem; color: var(--ucc-gray); margin-top: 4px; }
+.admin-flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 0.88rem; }
+.admin-flash-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.admin-flash-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.admin-empty { text-align: center; padding: 40px 20px; color: var(--ucc-gray); }
+.admin-inline-error { color: #b91c1c; font-size: 0.8rem; margin-top: 4px; }
+[data-theme="dark"] .admin-card,
+[data-theme="dark"] .admin-table th,
+[data-theme="dark"] .admin-table tr:hover td {
+  background: var(--bg-page);
+  border-color: var(--border-soft);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .admin-table th { color: var(--text-secondary); }
+[data-theme="dark"] .admin-form input,
+[data-theme="dark"] .admin-form textarea,
+[data-theme="dark"] .admin-form select {
+  background: var(--bg-prompt);
+  color: var(--text-primary);
+  border-color: var(--border-soft);
+}
