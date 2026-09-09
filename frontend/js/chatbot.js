@@ -311,6 +311,52 @@
     };
   }
 
+  async function tryCoursesResponse(message) {
+    if (!message) return null;
+    const lower = message.toLowerCase();
+    const isSw = (state.detectedLang || 'en') === 'sw';
+
+    // Only handle queries that are clearly about UCC academic programmes/courses
+    const courseTriggers = [
+      'programme', 'programmes', 'program', 'course', 'courses', 'what programme', 'what programmes',
+      'what course', 'what courses', 'which programme', 'which programmes', 'dcit', 'dbit', 'ccit', 'cbit',
+      'what do you offer', 'what do you have', 'list programmes', 'list courses',
+      'programu', 'kozi', 'mtaala', 'masomo', 'programu zenu', 'kozi zenu', 'ni zipi', 'ni nini',
+      'entry requirement', 'entry requirements', 'vigezo vya kujiunga', 'fee structure', 'fees for',
+      'ada ya', 'duration', 'muda'
+    ];
+    if (!courseTriggers.some(t => lower.includes(t))) return null;
+
+    if (!window.UCCCourses) return null;
+
+    const data = await window.UCCCourses.load();
+    if (!data) return null;
+
+    // Check for specific programme
+    const specific = ['dcit', 'dbit', 'ccit', 'cbit'].find(p => lower.includes(p));
+    if (specific) {
+      const prog = window.UCCCourses.findById(data, specific);
+      if (prog) {
+        return {
+          answer: window.UCCCourses.formatProgramme(prog, state.detectedLang || 'en'),
+          sources: [{ title: 'UCC Courses Page', url: prog.sourceUrl || 'https://ucc.co.tz/' }],
+          confidence: 0.95,
+          escalationRequired: false,
+          language: state.detectedLang || 'en'
+        };
+      }
+    }
+
+    // Otherwise return the list
+    return {
+      answer: window.UCCCourses.formatList(data, state.detectedLang || 'en'),
+      sources: [{ title: 'UCC Courses Page', url: 'https://ucc.co.tz/' }],
+      confidence: 0.9,
+      escalationRequired: false,
+      language: state.detectedLang || 'en'
+    };
+  }
+
   async function buildAssistantResponse(userText) {
     // 1) Document / download intent (pre-empts API)
     const docResp = await tryDocumentResponse(userText);
@@ -318,6 +364,9 @@
     // 2) IT help intent
     const itResp = await tryITHelpResponse(userText);
     if (itResp) return itResp;
+    // 3) Courses / programmes intent
+    const coursesResp = await tryCoursesResponse(userText);
+    if (coursesResp) return coursesResp;
     return null;
   }
 
