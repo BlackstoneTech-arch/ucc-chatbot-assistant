@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="UCC News & Updates — announcements, admission reminders, and official updates from the University of Dar es Salaam Computing Centre.">
+  <title>News & Updates — UCC Customer Care Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="news-marquee" class="news-marquee" role="status" aria-live="polite" aria-label="UCC news and updates">
+    <div class="news-marquee-track" id="news-marquee-track"></div>
+  </div>
+  <div id="app">
+    <header class="hero">
+      <div class="container">
+        <div class="logo">
+          <div class="logo-icon" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h1>UCC News & Updates</h1>
+            <p>University of Dar es Salaam Computing Centre</p>
+          </div>
+        </div>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="courses.html">Programmes</a>
+          <a href="downloads.html">Downloads</a>
+          <a href="services.html">Services</a>
+          <a href="contact.html">Contact</a>
+          <a href="login.html" class="btn-primary" style="padding:8px 14px;border-radius:8px;color:#fff;text-decoration:none">Login</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="features">
+      <div class="container">
+        <h2>News & Updates</h2>
+        <p class="muted">Official announcements and updates from the University of Dar es Salaam Computing Centre.</p>
+        <div id="news-list" class="news-list"></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <p>University of Dar es Salaam Computing Centre (UCC)</p>
+        <p class="footer-links">
+          <a href="https://ucc.co.tz/" target="_blank" rel="noopener noreferrer">Official Website</a> |
+          <a href="https://ucc.co.tz/news" target="_blank" rel="noopener noreferrer">News</a> |
+          <a href="https://admission.ucc.co.tz/" target="_blank" rel="noopener noreferrer">Admission Portal</a> |
+          <a href="downloads.html">Downloads</a> |
+          <a href="privacy.html">Privacy</a> |
+          <a href="terms.html">Terms</a> |
+          <a href="cookies.html">Cookies</a>
+        </p>
+        <p class="footer-disclaimer">© 2026 UCC Customer Care Assistant. This is an AI assistant and may produce inaccurate information. Always verify with official UCC sources.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/ucc-kb.js"></script>
+  <script src="js/documents.js"></script>
+  <script src="js/news.js"></script>
+  <script src="js/chatbot.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.UCCNews) window.UCCNews.refresh().then(function (items) {
+        var list = document.getElementById('news-list');
+        if (!list) return;
+        if (!items || !items.length) {
+          list.innerHTML = '<p class="muted">No news or updates at this time.</p>';
+          return;
+        }
+        list.innerHTML = items.map(function (n) {
+          var date = n.publishedAt ? new Date(n.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+          return '<article class="news-card"><h3>' + (n.title || '').replace(/</g, '&lt;') + '</h3>' +
+                 '<p class="news-date">' + date + '</p>' +
+                 '<p class="news-summary">' + (n.summary || '').replace(/</g, '&lt;') + '</p>' +
+                 (n.sourceUrl ? '<p><a href="' + n.sourceUrl + '" target="_blank" rel="noopener noreferrer">Read more →</a></p>' : '') + '</article>';
+        }).join('');
+      });
+    });
+  </script>
+  <p style="text-align:center;padding:10px;font-size:0.75rem;color:var(--ucc-gray)"><a href="login.html" style="color:inherit">Login</a> · <a href="admin/news.html" style="color:inherit">Admin</a></p>
+</body>
+</html>

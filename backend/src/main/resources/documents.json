@@ -1,0 +1,152 @@
+{
+  "version": "2026-2027",
+  "lastUpdated": "2026-09-04",
+  "intake": {
+    "label": "October 2026/2027 intake",
+    "applicationOpen": "2026-06-01",
+    "applicationClose": "2026-09-30",
+    "reporting": "November 2026",
+    "applicationFeeLocal": "TZS 15,000",
+    "applicationFeeForeign": "TZS 30,000",
+    "portal": "https://admission.ucc.co.tz/"
+  },
+  "categories": [
+    {
+      "id": "prospectus",
+      "name": "Programme brochures",
+      "description": "Download the official UCC brochure for any programme — covers entry requirements, fees, duration, locations, and how to apply.",
+      "icon": "📘"
+    },
+    {
+      "id": "admission",
+      "name": "Admission guide",
+      "description": "Step-by-step walkthrough of how to apply, pay the application fee via mobile money, upload documents, and choose your programme.",
+      "icon": "🎓"
+    },
+    {
+      "id": "calendar",
+      "name": "Academic calendar",
+      "description": "Official UCC academic calendar with semester dates, exam windows, and holidays. Always check with the registry for the latest version.",
+      "icon": "📅"
+    },
+    {
+      "id": "timetable",
+      "name": "Class timetables",
+      "description": "Current semester class timetables for DCIT, DBIT, CCIT, and CBIT. Timetables change each semester; confirm with your coordinator.",
+      "icon": "🕒"
+    },
+    {
+      "id": "company",
+      "name": "About UCC",
+      "description": "UCC company profile, vision, mission, services, partners, and clients.",
+      "icon": "🏢"
+    }
+  ],
+  "documents": [
+    {
+      "id": "brochure-dcit-2026",
+      "title": "Brochure for DCIT — September/October 2026 Intake",
+      "category": "prospectus",
+      "programme": "DCIT",
+      "description": "Diploma in Computing and Information Technology — full details, entry requirements, fees, locations, and how to apply.",
+      "fileType": "PDF",
+      "size": "Brochure",
+      "language": "en",
+      "source": "ucc.co.tz",
+      "downloadUrl": "https://ucc.co.tz/downloads/brochure-for-dcit-september-2026-intake-267",
+      "tags": ["dcit", "diploma", "computing", "prospectus", "admission", "apply"]
+    },
+    {
+      "id": "brochure-dbit-2026",
+      "title": "Brochure for DBIT — September/October 2026 Intake",
+      "category": "prospectus",
+      "programme": "DBIT",
+      "description": "Diploma in Business Information Technology — full details, entry requirements, fees, locations, and how to apply.",
+      "fileType": "PDF",
+      "size": "Brochure",
+      "language": "en",
+      "source": "ucc.co.tz",
+      "downloadUrl": "https://ucc.co.tz/downloads/brochure-for-dbit-september-2026-intake-266",
+      "tags": ["dbit", "diploma", "business", "prospectus", "admission", "apply"]
+    },
+    {
+      "id": "brochure-ccit-2026",
+      "title": "Brochure for CCIT — September/October 2026 Intake",
+      "category": "prospectus",
+      "programme": "CCIT",
+      "description": "Certificate in Computing and Information Technology — full details, entry requirements, fees, locations, and how to apply.",
+      "fileType": "PDF",
+      "size": "Brochure",
+      "language": "en",
+      "source": "ucc.co.tz",
+      "downloadUrl": "https://ucc.co.tz/downloads/brochure-for-ccit-september-2026-intake-269",
+      "tags": ["ccit", "certificate", "computing", "prospectus", "admission", "apply"]
+    },
+    {
+      "id": "brochure-cbit-2026",
+      "title": "Brochure for CBIT — September/October 2026 Intake",
+      "category": "prospectus",
+      "programme": "CBIT",
+      "description": "Certificate in Business Information Technology — full details, entry requirements, fees, locations, and how to apply.",
+      "fileType": "PDF",
+      "size": "Brochure",
+      "language": "en",
+      "source": "ucc.co.tz",
+      "downloadUrl": "https://ucc.co.tz/downloads/brochure-for-cbit-september-2026-intake-268",
+      "tags": ["cbit", "certificate", "business", "prospectus", "admission", "apply"]
+    },
+    {
+      "id": "brochure-professional-head-office",
+      "title": "Brochure for Short and Professional Courses — UCC Head Office (Dar es Salaam)",
+      "category": "prospectus",
+      "programme": null,
+      "description": "All short and professional courses (PMP, CISA, CISM, ITIL, COBIT, CCNA, CCNP, MCSE, etc.) offered at UCC HQ, UDSM Mlimani Campus, Dar es Salaam.",
+      "fileType": "PDF",
+      "size": "Brochure",
+      "language": "en",
+      "source": "ucc.co.tz",
+      "downloadUrl": "https://ucc.co.tz/downloads/brochure-for-short-and-professional-courses-ucc-head-office-273",
+      "tags": ["professional", "pmp", "cisa", "cism", "itil", "cobit", "ccna", "ccnp", "mcse", "short courses"]
+    },
+    {
+      "id": "brochure-professional-dodoma",
+      "title": "Brochure for Professional Courses — Dodoma Branch (until August 2026)",
+      "category": "prospectus",
+      "programme": null,
+      "description": "Professional and short courses offered at the UCC Dodoma branch, with intake dates up to August 2026.",
+      "fileType": "PDF",
+      "size": "Brochure",
+      "language": "en",
+      "source": "ucc.co.tz",
+      "downloadUrl": "https://ucc.co.tz/downloads/brochure-for-professional-courses-till-august-2026-dodoma-270",
+      "tags": ["professional", "dodoma", "short courses"]
+    },
+    {
+      "id": "company-profile",
+      "title": "UCC Company Profile",
+      "category": "company",
+      "programme": null,
+      "description": "Official UCC company profile — history, vision, mission, services, products, clients, and partners.",
+      "fileType": "PDF",
+      "size": "Profile",
+      "language": "en",
+      "source": "ucc.co.tz",
+      "downloadUrl": "https://ucc.co.tz/downloads/ucc-company-profile-251",
+      "tags": ["about", "company", "profile", "ucc", "partners"]
+    }
+  ],
+  "intakePack": {
+    "id": "intake-pack-2026",
+    "title": "October 2026/2027 — Application Pack",
+    "description": "Everything a prospective student needs to apply: 4 programme brochures, the professional courses brochure, the company profile, and the official invitation to apply. Click each document to download.",
+    "documentIds": [
+      "brochure-dcit-2026",
+      "brochure-dbit-2026",
+      "brochure-ccit-2026",
+      "brochure-cbit-2026",
+      "brochure-professional-head-office",
+      "brochure-professional-dodoma",
+      "company-profile"
+    ]
+  }
+}

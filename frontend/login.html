@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — UCC Customer Care Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-wrap { max-width: 420px; margin: 0 auto; padding: 60px 20px 80px; }
+    .auth-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+    .auth-tabs { display: flex; gap: 6px; padding: 4px; background: var(--gray-100); border-radius: 12px; margin-bottom: 22px; }
+    .auth-tab { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 10px; font-weight: 600; color: var(--gray-600); cursor: pointer; transition: all 0.2s; }
+    .auth-tab.active { background: var(--white); color: var(--ucc-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .auth-tab:hover:not(.active) { color: var(--gray-900); }
+    .auth-title { font-size: 1.25rem; font-weight: 700; color: var(--ucc-primary); margin-bottom: 4px; }
+    .auth-sub { color: var(--ucc-gray); font-size: 0.88rem; margin-bottom: 18px; }
+    .auth-form .field { margin-bottom: 14px; }
+    .auth-form label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--gray-700); }
+    .auth-form input { width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 10px; font-family: inherit; font-size: 0.95rem; }
+    .auth-form input:focus { outline: none; border-color: var(--ucc-primary); box-shadow: 0 0 0 3px rgba(0,51,102,0.08); }
+    .auth-btn { width: 100%; padding: 12px; background: var(--ucc-primary); color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: transform 0.15s; }
+    .auth-btn:hover:not(:disabled) { transform: translateY(-1px); background: var(--ucc-accent); }
+    .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .auth-footer { text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--ucc-gray); }
+    .auth-footer a { color: var(--ucc-primary); text-decoration: none; font-weight: 600; }
+    .auth-footer a:hover { text-decoration: underline; }
+    .flash { padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: 0.88rem; }
+    .flash-ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .flash-err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .hidden { display: none !important; }
+    [data-theme="dark"] .auth-card { background: var(--bg-page); border-color: var(--border-soft); }
+    [data-theme="dark"] .auth-form input { background: var(--bg-prompt); color: var(--text-primary); border-color: var(--border-soft); }
+    [data-theme="dark"] .auth-tabs { background: var(--bg-prompt); }
+    [data-theme="dark"] .auth-tab.active { background: var(--bg-page); color: var(--text-primary); }
+    @media (max-width: 480px) { .auth-wrap { padding-top: 30px; } }
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div style="text-align:center;margin-bottom:18px">
+      <a href="index.html" style="color:var(--ucc-primary);text-decoration:none;font-weight:600">← Back to UCC Assistant</a>
+    </div>
+    <div class="auth-card">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:2rem;font-weight:800;color:var(--ucc-primary)">UCC</div>
+        <div style="color:var(--ucc-gray);font-size:0.85rem">Customer Care Assistant</div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="student" type="button">Student</button>
+        <button class="auth-tab" data-tab="admin" type="button">Admin</button>
+      </div>
+
+      <div id="flash-area"></div>
+
+      <!-- Student forms -->
+      <div id="tab-student">
+        <div class="auth-form">
+          <div class="auth-title">Student login</div>
+          <div class="auth-sub">Access your chat history and personalized support.</div>
+          <form id="student-login-form">
+            <div class="field">
+              <label for="s-email">Email</label>
+              <input id="s-email" type="email" placeholder="student@example.com" required>
+            </div>
+            <div class="field">
+              <label for="s-password">Password</label>
+              <input id="s-password" type="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="auth-btn">Login</button>
+          </form>
+          <div class="auth-footer">No account? <a href="#" id="show-student-register">Register</a></div>
+        </div>
+        <div class="auth-form hidden" id="student-register-box" style="margin-top:16px">
+          <div class="auth-title">Create student account</div>
+          <div class="auth-sub">Register to save your conversation history.</div>
+          <form id="student-register-form">
+            <div class="field">
+              <label for="s-name">Full name</label>
+              <input id="s-name" type="text" placeholder="Your name" required>
+            </div>
+            <div class="field">
+              <label for="s-email-2">Email</label>
+              <input id="s-email-2" type="email" placeholder="student@example.com" required>
+            </div>
+            <div class="field">
+              <label for="s-password-2">Password</label>
+              <input id="s-password-2" type="password" placeholder="Min 6 characters" required minlength="6">
+            </div>
+            <button type="submit" class="auth-btn">Create account</button>
+          </form>
+          <div class="auth-footer">Already have an account? <a href="#" id="show-student-login">Login</a></div>
+        </div>
+      </div>
+
+      <!-- Admin form -->
+      <div id="tab-admin" class="hidden">
+        <div class="auth-form">
+          <div class="auth-title">Admin login</div>
+          <div class="auth-sub">Manage news, FAQs, and knowledge base content.</div>
+          <form id="admin-login-form">
+            <div class="field">
+              <label for="a-email">Email</label>
+              <input id="a-email" type="email" placeholder="admin@ucc.co.tz" required>
+            </div>
+            <div class="field">
+              <label for="a-password">Password</label>
+              <input id="a-password" type="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="auth-btn">Login to admin</button>
+          </form>
+          <div class="auth-footer">Access is restricted to authorized staff only.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const apiBase = () => (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
+
+    function flash(msg, ok) {
+      const el = $('#flash-area');
+      const d = document.createElement('div');
+      d.className = 'flash ' + (ok ? 'flash-ok' : 'flash-err');
+      d.textContent = msg;
+      el.appendChild(d);
+      setTimeout(() => d.remove(), 4000);
+    }
+
+    function setTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+      $('#tab-student').classList.toggle('hidden', tab !== 'student');
+      $('#tab-admin').classList.toggle('hidden', tab !== 'admin');
+      $('#flash-area').innerHTML = '';
+    }
+
+    async function api(endpoint, opts = {}) {
+      const base = apiBase();
+      if (!base) return null;
+      const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+      const token = localStorage.getItem('ucc_auth_token');
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      const ctrl = new AbortController();
+      const tmo = setTimeout(() => ctrl.abort(), 8000);
+      try {
+        const r = await fetch(base + endpoint, { signal: ctrl.signal, headers, ...opts });
+        clearTimeout(tmo);
+        const txt = await r.text();
+        if (!r.ok) throw new Error(r.status + ': ' + txt);
+        return txt ? JSON.parse(txt) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveStudentSession(data) {
+      localStorage.setItem('ucc_auth_token', data.token);
+      localStorage.setItem('ucc_auth_role', data.user && data.user.role ? data.user.role : 'USER');
+      localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
+    }
+
+    function clearSession() {
+      localStorage.removeItem('ucc_auth_token');
+      localStorage.removeItem('ucc_auth_role');
+      localStorage.removeItem('ucc_auth_user');
+    }
+
+    async function verifyAdmin() {
+      const base = apiBase();
+      const token = localStorage.getItem('ucc_auth_token');
+      if (!base || !token) return false;
+      const data = await api('/api/auth/me');
+      if (!data || !data.success) { clearSession(); return false; }
+      const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+      if (role !== 'ADMIN' && role !== 'SUPERADMIN') return false;
+      return true;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
+      $('#show-student-register').addEventListener('click', (e) => { e.preventDefault(); $('#student-login-form').classList.add('hidden'); $('#student-register-box').classList.remove('hidden'); });
+      $('#show-student-login').addEventListener('click', (e) => { e.preventDefault(); $('#student-register-box').classList.add('hidden'); $('#student-login-form').classList.remove('hidden'); });
+
+      $('#student-login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const email = $('#s-email').value.trim();
+        const password = $('#s-password').value;
+        if (!email || !password) { flash('Enter email and password', false); return; }
+        const base = apiBase();
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash(data.message || 'Login failed', false); return; }
+        saveStudentSession(data);
+        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : email), true);
+        setTimeout(() => { window.location.href = 'chat.html'; }, 600);
+      });
+
+      $('#student-register-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const name = $('#s-name').value.trim();
+        const email = $('#s-email-2').value.trim();
+        const password = $('#s-password-2').value;
+        if (!name || !email || !password) { flash('All fields are required', false); return; }
+        const base = apiBase();
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name, role: 'USER' }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
+        flash('Account created. Please login.', true);
+        $('#student-register-form').reset();
+        $('#student-register-box').classList.add('hidden');
+        $('#student-login-form').classList.remove('hidden');
+        $('#s-email').value = email;
+        $('#s-password').focus();
+      });
+
+      $('#admin-login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const email = $('#a-email').value.trim();
+        const password = $('#a-password').value;
+        if (!email || !password) { flash('Enter email and password', false); return; }
+        const base = apiBase();
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash(data.message || 'Login failed', false); return; }
+        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+        if (role !== 'ADMIN' && role !== 'SUPERADMIN') { flash('Access denied: admin role required', false); clearSession(); return; }
+        localStorage.setItem('ucc_auth_token', data.token);
+        localStorage.setItem('ucc_auth_role', role);
+        localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
+        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : email), true);
+        setTimeout(() => { window.location.href = 'admin/news.html'; }, 600);
+      });
+
+      (async () => {
+        const base = apiBase();
+        const token = localStorage.getItem('ucc_auth_token');
+        if (base && token) {
+          const data = await api('/api/auth/me');
+          if (data && data.success) {
+            const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+            localStorage.setItem('ucc_auth_role', role);
+            if (role === 'ADMIN' || role === 'SUPERADMIN') {
+              setTab('admin');
+            } else {
+              setTab('student');
+              $('#s-email').value = data.user && data.user.email ? data.user.email : '';
+            }
+          } else {
+            clearSession();
+          }
+        }
+      })();
+    });
+  </script>
+</body>
+</html>

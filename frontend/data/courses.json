@@ -1,0 +1,116 @@
+{
+  "intake": "2026/2027",
+  "updated": "2026-09-09",
+  "programmes": [
+    {
+      "id": "dcit",
+      "name": "Diploma in Computing and Information Technology (DCIT)",
+      "short": "DCIT",
+      "level": "Diploma",
+      "duration": "2 years (4 semesters)",
+      "totalFee": "TZS 3,020,000",
+      "fees": {
+        "tuition": "TZS 2,800,000",
+        "examination": "TZS 60,000",
+        "identityCard": "TZS 20,000",
+        "ictServices": "TZS 100,000",
+        "nacteQualityAssurance": "TZS 40,000"
+      },
+      "entryRequirements": "ACSEE with at least 1 principal pass and 1 subsidiary pass; OR Basic Technician Certificate (NTA Level 4) in Computer Science, Information Technology, Business Information Technology, Computer Engineering, or Electronic Engineering.",
+      "focus": "Hardware, networking, programming, web, databases, server and CCNA-aligned practicals.",
+      "bestFor": "Students who want a strong technical / software-development / network-engineering career path, or who plan to bridge to a CS/IT degree.",
+      "locations": "UCC Headquarters at UDSM Mlimani Campus opposite NBC Bank, Dar es Salaam; UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.",
+      "applyUrl": "https://admission.ucc.co.tz/",
+      "sourceUrl": "https://www.ucc.co.tz/course/diploma-in-computing-and-information-technology-dcit-81"
+    },
+    {
+      "id": "dbit",
+      "name": "Diploma in Business Information Technology (DBIT)",
+      "short": "DBIT",
+      "level": "Diploma",
+      "duration": "2 years (4 semesters)",
+      "totalFee": "TZS 3,020,000",
+      "fees": {
+        "tuition": "TZS 2,800,000",
+        "examination": "TZS 60,000",
+        "identityCard": "TZS 20,000",
+        "ictServices": "TZS 100,000",
+        "nacteQualityAssurance": "TZS 40,000"
+      },
+      "entryRequirements": "ACSEE with at least 1 principal pass and 1 subsidiary pass; OR Basic Technician Certificate (NTA Level 4) in Business Administration, Accountancy, Computer Science, Information Technology, Business Information Technology, or Computer Engineering.",
+      "focus": "Business + IT (accounting packages, e-business, web services, business law, entrepreneurship, management).",
+      "bestFor": "Students who want to work at the intersection of business and IT — business analyst, IT sales, e-commerce, ERP/SAP, or run their own IT business.",
+      "locations": "UCC Headquarters at UDSM Mlimani Campus opposite NBC Bank, Dar es Salaam; UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.",
+      "applyUrl": "https://admission.ucc.co.tz/",
+      "sourceUrl": "https://www.ucc.co.tz/course/diploma-in-business-information-technology-dbit-82"
+    },
+    {
+      "id": "ccit",
+      "name": "Certificate in Computing and Information Technology (CCIT)",
+      "short": "CCIT",
+      "level": "Certificate",
+      "duration": "1 year",
+      "totalFee": "TZS 1,370,000",
+      "fees": {
+        "tuition": "TZS 1,200,000",
+        "examination": "TZS 30,000",
+        "identityCard": "TZS 20,000",
+        "ictServices": "TZS 100,000",
+        "nacteQualityAssurance": "TZS 20,000"
+      },
+      "entryRequirements": "Certificate of Secondary Education (CSEE) with at least 4 passes in non-religious subjects; OR National Vocational Training Award (NVTA) Level III / Trade Test Grade I from a recognized institution.",
+      "focus": "Foundational computing and information technology skills.",
+      "bestFor": "Students seeking a quick entry-level IT qualification.",
+      "locations": "UCC Headquarters at UDSM Mlimani Campus opposite NBC Bank, Dar es Salaam; UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.",
+      "applyUrl": "https://admission.ucc.co.tz/",
+      "sourceUrl": "https://www.ucc.co.tz/course/certificate-in-computing-and-information-technology-ccit-172"
+    },
+    {
+      "id": "cbit",
+      "name": "Certificate in Business Information Technology (CBIT)",
+      "short": "CBIT",
+      "level": "Certificate",
+      "duration": "1 year",
+      "totalFee": "TZS 1,370,000",
+      "fees": {
+        "tuition": "TZS 1,200,000",
+        "examination": "TZS 30,000",
+        "identityCard": "TZS 20,000",
+        "ictServices": "TZS 100,000",
+        "nacteQualityAssurance": "TZS 20,000"
+      },
+      "entryRequirements": "Certificate of Secondary Education (CSEE) with at least 4 passes in non-religious subjects; OR National Vocational Training Award (NVTA) Level III / Trade Test Grade I from a recognized institution.",
+      "focus": "Foundational business information technology skills.",
+      "bestFor": "Students seeking a quick entry-level business IT qualification.",
+      "locations": "UCC Headquarters at UDSM Mlimani Campus opposite NBC Bank, Dar es Salaam; UCC Dodoma Branch at Capital Compound, Mathias Street, Miyuji.",
+      "applyUrl": "https://admission.ucc.co.tz/",
+      "sourceUrl": "https://www.ucc.co.tz/course/academic"
+    }
+  ],
+  "professionalCourses": [
+    "Project Management Professional (PMP)",
+    "Certified Information Systems Auditor (CISA)",
+    "Certified Information Security Manager (CISM)",
+    "ITIL Foundation",
+    "ITIL Practitioner",
+    "COBIT Foundation",
+    "CCNA",
+    "CCNP",
+    "CCIP",
+    "Java Certified Programmer (JCP)",
+    "Microsoft Certified Solutions Developer (MCSD)",
+    "Business Processes Management",
+    "Enterprise Architecture for Managers",
+    "IT Governance",
+    "IT Service Management",
+    "Information Security and Risk Management",
+    "Ethical Hacking",
+    "Mobile Application Development"
+  ],
+  "contacts": {
+    "email": "info@ucc.co.tz",
+    "phoneDar": "+255 22 2410641/5",
+    "phoneMobile": "+255 754782120",
+    "phoneDodoma": "+255 0747 626 619"
+  }
+}
