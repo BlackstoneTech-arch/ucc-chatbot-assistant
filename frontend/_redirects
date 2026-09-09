@@ -1,5 +1,5 @@
 # UCC Chatbot — Netlify redirects
-# Clean URLs for static legal pages
+# Clean URLs for static pages
 /privacy  /privacy.html  200
 /terms    /terms.html    200
 /cookies  /cookies.html  200
@@ -9,6 +9,3 @@
 /admin/news       /admin/news.html       200
 /admin/news.html  /admin/news.html       200
 /login.html       /login.html            200
-
-# SPA-style fallback for admin (optional)
-/admin/*          /admin/news.html       200
