@@ -175,11 +175,17 @@
     async function verifyAdmin() {
       const base = apiBase();
       const token = localStorage.getItem('ucc_auth_token');
-      if (!base || !token) return false;
+      const role = localStorage.getItem('ucc_auth_role');
+      // Offline mode: if no backend but token exists and role is ADMIN, allow access
+      if (!base) {
+        if (token && (role === 'ADMIN' || role === 'SUPERADMIN')) return true;
+        return false;
+      }
+      if (!token) return false;
       const data = await api('/api/auth/me');
       if (!data || !data.success) { localStorage.removeItem('ucc_auth_token'); return false; }
-      const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-      if (role !== 'ADMIN' && role !== 'SUPERADMIN') return false;
+      const r = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+      if (r !== 'ADMIN' && r !== 'SUPERADMIN') return false;
       return true;
     }
 
@@ -191,6 +197,20 @@
     }
 
     async function loadItems() {
+      const base = apiBase();
+      if (!base) {
+        // Offline mode: use localStorage (fallback to seed data)
+        let items = JSON.parse(localStorage.getItem('ucc_news_offline') || 'null');
+        if (!items || !items.length) {
+          if (window.UCCNews) {
+            const seed = await window.UCCNews.load();
+            if (seed && seed.length) { items = seed; }
+          }
+        }
+        if (!items) items = [];
+        renderTable(items);
+        return;
+      }
       const data = await api('/api/news/all');
       if (!data) { flash('Backend unreachable or not authorized.', false); return; }
       const items = Array.isArray(data) ? data : (data.items || data.news || []);
@@ -234,7 +254,21 @@
       if (!payload.title || !payload.content) { flash('Title and content are required', false); return; }
       const id = $('#n-id').value;
       const base = apiBase();
-      if (!base) { flash('Backend not configured.', false); return; }
+      if (!base) {
+        // Offline mode: save to localStorage
+        let items = JSON.parse(localStorage.getItem('ucc_news_offline') || '[]');
+        if (id) {
+          items = items.map(it => it.id === id ? { ...it, ...payload } : it);
+        } else {
+          const newItem = { ...payload, id: 'news-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6) };
+          items.unshift(newItem);
+        }
+        localStorage.setItem('ucc_news_offline', JSON.stringify(items));
+        flash(id ? 'Updated (offline)' : 'Created (offline)', true);
+        resetForm();
+        renderTable(items);
+        return;
+      }
       let url = base + '/api/news';
       let method = 'POST';
       if (id) { url += '/' + encodeURIComponent(id); method = 'PUT'; }
@@ -252,6 +286,15 @@
 
     async function togglePublish(id) {
       if (!confirm('Toggle published state?')) return;
+      const base = apiBase();
+      if (!base) {
+        let items = JSON.parse(localStorage.getItem('ucc_news_offline') || '[]');
+        items = items.map(it => it.id === id ? { ...it, isPublished: !it.isPublished } : it);
+        localStorage.setItem('ucc_news_offline', JSON.stringify(items));
+        flash('Toggled (offline)', true);
+        renderTable(items);
+        return;
+      }
       const r = await api('/api/news/' + encodeURIComponent(id) + '/publish', {
         method: 'PATCH',
         body: JSON.stringify({ isPublished: true, publishedAt: new Date().toISOString() })
@@ -263,6 +306,15 @@
 
     async function removeItem(id) {
       if (!confirm('Delete this item permanently?')) return;
+      const base = apiBase();
+      if (!base) {
+        let items = JSON.parse(localStorage.getItem('ucc_news_offline') || '[]');
+        items = items.filter(it => it.id !== id);
+        localStorage.setItem('ucc_news_offline', JSON.stringify(items));
+        flash('Deleted (offline)', true);
+        renderTable(items);
+        return;
+      }
       const r = await api('/api/news/' + encodeURIComponent(id), { method: 'DELETE' });
       if (!r) { flash('Failed', false); return; }
       flash('Deleted', true);

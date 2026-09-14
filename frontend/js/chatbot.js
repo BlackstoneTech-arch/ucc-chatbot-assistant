@@ -874,6 +874,19 @@
         finalDownloads = data.downloads || null;
         finalEscalation = !!data.escalationRequired;
         finalConfidence = data.confidence || 0.85;
+        // If backend returned an escalation message, try local KB fallback
+        const escalationPattern = /couldn't find verified information|please contact ucc|visit https:\/\/ucc\.co\.tz\//i;
+        if (escalationPattern.test(finalAnswer) && typeof uccFallbackAnswer === 'function') {
+          try {
+            const fb = uccFallbackAnswer(userText, state.detectedLang || 'en');
+            if (fb && fb.answer) {
+              finalAnswer = fb.answer;
+              finalSources = fb.sources || [];
+              finalConfidence = fb.confidence || 0.75;
+              finalEscalation = !!fb.escalationRequired;
+            }
+          } catch (_) { /* keep original */ }
+        }
         if (stream) {
           if (STREAMING_ENABLED && finalAnswer) {
             stream.stream(finalAnswer);
