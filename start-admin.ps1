@@ -7,13 +7,13 @@ param(
 $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Split-Path -Parent $PSCommandPath
-$AdminDir = Join-Path $ProjectRoot "admin"
+$FrontendDir = Join-Path $ProjectRoot "frontend"
 $LogDir = Join-Path $ProjectRoot "logs"
 $LogFile = Join-Path $LogDir "admin.log"
 
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
-if (-not (Test-Path $AdminDir)) {
-    Write-Host "Admin directory not found: $AdminDir" -ForegroundColor Red
+if (-not (Test-Path $FrontendDir)) {
+    Write-Host "Frontend directory not found: $FrontendDir" -ForegroundColor Red
     exit 1
 }
 
@@ -24,10 +24,10 @@ if (-not $npmCmd) {
 }
 
 Write-Host "Starting UCC Admin Dashboard on port $Port..." -ForegroundColor Green
-Write-Host "URL: http://localhost:$Port/" -ForegroundColor Cyan
+Write-Host "URL: http://localhost:$Port/admin/news.html" -ForegroundColor Cyan
 Write-Host "Logs: $LogFile" -ForegroundColor DarkGray
 
-Push-Location $AdminDir
+Push-Location $FrontendDir
 try {
     & npx serve . -l $Port 2>&1 | Tee-Object -FilePath $LogFile -Append
 }
