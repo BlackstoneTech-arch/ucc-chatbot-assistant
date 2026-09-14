@@ -1,3 +1,2 @@
 [build]
   publish = "frontend"
-  command = "echo 'Static site - no build step required'"

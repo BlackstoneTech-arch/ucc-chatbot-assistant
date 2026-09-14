@@ -9,3 +9,9 @@
 /admin/news       /admin/news.html       200
 /admin/news.html  /admin/news.html       200
 /login.html       /login.html            200
+
+# Fallback for SPA-style admin routes
+/admin/*          /admin/news.html       200
+
+# Ensure Netlify re-reads config on next deploy
+# Last updated: 2026-09-14
