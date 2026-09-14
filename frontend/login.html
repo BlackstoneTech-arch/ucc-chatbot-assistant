@@ -253,7 +253,7 @@
           localStorage.setItem('ucc_auth_role', 'ADMIN');
           localStorage.setItem('ucc_auth_user', JSON.stringify(fakeUser));
           flash('Logged in (offline mode) — ' + fakeUser.fullName, true);
-          setTimeout(() => { window.location.href = 'admin/news.html'; }, 600);
+          setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
           return;
         }
         const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
@@ -265,7 +265,7 @@
         localStorage.setItem('ucc_auth_role', role);
         localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
         flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : email), true);
-        setTimeout(() => { window.location.href = 'admin/news.html'; }, 600);
+        setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
       });
 
       (async () => {
