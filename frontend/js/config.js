@@ -1,7 +1,7 @@
 /* ============================================
    API Configuration
    ============================================
-   Production (Netlify): leave BASE_URL empty to use the
+   Production (Cloudflare Pages): leave BASE_URL empty to use the
    bundled client-side knowledge base (ucc-kb.js). This
    guarantees the chat works without any backend.
 
@@ -16,9 +16,11 @@
    CORS must allow the deployed frontend origin.
    ============================================ */
 const API_CONFIG = {
-  BASE_URL: (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-    ? "http://localhost:8081/api"
-    : "" // Production: empty => KB-only mode
+  BASE_URL: (typeof __API_BASE_URL__ !== 'undefined' && __API_BASE_URL__)
+    ? __API_BASE_URL__
+    : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+      ? "http://localhost:8081/api"
+      : "" // Production: empty => KB-only mode
 };
 const API_BASE_URL = API_CONFIG.BASE_URL;
 

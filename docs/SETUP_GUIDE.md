@@ -312,10 +312,12 @@ ADMIN_PASSWORD=ChangeMeImmediately!2026
 ADMIN_NAME=UCC Administrator
 
 # === AI (leave blank to use the static KB only) ===
-AI_API_KEY=
+AI_PROVIDER=openai              # openai | groq | pollinations
+AI_API_KEY=                     # required for openai & groq; not needed for pollinations
 AI_API_URL=https://api.openai.com/v1
-AI_MODEL=gpt-4o-mini
+AI_MODEL=gpt-4o-mini            # for groq: llama-3.3-70b-versatile
 AI_EMBEDDING_MODEL=text-embedding-3-small
+AI_ALWAYS_CALL=true             # when true, AI is called for every non-KB question
 
 # === CORS ===
 # Comma-separated list of allowed origins. MUST include every URL the
@@ -619,14 +621,16 @@ Without an LLM, the chatbot can only answer from the static UCC knowledge base t
 - Handle questions the static KB doesn't cover
 - Translate more accurately between English and Swahili
 
-The LLM is a *fallback* — the static KB always wins when it has an answer. So enabling it is a strict improvement.
+The LLM is the conversational brain — the static KB is injected into the system prompt as verified context so the model never hallucinates UCC facts. When `AI_ALWAYS_CALL=true` (default), the bot calls the AI for every question the static KB doesn't already answer verbatim. Set `AI_ALWAYS_CALL=false` if you prefer pure static-KB behaviour.
 
 ### 10.1 Get an API key
 
 Pick one:
 - **OpenAI**: https://platform.openai.com/api-keys (~$0.15 per 1M input tokens for gpt-4o-mini)
+- **Groq** (free tier, very fast Llama 3.x): https://console.groq.com/keys — set `AI_PROVIDER=groq` and `AI_MODEL=llama-3.3-70b-versatile`
 - **OpenRouter** (cheaper, many models): https://openrouter.ai/keys
 - **Azure OpenAI** (enterprise): contact Microsoft
+- **Pollinations.ai** (free, no key needed): set `AI_PROVIDER=pollinations` (lowest quality)
 - **Local Ollama** (free, no internet): see §10.3
 
 ### 10.2 Configure

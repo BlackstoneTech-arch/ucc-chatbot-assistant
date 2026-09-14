@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/courses/**").permitAll()
                         .requestMatchers("/api/services/**").permitAll()
                         .requestMatchers("/api/contacts/**").permitAll()
+                        .requestMatchers("/api/news/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
                         .anyRequest().permitAll()
                 )
