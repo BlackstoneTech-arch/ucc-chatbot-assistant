@@ -51,7 +51,7 @@
 
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="student" type="button">Student</button>
-        <button class="auth-tab" data-tab="admin" type="button">Admin</button>
+        <button class="auth-tab hidden" data-tab="admin" type="button">Admin</button>
       </div>
 
       <div id="flash-area"></div>
@@ -277,7 +277,8 @@
             const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
             localStorage.setItem('ucc_auth_role', role);
             if (role === 'ADMIN' || role === 'SUPERADMIN') {
-              setTab('admin');
+              // Admin sessions are handled on the dedicated admin dashboard, not here.
+              window.location.href = 'admin/dashboard.html';
             } else {
               setTab('student');
               $('#s-email').value = data.user && data.user.email ? data.user.email : '';
