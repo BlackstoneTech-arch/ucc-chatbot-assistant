@@ -13,7 +13,7 @@ UCC provides ICT support services to students including:
 ### How to Get ICT Support
 1. Visit the ICT Support office during office hours
 2. Email: ict@ucc.co.tz
-3. Phone: +255 22 2410 003
+3. Phone: +255 22 2410641/5
 4. Submit a support request through the student portal
 
 ### IT Infrastructure
