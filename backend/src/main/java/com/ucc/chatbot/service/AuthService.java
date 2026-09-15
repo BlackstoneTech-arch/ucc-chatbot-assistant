@@ -14,4 +14,5 @@ public interface AuthService {
     User changePassword(String userId, String currentPassword, String newPassword);
     void ensureDefaultAdmin(String email, String password, String fullName);
     Map<String, Object> register(Map<String, String> payload);
+    Map<String, Object> visitorLogin(String phone, String fullName);
 }

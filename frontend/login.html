@@ -50,14 +50,33 @@
       </div>
 
       <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="student" type="button">Student</button>
-        <button class="auth-tab hidden" data-tab="admin" type="button">Admin</button>
+        <button class="auth-tab active" data-tab="visitor" type="button">Visitor</button>
+        <button class="auth-tab" data-tab="student" type="button">Student</button>
       </div>
 
       <div id="flash-area"></div>
 
+      <!-- Visitor form -->
+      <div id="tab-visitor">
+        <div class="auth-form">
+          <div class="auth-title">Visitor login</div>
+          <div class="auth-sub">Sign in with your phone number to save your chat history.</div>
+          <form id="visitor-login-form">
+            <div class="field">
+              <label for="v-phone">Phone number</label>
+              <input id="v-phone" type="tel" placeholder="+255 7xx xxx xxx" required>
+            </div>
+            <div class="field">
+              <label for="v-name">Full name (optional)</label>
+              <input id="v-name" type="text" placeholder="Your name">
+            </div>
+            <button type="submit" class="auth-btn">Continue as Visitor</button>
+          </form>
+        </div>
+      </div>
+
       <!-- Student forms -->
-      <div id="tab-student">
+      <div id="tab-student" class="hidden">
         <div class="auth-form">
           <div class="auth-title">Student login</div>
           <div class="auth-sub">Access your chat history and personalized support.</div>
@@ -87,6 +106,14 @@
               <input id="s-email-2" type="email" placeholder="student@example.com" required>
             </div>
             <div class="field">
+              <label for="s-phone-2">Phone number</label>
+              <input id="s-phone-2" type="tel" placeholder="+255 7xx xxx xxx" required>
+            </div>
+            <div class="field">
+              <label for="s-num-2">Student number (optional)</label>
+              <input id="s-num-2" type="text" placeholder="UCC/2026/xxxx">
+            </div>
+            <div class="field">
               <label for="s-password-2">Password</label>
               <input id="s-password-2" type="password" placeholder="Min 6 characters" required minlength="6">
             </div>
@@ -103,10 +130,10 @@
           <div class="auth-sub">Manage news, FAQs, and knowledge base content.</div>
           <form id="admin-login-form">
             <div class="field">
-              <label for="a-email">Email</label>
-              <input id="a-email" type="email" placeholder="admin@ucc.co.tz" required>
+              <label for="a-identifier">Email or phone number</label>
+              <input id="a-identifier" type="text" placeholder="admin@ucc.co.tz or +255 7xx xxx xxx" required>
             </div>
-            <div class="field">
+            <div class="field" id="a-password-wrap">
               <label for="a-password">Password</label>
               <input id="a-password" type="password" placeholder="••••••••" required>
             </div>
@@ -134,6 +161,7 @@
 
     function setTab(tab) {
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+      $('#tab-visitor').classList.toggle('hidden', tab !== 'visitor');
       $('#tab-student').classList.toggle('hidden', tab !== 'student');
       $('#tab-admin').classList.toggle('hidden', tab !== 'admin');
       $('#flash-area').innerHTML = '';
@@ -193,9 +221,36 @@
         const password = params.get('password') || '';
         $('#s-email').value = email;
         $('#s-password').value = password;
-        $('#a-email').value = email;
+        $('#a-identifier').value = email;
         $('#a-password').value = password;
       }
+      if (params.has('phone')) {
+        $('#v-phone').value = params.get('phone');
+        $('#a-identifier').value = params.get('phone');
+      }
+
+      $('#visitor-login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const phone = $('#v-phone').value.trim();
+        const name = $('#v-name').value.trim();
+        if (!phone) { flash('Enter your phone number', false); return; }
+        const base = apiBase();
+        if (!base) {
+          // No backend configured — simulate a visitor session using the local KB
+          const fakeUser = { id: 'local-vis-' + Date.now(), email: phone, fullName: name || 'Visitor', role: 'VISITOR', isActive: true, phone: phone };
+          const fakeToken = 'local-vis-token-' + Math.random().toString(36).slice(2);
+          saveStudentSession({ token: fakeToken, user: fakeUser });
+          flash('Logged in (offline mode) — ' + fakeUser.fullName, true);
+          setTimeout(() => { window.location.href = 'chat.html'; }, 600);
+          return;
+        }
+        const r = await fetch(base + '/api/auth/visitor-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, fullName: name }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash(data.message || 'Visitor login failed', false); return; }
+        saveStudentSession(data);
+        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : phone), true);
+        setTimeout(() => { window.location.href = 'chat.html'; }, 600);
+      });
 
       $('#student-login-form').addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -224,11 +279,13 @@
         e.preventDefault();
         const name = $('#s-name').value.trim();
         const email = $('#s-email-2').value.trim();
+        const phone = $('#s-phone-2').value.trim();
+        const studentNumber = $('#s-num-2').value.trim();
         const password = $('#s-password-2').value;
-        if (!name || !email || !password) { flash('All fields are required', false); return; }
+        if (!name || !email || !password || !phone) { flash('Name, email, phone and password are required', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name, role: 'USER' }) });
+        const r = await fetch(base + '/api/auth/student-register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name, role: 'USER', phone, studentNumber }) });
         const data = await r.json().catch(() => ({}));
         if (!r.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);
@@ -241,13 +298,13 @@
 
       $('#admin-login-form').addEventListener('submit', async function (e) {
         e.preventDefault();
-        const email = $('#a-email').value.trim();
-        const password = $('#a-password').value;
-        if (!email || !password) { flash('Enter email and password', false); return; }
+        const identifier = $('#a-identifier').value.trim();
+        const password = $('#a-password').value.trim();
+        if (!identifier) { flash('Enter email or phone number', false); return; }
         const base = apiBase();
         if (!base) {
           // No backend configured — create a local admin session so the admin page loads
-          const fakeUser = { id: 'local-admin', email: email, fullName: 'UCC Administrator', role: 'ADMIN', isActive: true };
+          const fakeUser = { id: 'local-admin', email: identifier, fullName: 'UCC Administrator', role: 'ADMIN', isActive: true };
           const fakeToken = 'local-admin-token-' + Math.random().toString(36).slice(2);
           localStorage.setItem('ucc_auth_token', fakeToken);
           localStorage.setItem('ucc_auth_role', 'ADMIN');
@@ -256,7 +313,11 @@
           setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
           return;
         }
-        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        // Admins can use the same visitor gate: identify by phone, then verify role server-side.
+        const looksLikePhone = /^\+?\d[\d\s\-]{7,}$/.test(identifier);
+        const body = looksLikePhone ? { phone: identifier } : { email: identifier, password };
+        const endpoint = looksLikePhone ? '/api/auth/visitor-login' : '/api/auth/login';
+        const r = await fetch(base + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await r.json().catch(() => ({}));
         if (!r.ok || !data.success) { flash(data.message || 'Login failed', false); return; }
         const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
@@ -264,7 +325,7 @@
         localStorage.setItem('ucc_auth_token', data.token);
         localStorage.setItem('ucc_auth_role', role);
         localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
-        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : email), true);
+        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : identifier), true);
         setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
       });
 
@@ -280,8 +341,8 @@
               // Admin sessions are handled on the dedicated admin dashboard, not here.
               window.location.href = 'admin/dashboard.html';
             } else {
-              setTab('student');
-              $('#s-email').value = data.user && data.user.email ? data.user.email : '';
+              // Visitor or student — go to the chat.
+              window.location.href = 'chat.html';
             }
           } else {
             clearSession();

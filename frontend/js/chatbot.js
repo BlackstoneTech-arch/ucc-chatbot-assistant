@@ -1149,10 +1149,11 @@
     const authBtn = $('auth-btn');
     if (authBtn) {
       const hasToken = !!localStorage.getItem('ucc_auth_token');
-      authBtn.setAttribute('aria-label', hasToken ? 'Student menu' : 'Student login');
+      authBtn.setAttribute('aria-label', hasToken ? 'Account menu' : 'Sign in');
+      authBtn.setAttribute('title', hasToken ? 'Account / logout' : 'Sign in (visitor, student or admin)');
       authBtn.addEventListener('click', () => {
         if (hasToken) {
-          if (confirm('Logout from student account?')) {
+          if (confirm('Logout from your account?')) {
             localStorage.removeItem('ucc_auth_token');
             localStorage.removeItem('ucc_auth_role');
             localStorage.removeItem('ucc_auth_user');
@@ -1166,10 +1167,11 @@
     const widgetAuthBtn = $('widget-auth-btn');
     if (widgetAuthBtn) {
       const hasToken = !!localStorage.getItem('ucc_auth_token');
-      widgetAuthBtn.setAttribute('aria-label', hasToken ? 'Student menu' : 'Student login');
+      widgetAuthBtn.setAttribute('aria-label', hasToken ? 'Account menu' : 'Sign in');
+      widgetAuthBtn.setAttribute('title', hasToken ? 'Account / logout' : 'Sign in (visitor, student or admin)');
       widgetAuthBtn.addEventListener('click', () => {
         if (hasToken) {
-          if (confirm('Logout from student account?')) {
+          if (confirm('Logout from your account?')) {
             localStorage.removeItem('ucc_auth_token');
             localStorage.removeItem('ucc_auth_role');
             localStorage.removeItem('ucc_auth_user');

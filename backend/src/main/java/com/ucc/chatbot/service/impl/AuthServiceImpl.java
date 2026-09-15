@@ -183,6 +183,75 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
+    public Map<String, Object> visitorLogin(String phone, String fullName) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (phone == null || phone.trim().isEmpty()) {
+            result.put("success", false);
+            result.put("message", "Phone number is required");
+            return result;
+        }
+        String normalized = phone.trim();
+        User user = userRepository.findByEmail(normalized).orElse(null);
+        if (user == null) {
+            user = new User();
+            user.setEmail(normalized);
+            user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+            user.setFullName((fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : "Visitor");
+            user.setRole("VISITOR");
+            user.setIsActive(true);
+            user.setPhone(normalized);
+            user.setFailedLoginCount(0);
+            user = userRepository.save(user);
+        } else if (!"VISITOR".equals(user.getRole()) && !"USER".equals(user.getRole())) {
+            // Allow admin/staff to use the same visitor gate: just re-issue a token.
+            user.setPhone(normalized);
+            if (user.getFullName() == null || user.getFullName().isEmpty()) {
+                user.setFullName((fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : "Visitor");
+            }
+            user = userRepository.save(user);
+        } else {
+            user.setPhone(normalized);
+            if ((fullName != null && !fullName.trim().isEmpty()) && (user.getFullName() == null || user.getFullName().equals("Visitor"))) {
+                user.setFullName(fullName.trim());
+            }
+            user = userRepository.save(user);
+        }
+        user.setLastLogin(LocalDateTime.now());
+        user.setFailedLoginCount(0);
+        userRepository.save(user);
+        String accessToken = jwtService.generateToken(user.getEmail(), user.getRole());
+        RefreshToken rt = new RefreshToken();
+        rt.setUserId(user.getId());
+        rt.setToken(UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString());
+        rt.setExpiresAt(LocalDateTime.now().plusDays(7));
+        rt.setCreatedAt(LocalDateTime.now());
+        refreshTokenRepository.save(rt);
+        Map<String, Object> userData = new LinkedHashMap<>();
+        userData.put("id", user.getId());
+        userData.put("email", user.getEmail());
+        userData.put("fullName", user.getFullName());
+        userData.put("role", user.getRole());
+        userData.put("isActive", user.getIsActive());
+        userData.put("phone", user.getPhone());
+        LoginResponse lr = LoginResponse.builder()
+            .token(accessToken)
+            .userId(user.getId())
+            .email(user.getEmail())
+            .fullName(user.getFullName())
+            .role(user.getRole())
+            .build();
+        result.put("success", true);
+        result.put("token", accessToken);
+        result.put("refreshToken", rt.getToken());
+        result.put("user", userData);
+        result.put("expiresIn", 86400);
+        result.put("loginResponse", lr);
+        logLoginAttempt(user.getEmail(), true);
+        return result;
+    }
+
+    @Override
     public Map<String, Object> register(Map<String, String> payload) {
         try {
             User u = createUser(

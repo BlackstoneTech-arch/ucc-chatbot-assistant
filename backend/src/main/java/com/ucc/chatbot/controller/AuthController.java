@@ -76,4 +76,28 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody Map<String, String> payload) {
         return ResponseEntity.ok(authService.register(payload));
     }
+
+    @PostMapping("/visitor-login")
+    public ResponseEntity<?> visitorLogin(@RequestBody Map<String, String> payload) {
+        String phone = payload.get("phone");
+        String fullName = payload.get("fullName");
+        return ResponseEntity.ok(authService.visitorLogin(phone, fullName));
+    }
+
+    @PostMapping("/student-register")
+    public ResponseEntity<?> studentRegister(@RequestBody Map<String, String> payload) {
+        payload.putIfAbsent("role", "USER");
+        Map<String, Object> result = authService.register(payload);
+        if (Boolean.TRUE.equals(result.get("success"))) {
+            String userId = (String) result.get("id");
+            if (userId != null) {
+                userRepository.findById(userId).ifPresent(u -> {
+                    if (payload.get("phone") != null) u.setPhone(payload.get("phone"));
+                    if (payload.get("studentNumber") != null) u.setStudentNumber(payload.get("studentNumber"));
+                    userRepository.save(u);
+                });
+            }
+        }
+        return ResponseEntity.ok(result);
+    }
 }
