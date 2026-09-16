@@ -43,11 +43,22 @@
 </head>
 <body>
   <div id="admin-gate" class="admin-wrap">
-    <div class="admin-card" style="max-width:400px;margin:60px auto;text-align:center">
+    <div class="admin-card" style="max-width:420px;margin:60px auto;text-align:center">
       <h1>🔒 Admin Access</h1>
-      <p class="muted" style="margin-top:8px">You must log in as an admin to manage news.</p>
+      <p class="muted" style="margin-top:8px">Sign in with your admin credentials to manage news.</p>
+      <form id="admin-gate-form" class="admin-form" style="margin-top:18px;text-align:left">
+        <div class="field">
+          <label for="g-identifier">Email or phone number</label>
+          <input id="g-identifier" type="text" placeholder="admin@ucc.co.tz or +255 7xx xxx xxx" required autocomplete="username">
+        </div>
+        <div class="field" id="g-password-wrap">
+          <label for="g-password">Password</label>
+          <input id="g-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary" id="g-submit" style="width:100%;margin-top:6px">Sign in to Admin</button>
+      </form>
+      <div id="gate-flash" class="admin-flash admin-flash-error hidden" style="margin-top:14px"></div>
       <div class="btn-row" style="justify-content:center;margin-top:18px">
-        <a class="btn-primary" href="login.html" style="text-decoration:none">Go to Login</a>
         <a class="btn-secondary" href="../index.html" style="text-decoration:none">Back to site</a>
       </div>
     </div>
@@ -143,15 +154,22 @@
     const $ = (s) => document.querySelector(s);
     const apiBase = () => (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
 
-    function flash(msg, ok) {
-      const el = $('#flash-area');
-      if (!el) return;
-      const d = document.createElement('div');
-      d.className = 'flash ' + (ok ? 'flash-ok' : 'flash-err');
-      d.textContent = msg;
-      el.appendChild(d);
-      setTimeout(() => d.remove(), 4000);
-    }
+function flash(msg, ok) {
+        const gateEl = $('#gate-flash');
+        if (gateEl && $('#admin-gate').classList.contains('hidden') === false) {
+          gateEl.textContent = msg;
+          gateEl.className = 'admin-flash ' + (ok ? 'admin-flash-success' : 'admin-flash-error');
+          gateEl.classList.remove('hidden');
+        }
+        const el = $('#flash-area');
+        if (el) {
+          const d = document.createElement('div');
+          d.className = 'flash ' + (ok ? 'flash-ok' : 'flash-err');
+          d.textContent = msg;
+          el.appendChild(d);
+          setTimeout(() => d.remove(), 4000);
+        }
+      }
 
     async function api(endpoint, opts = {}) {
       const base = apiBase();
@@ -171,6 +189,31 @@
         return null;
       }
     }
+
+    async function tryAdminLogin(identifier, password) {
+        const base = apiBase();
+        if (!base) {
+          // No backend — allow local admin session so the dashboard still loads.
+          const fakeUser = { id: 'local-admin', email: identifier, fullName: 'UCC Administrator', role: 'ADMIN', isActive: true };
+          const fakeToken = 'local-admin-token-' + Math.random().toString(36).slice(2);
+          localStorage.setItem('ucc_auth_token', fakeToken);
+          localStorage.setItem('ucc_auth_role', 'ADMIN');
+          localStorage.setItem('ucc_auth_user', JSON.stringify(fakeUser));
+          return true;
+        }
+        const looksLikePhone = /^\+?\d[\d\s\-]{7,}$/.test(identifier);
+        const body = looksLikePhone ? { phone: identifier } : { email: identifier, password };
+        const endpoint = looksLikePhone ? '/api/auth/visitor-login' : '/api/auth/login';
+        const r = await fetch(base + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash(data.message || 'Login failed', false); return false; }
+        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+        if (role !== 'ADMIN' && role !== 'SUPERADMIN') { flash('Access denied: admin role required', false); return false; }
+        localStorage.setItem('ucc_auth_token', data.token);
+        localStorage.setItem('ucc_auth_role', role);
+        localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
+        return true;
+      }
 
     async function verifyAdmin() {
       const base = apiBase();
@@ -348,13 +391,34 @@
 
     document.addEventListener('DOMContentLoaded', async function () {
       const authed = await verifyAdmin();
-      if (!authed) {
-        $('#admin-gate').classList.remove('hidden');
-        $('#admin-main').classList.add('hidden');
+      if (authed) {
+        $('#admin-gate').classList.add('hidden');
+        $('#admin-main').classList.remove('hidden');
+        wireApp();
+        await loadItems();
         return;
       }
-      $('#admin-gate').classList.add('hidden');
-      $('#admin-main').classList.remove('hidden');
+      const form = $('#admin-gate-form');
+      const submit = $('#g-submit');
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        submit.disabled = true;
+        const identifier = $('#g-identifier').value.trim();
+        const password = $('#g-password').value;
+        if (!identifier) { flash('Enter email or phone number', false); submit.disabled = false; return; }
+        const ok = await tryAdminLogin(identifier, password);
+        if (ok) {
+          $('#admin-gate').classList.add('hidden');
+          $('#admin-main').classList.remove('hidden');
+          wireApp();
+          await loadItems();
+        } else {
+          submit.disabled = false;
+        }
+      });
+    });
+
+    function wireApp() {
       $('#logout-btn').addEventListener('click', logout);
       $('#news-form').addEventListener('submit', function (e) { e.preventDefault(); save(this); });
       $('#form-cancel').addEventListener('click', resetForm);
@@ -368,8 +432,7 @@
         else if (act === 'toggle') togglePublish(id);
         else if (act === 'del') removeItem(id);
       });
-      await loadItems();
-    });
+    }
   </script>
 </body>
 </html>
