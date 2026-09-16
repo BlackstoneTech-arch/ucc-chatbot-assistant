@@ -47,6 +47,28 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/admin-login")
+    public ResponseEntity<?> adminLogin(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String password = payload.get("password");
+        if (email == null || password == null) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Email and password required"));
+        }
+        Map<String, Object> result = authService.loginWithMap(email, password);
+        if (!Boolean.TRUE.equals(result.get("success"))) {
+            // Generic error — do not reveal whether the account exists.
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Invalid email or password"));
+        }
+        Object userObj = result.get("user");
+        String role = (userObj instanceof Map) ? (String) ((Map<?, ?>) userObj).get("role") : null;
+        if (role == null || (!"ADMIN".equals(role) && !"SUPERADMIN".equals(role))) {
+            // Not an administrator — reject without issuing a token.
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied: admin role required"));
+        }
+        result.put("redirect", "/admin/dashboard.html");
+        return ResponseEntity.ok(result);
+    }
+
     private String routingFor(String role) {
         if (role == null) return "/chat.html";
         switch (role.toUpperCase()) {

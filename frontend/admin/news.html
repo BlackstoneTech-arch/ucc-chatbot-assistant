@@ -48,8 +48,8 @@
       <p class="muted" style="margin-top:8px">Sign in with your admin credentials to manage news.</p>
       <form id="admin-gate-form" class="admin-form" style="margin-top:18px;text-align:left">
         <div class="field">
-          <label for="g-identifier">Email or phone number</label>
-          <input id="g-identifier" type="text" placeholder="admin@ucc.co.tz or +255 7xx xxx xxx" required autocomplete="username">
+          <label for="g-email">Email</label>
+          <input id="g-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
         </div>
         <div class="field" id="g-password-wrap">
           <label for="g-password">Password</label>
@@ -190,23 +190,13 @@ function flash(msg, ok) {
       }
     }
 
-    async function tryAdminLogin(identifier, password) {
+    async function tryAdminLogin(email, password) {
         const base = apiBase();
-        if (!base) {
-          // No backend — allow local admin session so the dashboard still loads.
-          const fakeUser = { id: 'local-admin', email: identifier, fullName: 'UCC Administrator', role: 'ADMIN', isActive: true };
-          const fakeToken = 'local-admin-token-' + Math.random().toString(36).slice(2);
-          localStorage.setItem('ucc_auth_token', fakeToken);
-          localStorage.setItem('ucc_auth_role', 'ADMIN');
-          localStorage.setItem('ucc_auth_user', JSON.stringify(fakeUser));
-          return true;
-        }
-        const looksLikePhone = /^\+?\d[\d\s\-]{7,}$/.test(identifier);
-        const body = looksLikePhone ? { phone: identifier } : { email: identifier, password };
-        const endpoint = looksLikePhone ? '/api/auth/visitor-login' : '/api/auth/login';
-        const r = await fetch(base + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!base) { flash('Backend not configured on this host.', false); return false; }
+        if (!email || !password) { flash('Invalid email or password', false); return false; }
+        const r = await fetch(base + '/api/auth/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
         const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Login failed', false); return false; }
+        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return false; }
         const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
         if (role !== 'ADMIN' && role !== 'SUPERADMIN') { flash('Access denied: admin role required', false); return false; }
         localStorage.setItem('ucc_auth_token', data.token);
@@ -403,10 +393,9 @@ function flash(msg, ok) {
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
         submit.disabled = true;
-        const identifier = $('#g-identifier').value.trim();
+        const email = $('#g-email').value.trim();
         const password = $('#g-password').value;
-        if (!identifier) { flash('Enter email or phone number', false); submit.disabled = false; return; }
-        const ok = await tryAdminLogin(identifier, password);
+        const ok = await tryAdminLogin(email, password);
         if (ok) {
           $('#admin-gate').classList.add('hidden');
           $('#admin-main').classList.remove('hidden');

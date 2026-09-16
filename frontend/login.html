@@ -433,11 +433,9 @@
         if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const r = await fetch(base + '/api/auth/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
         const data = await r.json().catch(() => ({}));
         if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
-        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-        if (role !== 'ADMIN' && role !== 'SUPERADMIN') { flash('Access denied: admin role required', false); clearSession(); return; }
         saveStudentSession(data);
         try {
           if (window.UCCSession && typeof window.UCCSession.linkConversation === 'function') {
