@@ -38,7 +38,26 @@ public class AuthController {
         if (email == null || password == null) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Email and password required"));
         }
-        return ResponseEntity.ok(authService.loginWithMap(email, password));
+        Map<String, Object> result = authService.loginWithMap(email, password);
+        if (Boolean.TRUE.equals(result.get("success"))) {
+            Object userObj = result.get("user");
+            String role = (userObj instanceof Map) ? (String) ((Map<?, ?>) userObj).get("role") : null;
+            result.put("redirect", routingFor(role));
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    private String routingFor(String role) {
+        if (role == null) return "/chat.html";
+        switch (role.toUpperCase()) {
+            case "ADMIN":
+            case "SUPERADMIN":
+                return "/admin/dashboard.html";
+            case "STUDENT":
+            case "VISITOR":
+            default:
+                return "/chat.html";
+        }
     }
 
     @PostMapping("/refresh")
@@ -73,43 +92,49 @@ public class AuthController {
             data.put("fullName", u.getFullName());
             data.put("role", u.getRole());
             data.put("isActive", u.getIsActive());
+            data.put("emailVerified", u.getEmailVerified());
+            data.put("registrationNumber", u.getRegistrationNumber());
             data.put("phone", u.getPhone());
-            data.put("studentNumber", u.getStudentNumber());
             return ResponseEntity.ok(Map.of("success", true, "user", data));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Invalid token"));
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> payload) {
-        return ResponseEntity.ok(authService.register(payload));
+    @PostMapping("/visitor-register")
+    public ResponseEntity<?> registerVisitor(@RequestBody Map<String, String> payload) {
+        return ResponseEntity.ok(authService.registerVisitor(payload));
     }
 
-    @PostMapping("/visitor-login")
-    public ResponseEntity<?> visitorLogin(@RequestBody Map<String, String> payload) {
-        String phone = payload.get("phone");
-        String fullName = payload.get("fullName");
-        return ResponseEntity.ok(authService.visitorLogin(phone, fullName));
+    @PostMapping("/student/register")
+    public ResponseEntity<?> registerStudent(@RequestBody Map<String, String> payload) {
+        return ResponseEntity.ok(authService.registerStudent(payload));
     }
 
-    @PostMapping("/student-register")
-    public ResponseEntity<?> studentRegister(@RequestBody Map<String, String> payload) {
-        payload.putIfAbsent("role", "USER");
-        Map<String, Object> result = authService.register(payload);
-        if (Boolean.TRUE.equals(result.get("success"))) {
-            String userId = (String) result.get("id");
-            if (userId != null) {
-                userRepository.findById(userId).ifPresent(u -> {
-                    if (payload.get("phone") != null) u.setPhone(payload.get("phone"));
-                    if (payload.get("studentNumber") != null) u.setStudentNumber(payload.get("studentNumber"));
-                    userRepository.save(u);
-                });
-            }
+    @PostMapping("/student/verify-email")
+    public ResponseEntity<?> studentVerifyEmail(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String password = payload.get("password");
+        if (email == null || password == null) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Email and password required"));
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(authService.studentVerifyEmail(email, password));
     }
 
+    @PostMapping("/student/verify-registration")
+    public ResponseEntity<?> studentVerifyRegistration(@RequestBody Map<String, String> payload) {
+        return ResponseEntity.ok(authService.studentVerifyRegistration(payload));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
+        return ResponseEntity.ok(authService.forgotPassword(payload));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        return ResponseEntity.ok(authService.resetPassword(payload));
+    }
 
     @PostMapping("/link-conversation")
     public ResponseEntity<?> linkConversation(@RequestHeader(value = "Authorization", required = false) String auth,

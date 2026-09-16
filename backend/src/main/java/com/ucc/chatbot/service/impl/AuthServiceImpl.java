@@ -2,9 +2,11 @@ package com.ucc.chatbot.service.impl;
 
 import com.ucc.chatbot.dto.LoginRequest;
 import com.ucc.chatbot.dto.LoginResponse;
+import com.ucc.chatbot.model.AuthenticationChallenge;
 import com.ucc.chatbot.model.User;
 import com.ucc.chatbot.model.Role;
 import com.ucc.chatbot.model.RefreshToken;
+import com.ucc.chatbot.model.AuditLog;
 import com.ucc.chatbot.model.AILog;
 import com.ucc.chatbot.repository.*;
 import com.ucc.chatbot.service.AuthService;
@@ -25,6 +27,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final AuthenticationChallengeRepository challengeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AILogRepository aiLogRepository;
@@ -33,6 +37,8 @@ public class AuthServiceImpl implements AuthService {
                             UserRepository userRepository,
                             RoleRepository roleRepository,
                             RefreshTokenRepository refreshTokenRepository,
+                            AuditLogRepository auditLogRepository,
+                            AuthenticationChallengeRepository challengeRepository,
                             PasswordEncoder passwordEncoder,
                             JwtService jwtService,
                             AILogRepository aiLogRepository) {
@@ -40,6 +46,8 @@ public class AuthServiceImpl implements AuthService {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.challengeRepository = challengeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.aiLogRepository = aiLogRepository;
@@ -184,39 +192,170 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public Map<String, Object> visitorLogin(String phone, String fullName) {
+    public Map<String, Object> registerVisitor(Map<String, String> payload) {
         Map<String, Object> result = new LinkedHashMap<>();
-        if (phone == null || phone.trim().isEmpty()) {
+        String email = payload.get("email");
+        String password = payload.get("password");
+        String fullName = payload.get("fullName");
+        String confirm = payload.get("confirmPassword");
+        if (email == null || password == null || fullName == null) {
             result.put("success", false);
-            result.put("message", "Phone number is required");
+            result.put("message", "Email, password and full name are required");
             return result;
         }
-        String normalized = phone.trim();
-        User user = userRepository.findByEmail(normalized).orElse(null);
-        if (user == null) {
-            user = new User();
-            user.setEmail(normalized);
-            user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
-            user.setFullName((fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : "Visitor");
-            user.setRole("VISITOR");
-            user.setIsActive(true);
-            user.setPhone(normalized);
-            user.setFailedLoginCount(0);
-            user = userRepository.save(user);
-        } else if (!"VISITOR".equals(user.getRole()) && !"USER".equals(user.getRole())) {
-            // Allow admin/staff to use the same visitor gate: just re-issue a token.
-            user.setPhone(normalized);
-            if (user.getFullName() == null || user.getFullName().isEmpty()) {
-                user.setFullName((fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : "Visitor");
-            }
-            user = userRepository.save(user);
-        } else {
-            user.setPhone(normalized);
-            if ((fullName != null && !fullName.trim().isEmpty()) && (user.getFullName() == null || user.getFullName().equals("Visitor"))) {
-                user.setFullName(fullName.trim());
-            }
-            user = userRepository.save(user);
+        if (password.length() < 6) {
+            result.put("success", false);
+            result.put("message", "Password must be at least 6 characters");
+            return result;
         }
+        if (!password.equals(confirm)) {
+            result.put("success", false);
+            result.put("message", "Passwords do not match");
+            return result;
+        }
+        if (userRepository.existsByEmail(email)) {
+            result.put("success", false);
+            result.put("message", "Invalid email or password");
+            return result;
+        }
+        User u = new User();
+        u.setEmail(email);
+        u.setPasswordHash(passwordEncoder.encode(password));
+        u.setFullName(fullName);
+        u.setRole("VISITOR");
+        u.setIsActive(true);
+        u.setFailedLoginCount(0);
+        u = userRepository.save(u);
+        audit(u.getId(), "ACCOUNT_CREATED", "user", u.getId(), null, null);
+        result.put("success", true);
+        result.put("id", u.getId());
+        result.put("email", u.getEmail());
+        result.put("role", u.getRole());
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> registerStudent(Map<String, String> payload) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        String email = payload.get("email");
+        String password = payload.get("password");
+        String fullName = payload.get("fullName");
+        String regNumber = payload.get("registrationNumber");
+        String confirm = payload.get("confirmPassword");
+        if (email == null || password == null || fullName == null || regNumber == null) {
+            result.put("success", false);
+            result.put("message", "Email, password, full name and registration number are required");
+            return result;
+        }
+        if (password.length() < 6) {
+            result.put("success", false);
+            result.put("message", "Password must be at least 6 characters");
+            return result;
+        }
+        if (!password.equals(confirm)) {
+            result.put("success", false);
+            result.put("message", "Passwords do not match");
+            return result;
+        }
+        if (userRepository.existsByEmail(email)) {
+            result.put("success", false);
+            result.put("message", "Invalid email or password");
+            return result;
+        }
+        if (userRepository.existsByRegistrationNumber(regNumber)) {
+            result.put("success", false);
+            result.put("message", "Invalid email or password");
+            return result;
+        }
+        User u = new User();
+        u.setEmail(email);
+        u.setPasswordHash(passwordEncoder.encode(password));
+        u.setFullName(fullName);
+        u.setRole("STUDENT");
+        u.setIsActive(true);
+        u.setRegistrationNumber(regNumber);
+        u.setStudentNumber(regNumber);
+        u.setFailedLoginCount(0);
+        u = userRepository.save(u);
+        audit(u.getId(), "ACCOUNT_CREATED", "user", u.getId(), null, null);
+        result.put("success", true);
+        result.put("id", u.getId());
+        result.put("email", u.getEmail());
+        result.put("registrationNumber", u.getRegistrationNumber());
+        result.put("role", u.getRole());
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> studentVerifyEmail(String email, String password) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (email == null || password == null) {
+            result.put("success", false);
+            result.put("message", "Invalid email or password");
+            return result;
+        }
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null || !"STUDENT".equals(user.getRole()) || !user.getIsActive()) {
+            result.put("success", false);
+            result.put("message", "Invalid email or password");
+            return result;
+        }
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            logLoginAttempt(email, false);
+            result.put("success", false);
+            result.put("message", "Invalid email or password");
+            return result;
+        }
+        AuthenticationChallenge challenge = createStudentChallenge(user.getId());
+        result.put("success", true);
+        result.put("requiresRegistrationNumber", true);
+        result.put("challengeToken", challenge.getToken());
+        result.put("expiresIn", 300);
+        result.put("email", user.getEmail());
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> studentVerifyRegistration(Map<String, String> payload) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        String challengeToken = payload.get("challengeToken");
+        String regNumber = payload.get("registrationNumber");
+        String password = payload.get("password");
+        if (challengeToken == null || regNumber == null || password == null) {
+            result.put("success", false);
+            result.put("message", "Invalid registration number or password");
+            return result;
+        }
+        AuthenticationChallenge challenge = challengeRepository.findByToken(challengeToken).orElse(null);
+        if (challenge == null || challenge.getUsed() || challenge.getExpiresAt().isBefore(LocalDateTime.now())) {
+            result.put("success", false);
+            result.put("message", "Invalid registration number or password");
+            return result;
+        }
+        User user = userRepository.findById(challenge.getId()).orElse(null);
+        if (user == null || !"STUDENT".equals(user.getRole()) || !user.getIsActive()) {
+            result.put("success", false);
+            result.put("message", "Invalid registration number or password");
+            return result;
+        }
+        if (!regNumber.equals(user.getRegistrationNumber())) {
+            logLoginAttempt(user.getEmail(), false);
+            challengeRepository.markUsed(challengeToken, LocalDateTime.now());
+            result.put("success", false);
+            result.put("message", "Invalid registration number or password");
+            return result;
+        }
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            logLoginAttempt(user.getEmail(), false);
+            challengeRepository.markUsed(challengeToken, LocalDateTime.now());
+            result.put("success", false);
+            result.put("message", "Invalid registration number or password");
+            return result;
+        }
+        challengeRepository.markUsed(challengeToken, LocalDateTime.now());
         user.setLastLogin(LocalDateTime.now());
         user.setFailedLoginCount(0);
         userRepository.save(user);
@@ -231,38 +370,61 @@ public class AuthServiceImpl implements AuthService {
         userData.put("id", user.getId());
         userData.put("email", user.getEmail());
         userData.put("fullName", user.getFullName());
+        userData.put("registrationNumber", user.getRegistrationNumber());
         userData.put("role", user.getRole());
         userData.put("isActive", user.getIsActive());
-        userData.put("phone", user.getPhone());
-        LoginResponse lr = LoginResponse.builder()
-            .token(accessToken)
-            .userId(user.getId())
-            .email(user.getEmail())
-            .fullName(user.getFullName())
-            .role(user.getRole())
-            .build();
         result.put("success", true);
         result.put("token", accessToken);
         result.put("refreshToken", rt.getToken());
         result.put("user", userData);
         result.put("expiresIn", 86400);
-        result.put("loginResponse", lr);
+        result.put("redirect", "/chat.html");
         logLoginAttempt(user.getEmail(), true);
+        audit(user.getId(), "LOGIN_SUCCESS", "user", user.getId(), null, null);
         return result;
     }
 
     @Override
-    public Map<String, Object> register(Map<String, String> payload) {
+    @Transactional
+    public Map<String, Object> forgotPassword(Map<String, String> payload) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        String email = payload.get("email");
+        result.put("success", true);
+        result.put("message", "If an account exists, a reset link has been sent.");
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> resetPassword(Map<String, String> payload) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("success", false);
+        result.put("message", "Password reset is not yet configured.");
+        return result;
+    }
+
+    @Override
+    public AuthenticationChallenge createStudentChallenge(String userId) {
+        AuthenticationChallenge c = new AuthenticationChallenge();
+        c.setUserId(userId);
+        c.setToken(UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString());
+        c.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        c.setUsed(false);
+        return challengeRepository.save(c);
+    }
+
+    private void audit(String userId, String action, String resourceType, String resourceId, String oldValues, String newValues) {
         try {
-            User u = createUser(
-                payload.get("email"),
-                payload.get("password"),
-                payload.get("fullName"),
-                payload.getOrDefault("role", "USER")
-            );
-            return Map.of("success", true, "id", u.getId());
+            AuditLog log = new AuditLog();
+            log.setUserId(userId);
+            log.setAction(action);
+            log.setResourceType(resourceType);
+            log.setResourceId(resourceId);
+            log.setOldValues(oldValues);
+            log.setNewValues(newValues);
+            auditLogRepository.save(log);
         } catch (Exception e) {
-            return Map.of("success", false, "message", e.getMessage());
+            // best-effort
         }
     }
 
