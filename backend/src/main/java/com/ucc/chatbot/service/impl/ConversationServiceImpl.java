@@ -28,12 +28,19 @@ public class ConversationServiceImpl implements com.ucc.chatbot.service.Conversa
         if (sessionId != null && !sessionId.isBlank()) {
             Optional<Conversation> existing = conversationRepository.findBySessionId(sessionId);
             if (existing.isPresent()) {
-                return existing;
+                Conversation c = existing.get();
+                // If this conversation is anonymous but now we have a user, link it.
+                if ((c.getUserId() == null || c.getUserId().isBlank()) && userId != null && !userId.isBlank()) {
+                    c.setUserId(userId);
+                    conversationRepository.save(c);
+                }
+                return Optional.of(c);
             }
         }
 
         Conversation conversation = new Conversation();
         conversation.setSessionId(sessionId != null ? sessionId : java.util.UUID.randomUUID().toString());
+        conversation.setUserId(userId != null && !userId.isBlank() ? userId : null);
         conversation.setIsActive(true);
         return Optional.of(conversationRepository.save(conversation));
     }
