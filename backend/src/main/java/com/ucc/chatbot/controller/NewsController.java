@@ -46,7 +46,6 @@ public class NewsController {
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','EDITOR')")
     public ResponseEntity<News> create(@RequestBody News news) {
         if (news.getIsPublished() == null) news.setIsPublished(false);
-        if (news.getCreatedAt() == null) news.setCreatedAt(java.time.LocalDateTime.now());
         if (news.getCreatedBy() == null) news.setCreatedBy(currentUserEmail());
         return ResponseEntity.ok(newsRepository.save(news));
     }
