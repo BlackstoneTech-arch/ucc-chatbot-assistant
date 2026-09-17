@@ -93,12 +93,25 @@
       <div id="tab-settings" class="tab-content hidden"></div>
     </main>
   </div>
-<script src="js/config.js"></script>
+<script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="js/admin-dashboard.js"></script>
   <script>
     (function() {
       const $ = (s) => document.querySelector(s);
-      const apiBase = () => (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
+
+      // Already authenticated as admin? Show dashboard, hide gate.
+      if (window.AuthService && window.AuthService.requiresAdmin()) {
+        document.getElementById('admin-gate').classList.add('hidden');
+        document.getElementById('admin-main').classList.remove('hidden');
+        return;
+      }
+
+      // Authenticated but wrong role? Redirect away.
+      if (window.AuthService && window.AuthService.isAuthenticated() && !window.AuthService.requiresAdmin()) {
+        window.location.href = "../index.html";
+        return;
+      }
 
       function flash(msg, ok) {
         const el = $('#gate-flash');
@@ -108,26 +121,18 @@
       }
 
       async function tryAdminLogin(email, password) {
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return false; }
         if (!email || !password) { flash('Invalid email or password', false); return false; }
-        const r = await fetch(base + '/api/auth/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return false; }
-        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-        if (role !== 'ADMIN' && role !== 'SUPERADMIN') { flash('Access denied: admin role required', false); return false; }
-        localStorage.setItem('ucc_auth_token', data.token);
-        localStorage.setItem('ucc_auth_role', role);
-        localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
-        return true;
-      }
-
-      const token = localStorage.getItem('ucc_auth_token');
-      const role = localStorage.getItem('ucc_auth_role');
-      if (token && (role === 'ADMIN' || role === 'SUPERADMIN')) {
-        document.getElementById('admin-gate').classList.add('hidden');
-        document.getElementById('admin-main').classList.remove('hidden');
-        return;
+        try {
+          if (window.AuthService) {
+            const data = await window.AuthService.adminLogin(email, password);
+            if (data && data.success) return true;
+            flash(data && data.message ? data.message : 'Invalid email or password', false);
+            return false;
+          }
+        } catch (e) {
+          flash(e.message || 'Invalid email or password', false);
+        }
+        return false;
       }
 
       const form = $('#admin-gate-form');
