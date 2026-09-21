@@ -44,29 +44,7 @@
   <script src="../js/auth.js"></script>
 </head>
 <body>
-  <div id="admin-gate" class="admin-wrap">
-    <div class="admin-card" style="max-width:420px;margin:60px auto;text-align:center">
-      <h1>🔒 Admin Access</h1>
-      <p class="muted" style="margin-top:8px">Sign in with your admin credentials to manage news.</p>
-      <form id="admin-gate-form" class="admin-form" style="margin-top:18px;text-align:left">
-        <div class="field">
-          <label for="g-email">Email</label>
-          <input id="g-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
-        </div>
-        <div class="field" id="g-password-wrap">
-          <label for="g-password">Password</label>
-          <input id="g-password" type="password" placeholder="••••••••" required autocomplete="current-password">
-        </div>
-        <button type="submit" class="btn-primary" id="g-submit" style="width:100%;margin-top:6px">Sign in to Admin</button>
-      </form>
-      <div id="gate-flash" class="admin-flash admin-flash-error hidden" style="margin-top:14px"></div>
-      <div class="btn-row" style="justify-content:center;margin-top:18px">
-        <a class="btn-secondary" href="../index.html" style="text-decoration:none">Back to site</a>
-      </div>
-    </div>
-  </div>
-
-  <div id="admin-main" class="admin-wrap hidden">
+  <div id="admin-main" class="admin-wrap">
     <div class="admin-header">
       <div>
         <h1>📰 News Admin</h1>
@@ -190,38 +168,6 @@ function flash(msg, ok) {
       } catch (e) {
         return null;
       }
-    }
-
-    async function tryAdminLogin(email, password) {
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return false; }
-        if (!email || !password) { flash('Invalid email or password', false); return false; }
-        const r = await fetch(base + '/api/auth/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return false; }
-        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-        if (role !== 'ADMIN' && role !== 'SUPERADMIN') { flash('Access denied: admin role required', false); return false; }
-        localStorage.setItem('ucc_auth_token', data.token);
-        localStorage.setItem('ucc_auth_role', role);
-        localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
-        return true;
-      }
-
-    async function verifyAdmin() {
-      const base = apiBase();
-      const token = localStorage.getItem('ucc_auth_token');
-      const role = localStorage.getItem('ucc_auth_role');
-      // Offline mode: if no backend but token exists and role is ADMIN, allow access
-      if (!base) {
-        if (token && (role === 'ADMIN' || role === 'SUPERADMIN')) return true;
-        return false;
-      }
-      if (!token) return false;
-      const data = await api('/api/auth/me');
-      if (!data || !data.success) { localStorage.removeItem('ucc_auth_token'); return false; }
-      const r = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-      if (r !== 'ADMIN' && r !== 'SUPERADMIN') return false;
-      return true;
     }
 
     function logout() {
@@ -382,45 +328,9 @@ function flash(msg, ok) {
     }
 
     document.addEventListener('DOMContentLoaded', async function () {
-      // Already authenticated as admin? Show dashboard, hide gate.
-      if (window.AuthService && window.AuthService.requiresAdmin()) {
-        $('#admin-gate').classList.add('hidden');
-        $('#admin-main').classList.remove('hidden');
-        wireApp();
-        await loadItems();
-        return;
-      }
-
-      // Authenticated but wrong role? Redirect away.
-      if (window.AuthService && window.AuthService.isAuthenticated() && !window.AuthService.requiresAdmin()) {
-        window.location.href = "../index.html";
-        return;
-      }
-
-      const form = $('#admin-gate-form');
-      const submit = $('#g-submit');
-      form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        submit.disabled = true;
-        const email = $('#g-email').value.trim();
-        const password = $('#g-password').value;
-        try {
-          if (window.AuthService) {
-            const data = await window.AuthService.adminLogin(email, password);
-            if (data && data.success) {
-              $('#admin-gate').classList.add('hidden');
-              $('#admin-main').classList.remove('hidden');
-              wireApp();
-              await loadItems();
-              return;
-            }
-            flash(data && data.message ? data.message : 'Invalid email or password', false);
-          }
-        } catch (e) {
-          flash(e.message || 'Invalid email or password', false);
-        }
-        submit.disabled = false;
-      });
+      if (!window.AuthService || !window.AuthService.requireAdmin('/admin-login.html')) return;
+      wireApp();
+      await loadItems();
     });
 
     function wireApp() {

@@ -271,17 +271,6 @@
       setTimeout(() => { window.location.href = 'chat.html'; }, 600);
     }
 
-    async function verifyAdmin() {
-      const base = apiBase();
-      const token = localStorage.getItem('ucc_auth_token');
-      if (!base || !token) return false;
-      const data = await api('/api/auth/me');
-      if (!data || !data.success) { clearSession(); return false; }
-      const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-      if (role !== 'ADMIN' && role !== 'SUPERADMIN') return false;
-      return true;
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
       $('#show-student-register').addEventListener('click', (e) => { e.preventDefault(); $('#student-login-form').classList.add('hidden'); $('#student-register-box').classList.remove('hidden'); });

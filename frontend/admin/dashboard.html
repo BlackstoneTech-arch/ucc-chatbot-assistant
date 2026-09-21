@@ -34,28 +34,7 @@
 </style>
 </head>
 <body>
-  <div id="admin-gate" class="admin-wrap">
-    <div class="admin-card" style="max-width:420px;margin:60px auto;text-align:center">
-      <h1>Admin Access</h1>
-      <p class="muted" style="margin-top:8px">Sign in with your admin credentials to access the dashboard.</p>
-      <form id="admin-gate-form" class="admin-form" style="margin-top:18px;text-align:left">
-        <div class="field">
-          <label for="g-email">Email</label>
-          <input id="g-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
-        </div>
-        <div class="field" id="g-password-wrap">
-          <label for="g-password">Password</label>
-          <input id="g-password" type="password" placeholder="••••••••" required autocomplete="current-password">
-        </div>
-        <button type="submit" class="btn-primary" id="g-submit" style="width:100%;margin-top:6px">Sign in to Dashboard</button>
-      </form>
-      <div id="gate-flash" class="admin-flash admin-flash-error hidden" style="margin-top:14px"></div>
-      <div class="btn-row" style="justify-content:center;margin-top:18px">
-        <a class="btn-secondary" href="../admin-login.html" style="text-decoration:none">Back to admin login</a>
-      </div>
-    </div>
-  </div>
-  <div id="admin-main" class="admin-shell hidden">
+  <div id="admin-main" class="admin-shell">
     <aside class="admin-sidebar">
       <h2>UCC Admin</h2>
       <a href="#" class="active" data-tab="dashboard">Dashboard</a>
@@ -100,56 +79,7 @@
     (function() {
       const $ = (s) => document.querySelector(s);
 
-      // Already authenticated as admin? Show dashboard, hide gate.
-      if (window.AuthService && window.AuthService.requiresAdmin()) {
-        document.getElementById('admin-gate').classList.add('hidden');
-        document.getElementById('admin-main').classList.remove('hidden');
-        return;
-      }
-
-      // Authenticated but wrong role? Redirect away.
-      if (window.AuthService && window.AuthService.isAuthenticated() && !window.AuthService.requiresAdmin()) {
-        window.location.href = "../index.html";
-        return;
-      }
-
-      function flash(msg, ok) {
-        const el = $('#gate-flash');
-        el.textContent = msg;
-        el.className = 'admin-flash ' + (ok ? 'admin-flash-success' : 'admin-flash-error');
-        el.classList.remove('hidden');
-      }
-
-      async function tryAdminLogin(email, password) {
-        if (!email || !password) { flash('Invalid email or password', false); return false; }
-        try {
-          if (window.AuthService) {
-            const data = await window.AuthService.adminLogin(email, password);
-            if (data && data.success) return true;
-            flash(data && data.message ? data.message : 'Invalid email or password', false);
-            return false;
-          }
-        } catch (e) {
-          flash(e.message || 'Invalid email or password', false);
-        }
-        return false;
-      }
-
-      const form = $('#admin-gate-form');
-      const submit = $('#g-submit');
-      form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        submit.disabled = true;
-        const email = $('#g-email').value.trim();
-        const password = $('#g-password').value;
-        const ok = await tryAdminLogin(email, password);
-        if (ok) {
-          document.getElementById('admin-gate').classList.add('hidden');
-          document.getElementById('admin-main').classList.remove('hidden');
-        } else {
-          submit.disabled = false;
-        }
-      });
+      if (!window.AuthService || !window.AuthService.requireAdmin('/admin-login.html')) return;
     })();
   </script>
 </body>
