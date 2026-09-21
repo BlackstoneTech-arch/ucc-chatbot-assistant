@@ -310,7 +310,7 @@
         if (password !== confirm) { flash('Passwords do not match', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/visitor-register', { email, password, fullName: name });
+        const result = await authRequest('/api/auth/visitor-register', { email, password, confirmPassword: confirm, fullName: name });
         const data = result.data;
         if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);
@@ -355,7 +355,7 @@
         if (password !== confirm) { flash('Passwords do not match', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/student/register', { email, password, fullName: name, registrationNumber: regNumber });
+        const result = await authRequest('/api/auth/student/register', { email, password, confirmPassword: confirm, fullName: name, registrationNumber: regNumber });
         const data = result.data;
         if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);

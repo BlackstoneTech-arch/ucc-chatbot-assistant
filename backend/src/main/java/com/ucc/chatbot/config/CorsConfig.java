@@ -20,7 +20,8 @@ public class CorsConfig {
                                 "http://localhost:3001",
                                 "http://localhost:8080",
                                 "http://localhost:8081",
-                                "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app"
+                                "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app",
+                                "https://ucc-chatbot.blackstone-tech02.workers.dev"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("Authorization", "Content-Type", "Accept")
