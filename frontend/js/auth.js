@@ -226,7 +226,7 @@
 
   function requireAdmin(redirect) {
     if (!isAuthenticated()) {
-      window.location.href = redirect || "login.html";
+      window.location.href = redirect || "/admin-login.html";
       return false;
     }
     if (!requiresAdmin()) {

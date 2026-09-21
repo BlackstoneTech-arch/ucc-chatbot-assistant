@@ -52,7 +52,6 @@
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="visitor" type="button">Visitor</button>
         <button class="auth-tab" data-tab="student" type="button">Student</button>
-        <button class="auth-tab" data-tab="admin" type="button">Admin</button>
       </div>
 
       <div id="flash-area"></div>
@@ -182,25 +181,6 @@
 
       </div>
 
-      <!-- Admin form -->
-      <div id="tab-admin" class="hidden">
-        <div class="auth-form">
-          <div class="auth-title">Admin login</div>
-          <div class="auth-sub">Manage news, FAQs, and knowledge base content.</div>
-          <form id="admin-login-form">
-            <div class="field">
-              <label for="a-email">Email</label>
-              <input id="a-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
-            </div>
-            <div class="field" id="a-password-wrap">
-              <label for="a-password">Password</label>
-              <input id="a-password" type="password" placeholder="••••••••" required autocomplete="current-password">
-            </div>
-            <button type="submit" class="auth-btn">Login to admin</button>
-          </form>
-          <div class="auth-footer">Access is restricted to authorized staff only.</div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -223,7 +203,6 @@
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
       $('#tab-visitor').classList.toggle('hidden', tab !== 'visitor');
       $('#tab-student').classList.toggle('hidden', tab !== 'student');
-      $('#tab-admin').classList.toggle('hidden', tab !== 'admin');
       $('#flash-area').innerHTML = '';
     }
 
@@ -315,7 +294,6 @@
       if (params.has('email')) {
         const email = params.get('email');
         $('#s-email').value = email;
-        $('#a-email').value = email;
       }
 
       $('#visitor-login-form').addEventListener('submit', async function (e) {
@@ -416,26 +394,6 @@
       });
 
       $('#s-back').addEventListener('click', (e) => { e.preventDefault(); $('#s-step2').classList.add('hidden'); $('#s-step1').classList.remove('hidden'); localStorage.removeItem('ucc_student_challenge'); localStorage.removeItem('ucc_student_email'); });
-
-      $('#admin-login-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const email = $('#a-email').value.trim();
-        const password = $('#a-password').value;
-        if (!email || !password) { flash('Invalid email or password', false); return; }
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/admin-login', { email, password });
-        const data = result.data;
-        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
-        saveStudentSession(data);
-        try {
-          if (window.UCCSession && typeof window.UCCSession.linkConversation === 'function') {
-            await window.UCCSession.linkConversation();
-          }
-        } catch (_) {}
-        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : email), true);
-        setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
-      });
 
       (async () => {
         const base = apiBase();

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Login - UCC Customer Care Assistant</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-login-wrap { max-width: 420px; margin: 0 auto; padding: 60px 20px 80px; }
+    .admin-login-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
+    .admin-login-brand { text-align: center; margin-bottom: 22px; }
+    .admin-login-brand strong { display: block; color: var(--ucc-primary); font-size: 2rem; }
+    .admin-login-brand span { color: var(--ucc-gray); font-size: .85rem; }
+    .admin-login-title { color: var(--ucc-primary); font-size: 1.25rem; font-weight: 700; margin-bottom: 4px; }
+    .admin-login-subtitle { color: var(--ucc-gray); font-size: .88rem; margin-bottom: 18px; }
+    .admin-login-field { margin-bottom: 14px; }
+    .admin-login-field label { display: block; font-size: .82rem; font-weight: 600; margin-bottom: 6px; color: var(--gray-700); }
+    .admin-login-field input { width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 10px; font: inherit; }
+    .admin-login-field input:focus { outline: none; border-color: var(--ucc-primary); box-shadow: 0 0 0 3px rgba(0,51,102,.08); }
+    .admin-login-button { width: 100%; padding: 12px; border: 0; border-radius: 10px; background: var(--ucc-primary); color: #fff; font-weight: 600; cursor: pointer; }
+    .admin-login-button:disabled { cursor: wait; opacity: .65; }
+    .admin-login-message { padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; font-size: .88rem; }
+    .admin-login-message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .admin-login-message.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .admin-login-footer { text-align: center; margin-top: 16px; font-size: .85rem; }
+    .admin-login-footer a { color: var(--ucc-primary); font-weight: 600; text-decoration: none; }
+    [data-theme="dark"] .admin-login-card { background: var(--bg-page); border-color: var(--border-soft); }
+    [data-theme="dark"] .admin-login-field input { background: var(--bg-prompt); color: var(--text-primary); border-color: var(--border-soft); }
+  </style>
+</head>
+<body>
+  <main class="admin-login-wrap">
+    <div class="admin-login-card">
+      <div class="admin-login-brand"><strong>UCC</strong><span>Administration Portal</span></div>
+      <div class="admin-login-title">Administrator sign in</div>
+      <p class="admin-login-subtitle">Authorized staff only. Admin access is verified by the server.</p>
+      <div id="admin-login-message" class="hidden" role="alert" aria-live="polite"></div>
+      <form id="admin-login-form">
+        <div class="admin-login-field">
+          <label for="admin-email">Email</label>
+          <input id="admin-email" type="email" autocomplete="username" required>
+        </div>
+        <div class="admin-login-field">
+          <label for="admin-password">Password</label>
+          <input id="admin-password" type="password" autocomplete="current-password" required>
+        </div>
+        <button id="admin-login-submit" class="admin-login-button" type="submit">Sign in to admin</button>
+      </form>
+      <div class="admin-login-footer"><a href="/index.html">Back to UCC Assistant</a></div>
+    </div>
+  </main>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function () {
+      const form = document.getElementById('admin-login-form');
+      const email = document.getElementById('admin-email');
+      const password = document.getElementById('admin-password');
+      const submit = document.getElementById('admin-login-submit');
+      const message = document.getElementById('admin-login-message');
+
+      function showMessage(text, success) {
+        message.textContent = text;
+        message.className = 'admin-login-message ' + (success ? 'success' : 'error');
+      }
+
+      if (window.AuthService && window.AuthService.requiresAdmin()) {
+        window.location.replace('/admin/dashboard.html');
+        return;
+      }
+
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        submit.disabled = true;
+        try {
+          if (!window.AuthService) throw new Error('Authentication service unavailable.');
+          const data = await window.AuthService.adminLogin(email.value.trim(), password.value);
+          if (!data || !data.success || !window.AuthService.requiresAdmin()) {
+            window.AuthService.clearSession();
+            throw new Error('Invalid administrator credentials.');
+          }
+          showMessage('Signed in. Redirecting...', true);
+          window.location.replace('/admin/dashboard.html');
+        } catch (error) {
+          showMessage(error.message || 'Unable to sign in.', false);
+          submit.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
