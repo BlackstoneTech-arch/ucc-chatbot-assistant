@@ -1,9 +1,8 @@
 /* ============================================
    API Configuration
    ============================================
-   Production (Cloudflare Pages): leave BASE_URL empty to use the
-   bundled client-side knowledge base (ucc-kb.js). This
-   guarantees the chat works without any backend.
+  Production uses the same-origin /api proxy by default. A separately
+  hosted backend can override this with the __API_BASE_URL__ global.
 
    To connect to a live backend API, set BASE_URL to the
    backend root, for example:
@@ -20,7 +19,7 @@ const API_CONFIG = {
     ? __API_BASE_URL__
     : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
       ? "http://localhost:8081/api"
-      : "" // Production: empty => KB-only mode
+      : "/api"
 };
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
