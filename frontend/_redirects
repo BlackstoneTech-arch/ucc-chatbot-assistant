@@ -4,8 +4,7 @@
 /terms    /terms.html    200
 /cookies  /cookies.html  200
 
-# Login and admin pages
-/login            /login.html            200
+# Admin pages
 /admin/news       /admin/news.html       200
 /admin/news.html  /admin/news.html       200
 
