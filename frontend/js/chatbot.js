@@ -1160,7 +1160,7 @@
             location.reload();
           }
         } else {
-          location.href = 'login.html';
+          location.href = '/login';
         }
       });
     }
@@ -1178,7 +1178,7 @@
             location.reload();
           }
         } else {
-          location.href = 'login.html';
+          location.href = '/login';
         }
       });
     }

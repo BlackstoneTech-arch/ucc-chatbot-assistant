@@ -174,7 +174,7 @@ function flash(msg, ok) {
       localStorage.removeItem('ucc_auth_token');
       localStorage.removeItem('ucc_auth_role');
       localStorage.removeItem('ucc_auth_user');
-      window.location.href = '../admin-login.html';
+      window.location.href = '/admin-login';
     }
 
     async function loadItems() {
@@ -328,7 +328,7 @@ function flash(msg, ok) {
     }
 
     document.addEventListener('DOMContentLoaded', async function () {
-      if (!window.AuthService || !window.AuthService.requireAdmin('/admin-login.html')) return;
+      if (!window.AuthService || !window.AuthService.requireAdmin('/admin-login')) return;
       wireApp();
       await loadItems();
     });
