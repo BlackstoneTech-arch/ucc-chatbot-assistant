@@ -62,7 +62,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if (path.equals("/api/chat/welcome")) return 60;
         if (path.equals("/api/chat/feedback")) return 20;
         if (path.equals("/api/auth/login")) return 10;
+        if (path.equals("/api/auth/student/verify-email")) return 10;
+        if (path.equals("/api/auth/student/verify-registration")) return 10;
+        if (path.equals("/api/auth/visitor-register")) return 5;
+        if (path.equals("/api/auth/student/register")) return 5;
         if (path.equals("/api/auth/register")) return 5;
+        if (path.equals("/api/auth/forgot-password")) return 3;
         return null;
     }
 

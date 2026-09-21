@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — UCC</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .admin-shell { display: flex; min-height: 100vh; }
+  .admin-sidebar { width: 240px; background: #1e293b; color: #e2e8f0; padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; }
+  .admin-sidebar h2 { font-size: 1.1rem; padding: 0 20px 16px; border-bottom: 1px solid #334155; margin-bottom: 12px; }
+  .admin-sidebar a { display: block; padding: 10px 20px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
+  .admin-sidebar a:hover, .admin-sidebar a.active { background: #334155; color: #fff; border-radius: 6px; }
+  .admin-main { flex: 1; margin-left: 240px; padding: 24px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+  .admin-header h1 { font-size: 1.5rem; color: #003366; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+  .stat-card .num { font-size: 1.8rem; font-weight: 700; color: #003366; }
+  .stat-card .label { font-size: 0.82rem; color: #64748b; margin-top: 4px; }
+  .panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+  .panel h3 { font-size: 1.05rem; color: #003366; margin-bottom: 12px; }
+  .panel .empty { text-align: center; color: #94a3b8; padding: 20px; }
+  .btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+  .btn-primary { background: #003366; color: #fff; }
+  .btn-secondary { background: #e2e8f0; color: #334155; }
+  .btn-danger { background: #fee2e2; color: #991b1b; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hidden { display: none !important; }
+  .flash { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 0.88rem; }
+  .flash-ok { background: #d1fae5; color: #065f46; }
+  .flash-err { background: #fee2e2; color: #991b1b; }
+  @media (max-width: 768px) { .admin-sidebar { width: 100%; position: static; height: auto; } .admin-main { margin-left: 0; } }
+</style>
+</head>
+<body>
+  <div id="admin-gate" class="admin-wrap">
+    <div class="admin-card" style="max-width:420px;margin:60px auto;text-align:center">
+      <h1>Admin Access</h1>
+      <p class="muted" style="margin-top:8px">Sign in with your admin credentials to access the dashboard.</p>
+      <form id="admin-gate-form" class="admin-form" style="margin-top:18px;text-align:left">
+        <div class="field">
+          <label for="g-email">Email</label>
+          <input id="g-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
+        </div>
+        <div class="field" id="g-password-wrap">
+          <label for="g-password">Password</label>
+          <input id="g-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary" id="g-submit" style="width:100%;margin-top:6px">Sign in to Dashboard</button>
+      </form>
+      <div id="gate-flash" class="admin-flash admin-flash-error hidden" style="margin-top:14px"></div>
+      <div class="btn-row" style="justify-content:center;margin-top:18px">
+        <a class="btn-secondary" href="../index.html" style="text-decoration:none">Back to site</a>
+      </div>
+    </div>
+  </div>
+  <div id="admin-main" class="admin-shell hidden">
+    <aside class="admin-sidebar">
+      <h2>UCC Admin</h2>
+      <a href="#" class="active" data-tab="dashboard">Dashboard</a>
+      <a href="#" data-tab="knowledge">Knowledge</a>
+      <a href="#" data-tab="faqs">FAQs</a>
+      <a href="#" data-tab="news">News</a>
+      <a href="#" data-tab="programmes">Programmes</a>
+      <a href="#" data-tab="students">Students</a>
+      <a href="#" data-tab="academic">Academic</a>
+      <a href="#" data-tab="integrations">Integrations</a>
+      <a href="#" data-tab="analytics">Analytics</a>
+      <a href="#" data-tab="audit">Audit Logs</a>
+      <a href="#" data-tab="settings">Settings</a>
+      <a href="#" id="sidebar-logout">Logout</a>
+    </aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1 id="page-title">Dashboard</h1>
+        <button class="btn btn-secondary" id="header-logout">Logout</button>
+      </div>
+      <div id="flash-area"></div>
+      <div id="tab-dashboard" class="tab-content">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="panel"><h3>Recent Activity</h3><div id="activity-feed">Loading...</div></div>
+      </div>
+      <div id="tab-knowledge" class="tab-content hidden"></div>
+      <div id="tab-faqs" class="tab-content hidden"></div>
+      <div id="tab-news" class="tab-content hidden"></div>
+      <div id="tab-programmes" class="tab-content hidden"></div>
+      <div id="tab-students" class="tab-content hidden"></div>
+      <div id="tab-academic" class="tab-content hidden"></div>
+      <div id="tab-integrations" class="tab-content hidden"></div>
+      <div id="tab-analytics" class="tab-content hidden"></div>
+      <div id="tab-audit" class="tab-content hidden"></div>
+      <div id="tab-settings" class="tab-content hidden"></div>
+    </main>
+  </div>
+<script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin-dashboard.js"></script>
+  <script>
+    (function() {
+      const $ = (s) => document.querySelector(s);
+
+      // Already authenticated as admin? Show dashboard, hide gate.
+      if (window.AuthService && window.AuthService.requiresAdmin()) {
+        document.getElementById('admin-gate').classList.add('hidden');
+        document.getElementById('admin-main').classList.remove('hidden');
+        return;
+      }
+
+      // Authenticated but wrong role? Redirect away.
+      if (window.AuthService && window.AuthService.isAuthenticated() && !window.AuthService.requiresAdmin()) {
+        window.location.href = "../index.html";
+        return;
+      }
+
+      function flash(msg, ok) {
+        const el = $('#gate-flash');
+        el.textContent = msg;
+        el.className = 'admin-flash ' + (ok ? 'admin-flash-success' : 'admin-flash-error');
+        el.classList.remove('hidden');
+      }
+
+      async function tryAdminLogin(email, password) {
+        if (!email || !password) { flash('Invalid email or password', false); return false; }
+        try {
+          if (window.AuthService) {
+            const data = await window.AuthService.adminLogin(email, password);
+            if (data && data.success) return true;
+            flash(data && data.message ? data.message : 'Invalid email or password', false);
+            return false;
+          }
+        } catch (e) {
+          flash(e.message || 'Invalid email or password', false);
+        }
+        return false;
+      }
+
+      const form = $('#admin-gate-form');
+      const submit = $('#g-submit');
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        submit.disabled = true;
+        const email = $('#g-email').value.trim();
+        const password = $('#g-password').value;
+        const ok = await tryAdminLogin(email, password);
+        if (ok) {
+          document.getElementById('admin-gate').classList.add('hidden');
+          document.getElementById('admin-main').classList.remove('hidden');
+        } else {
+          submit.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

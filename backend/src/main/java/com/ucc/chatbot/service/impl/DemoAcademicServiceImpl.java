@@ -51,17 +51,6 @@ public class DemoAcademicServiceImpl implements DemoAcademicService {
     public DemoAris getFullProfile(String studentId) {
         return arisRepository.findByStudentId(studentId).stream().findFirst().orElse(null);
     }
-}
-
-@Service
-class DemoLmsServiceImpl implements DemoLmsService {
-
-    private final DemoLmsRepository lmsRepository;
-
-    @Autowired
-    public DemoLmsServiceImpl(DemoLmsRepository lmsRepository) {
-        this.lmsRepository = lmsRepository;
-    }
 
     @Override
     public List<DemoLms> getLmsCourses(String studentId) {

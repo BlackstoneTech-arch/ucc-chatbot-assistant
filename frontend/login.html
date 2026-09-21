@@ -50,29 +50,106 @@
       </div>
 
       <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="student" type="button">Student</button>
+        <button class="auth-tab active" data-tab="visitor" type="button">Visitor</button>
+        <button class="auth-tab" data-tab="student" type="button">Student</button>
         <button class="auth-tab" data-tab="admin" type="button">Admin</button>
       </div>
 
       <div id="flash-area"></div>
 
-      <!-- Student forms -->
-      <div id="tab-student">
+      <!-- Visitor form -->
+      <div id="tab-visitor">
         <div class="auth-form">
-          <div class="auth-title">Student login</div>
-          <div class="auth-sub">Access your chat history and personalized support.</div>
-          <form id="student-login-form">
+          <div class="auth-title">Visitor login</div>
+          <div class="auth-sub">Sign in with your email and password to save your chat history.</div>
+          <form id="visitor-login-form">
             <div class="field">
-              <label for="s-email">Email</label>
-              <input id="s-email" type="email" placeholder="student@example.com" required>
+              <label for="v-email">Email</label>
+              <input id="v-email" type="email" placeholder="visitor@example.com" required autocomplete="email">
             </div>
             <div class="field">
-              <label for="s-password">Password</label>
-              <input id="s-password" type="password" placeholder="••••••••" required>
+              <label for="v-password">Password</label>
+              <input id="v-password" type="password" placeholder="••••••••" required autocomplete="current-password">
             </div>
-            <button type="submit" class="auth-btn">Login</button>
+            <button type="submit" class="auth-btn">Login as Visitor</button>
           </form>
-          <div class="auth-footer">No account? <a href="#" id="show-student-register">Register</a></div>
+          <div class="auth-footer">No account? <a href="#" id="show-visitor-register">Create visitor account</a></div>
+        </div>
+        <div class="auth-form hidden" id="visitor-register-box" style="margin-top:16px">
+          <div class="auth-title">Create Visitor Account</div>
+          <div class="auth-sub">Register to save your conversation history.</div>
+          <form id="visitor-register-form">
+            <div class="field">
+              <label for="v-name">Full name</label>
+              <input id="v-name" type="text" placeholder="Your name" required>
+            </div>
+            <div class="field">
+              <label for="v-email-2">Email</label>
+              <input id="v-email-2" type="email" placeholder="visitor@example.com" required autocomplete="email">
+            </div>
+            <div class="field">
+              <label for="v-password-2">Password</label>
+              <input id="v-password-2" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
+            </div>
+            <div class="field">
+              <label for="v-confirm-2">Confirm password</label>
+              <input id="v-confirm-2" type="password" placeholder="Repeat password" required autocomplete="new-password">
+            </div>
+            <button type="submit" class="auth-btn">Create account</button>
+          </form>
+          <div class="auth-footer">Already have an account? <a href="#" id="show-visitor-login">Login</a></div>
+        </div>
+      </div>
+
+      <!-- Student forms -->
+      <div id="tab-student" class="hidden">
+        <div id="s-step1">
+          <div class="auth-form">
+            <div class="auth-title">Student Login — Step 1</div>
+            <div class="auth-sub">Enter your email and password.</div>
+            <div class="auth-progress" style="margin-bottom:14px">
+              <div class="auth-step active"><span>1</span> Account</div>
+              <div class="auth-step"><span>2</span> Student Verification</div>
+            </div>
+            <form id="student-login-form">
+              <div class="field">
+                <label for="s-email">Email</label>
+                <input id="s-email" type="email" placeholder="student@example.com" required autocomplete="email">
+              </div>
+              <div class="field">
+                <label for="s-password">Password</label>
+                <input id="s-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+              </div>
+              <button type="submit" class="auth-btn">Continue</button>
+            </form>
+            <div class="auth-footer">No account? <a href="#" id="show-student-register">Register</a></div>
+          </div>
+        </div>
+        <div id="s-step2" class="hidden">
+          <div class="auth-form">
+            <div class="auth-title">Student Verification — Step 2</div>
+            <div class="auth-sub">For additional student verification, enter your UCC registration number.</div>
+            <div class="auth-progress" style="margin-bottom:14px">
+              <div class="auth-step done"><span>1</span> Account</div>
+              <div class="auth-step active"><span>2</span> Student Verification</div>
+            </div>
+            <form id="student-step2-form">
+              <div class="field">
+                <label for="s-step2-email">Email</label>
+                <input id="s-step2-email" type="email" readonly>
+              </div>
+              <div class="field">
+                <label for="s-reg">Registration number</label>
+                <input id="s-reg" type="text" placeholder="UCC/2026/XXXX" required autocomplete="off">
+              </div>
+              <div class="field">
+                <label for="s-step2-password">Password</label>
+                <input id="s-step2-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+              </div>
+              <button type="submit" class="auth-btn">Verify Student Account</button>
+            </form>
+            <div class="auth-footer"><a href="#" id="s-back">← Back</a></div>
+          </div>
         </div>
         <div class="auth-form hidden" id="student-register-box" style="margin-top:16px">
           <div class="auth-title">Create student account</div>
@@ -84,15 +161,48 @@
             </div>
             <div class="field">
               <label for="s-email-2">Email</label>
-              <input id="s-email-2" type="email" placeholder="student@example.com" required>
+              <input id="s-email-2" type="email" placeholder="student@example.com" required autocomplete="email">
+            </div>
+            <div class="field">
+              <label for="s-reg-2">Registration number</label>
+              <input id="s-reg-2" type="text" placeholder="UCC/2026/XXXX" required>
             </div>
             <div class="field">
               <label for="s-password-2">Password</label>
-              <input id="s-password-2" type="password" placeholder="Min 6 characters" required minlength="6">
+              <input id="s-password-2" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
+            </div>
+            <div class="field">
+              <label for="s-confirm-2">Confirm password</label>
+              <input id="s-confirm-2" type="password" placeholder="Repeat password" required autocomplete="new-password">
             </div>
             <button type="submit" class="auth-btn">Create account</button>
           </form>
           <div class="auth-footer">Already have an account? <a href="#" id="show-student-login">Login</a></div>
+        </div>
+
+        <div class="auth-form hidden" id="student-step2-box" style="margin-top:16px">
+          <div class="auth-title">Student Verification — Step 2</div>
+          <div class="auth-sub">For additional student verification, enter your UCC registration number.</div>
+          <div class="auth-progress" style="margin-bottom:14px">
+            <div class="auth-step done"><span>1</span> Account</div>
+            <div class="auth-step active"><span>2</span> Student Verification</div>
+          </div>
+          <form id="student-step2-form">
+            <div class="field">
+              <label for="s-step2-email">Email</label>
+              <input id="s-step2-email" type="email" readonly>
+            </div>
+            <div class="field">
+              <label for="s-reg">Registration number</label>
+              <input id="s-reg" type="text" placeholder="UCC/2026/XXXX" required autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="s-step2-password">Password</label>
+              <input id="s-step2-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="auth-btn">Verify Student Account</button>
+          </form>
+          <div class="auth-footer"><a href="#" id="s-back">← Back</a></div>
         </div>
       </div>
 
@@ -101,14 +211,14 @@
         <div class="auth-form">
           <div class="auth-title">Admin login</div>
           <div class="auth-sub">Manage news, FAQs, and knowledge base content.</div>
-          <form id="admin-login-form">
+<form id="admin-login-form">
             <div class="field">
               <label for="a-email">Email</label>
-              <input id="a-email" type="email" placeholder="admin@ucc.co.tz" required>
+              <input id="a-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
             </div>
-            <div class="field">
+            <div class="field" id="a-password-wrap">
               <label for="a-password">Password</label>
-              <input id="a-password" type="password" placeholder="••••••••" required>
+              <input id="a-password" type="password" placeholder="••••••••" required autocomplete="current-password">
             </div>
             <button type="submit" class="auth-btn">Login to admin</button>
           </form>
@@ -119,6 +229,7 @@
   </div>
 
   <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
   <script>
     const $ = (s) => document.querySelector(s);
     const apiBase = () => (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
@@ -134,6 +245,7 @@
 
     function setTab(tab) {
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+      $('#tab-visitor').classList.toggle('hidden', tab !== 'visitor');
       $('#tab-student').classList.toggle('hidden', tab !== 'student');
       $('#tab-admin').classList.toggle('hidden', tab !== 'admin');
       $('#flash-area').innerHTML = '';
@@ -160,14 +272,34 @@
 
     function saveStudentSession(data) {
       localStorage.setItem('ucc_auth_token', data.token);
+      if (data.refreshToken) localStorage.setItem('ucc_auth_refresh_token', data.refreshToken);
       localStorage.setItem('ucc_auth_role', data.user && data.user.role ? data.user.role : 'USER');
       localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
     }
 
     function clearSession() {
       localStorage.removeItem('ucc_auth_token');
+      localStorage.removeItem('ucc_auth_refresh_token');
       localStorage.removeItem('ucc_auth_role');
       localStorage.removeItem('ucc_auth_user');
+    }
+
+    async function finishLogin(data, fallbackName) {
+      saveStudentSession(data);
+      // Best-effort: link any anonymous conversation to this user so history survives.
+      try {
+        if (window.UCCSession && typeof window.UCCSession.linkConversation === 'function') {
+          await window.UCCSession.linkConversation();
+        }
+      } catch (_) {}
+      // Best-effort: schedule token refresh so sessions don't silently expire.
+      try {
+        if (window.UCCSession && typeof window.UCCSession.scheduleRefresh === 'function') {
+          window.UCCSession.scheduleRefresh();
+        }
+      } catch (_) {}
+      flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : (fallbackName || 'there')), true);
+      setTimeout(() => { window.location.href = 'chat.html'; }, 600);
     }
 
     async function verifyAdmin() {
@@ -185,50 +317,88 @@
       document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
       $('#show-student-register').addEventListener('click', (e) => { e.preventDefault(); $('#student-login-form').classList.add('hidden'); $('#student-register-box').classList.remove('hidden'); });
       $('#show-student-login').addEventListener('click', (e) => { e.preventDefault(); $('#student-register-box').classList.add('hidden'); $('#student-login-form').classList.remove('hidden'); });
+      $('#show-visitor-register').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-login-form').classList.add('hidden'); $('#visitor-register-box').classList.remove('hidden'); });
+      $('#show-visitor-login').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-register-box').classList.add('hidden'); $('#visitor-login-form').classList.remove('hidden'); });
 
       // Pre-fill from URL params: ?email=...&password=...
       const params = new URLSearchParams(window.location.search);
       if (params.has('email')) {
         const email = params.get('email');
-        const password = params.get('password') || '';
         $('#s-email').value = email;
-        $('#s-password').value = password;
         $('#a-email').value = email;
-        $('#a-password').value = password;
       }
+
+      $('#visitor-login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const email = $('#v-email').value.trim();
+        const password = $('#v-password').value;
+        if (!email || !password) { flash('Invalid email or password', false); return; }
+        const base = apiBase();
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
+        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+        if (role !== 'VISITOR') { flash('Access denied: visitor role required', false); clearSession(); return; }
+        finishLogin(data, email);
+      });
+
+      $('#visitor-register-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const name = $('#v-name').value.trim();
+        const email = $('#v-email-2').value.trim();
+        const password = $('#v-password-2').value;
+        const confirm = $('#v-confirm-2').value;
+        if (!name || !email || !password) { flash('All fields are required', false); return; }
+        if (password !== confirm) { flash('Passwords do not match', false); return; }
+        const base = apiBase();
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/visitor-register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
+        flash('Account created. Please login.', true);
+        $('#visitor-register-form').reset();
+        $('#visitor-register-box').classList.add('hidden');
+        $('#visitor-login-form').classList.remove('hidden');
+        $('#v-email').value = email;
+        $('#v-password').focus();
+      });
 
       $('#student-login-form').addEventListener('submit', async function (e) {
         e.preventDefault();
         const email = $('#s-email').value.trim();
         const password = $('#s-password').value;
-        if (!email || !password) { flash('Enter email and password', false); return; }
+        if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
-        if (!base) {
-          // No backend configured — simulate a student session using the local KB
-          const fakeUser = { id: 'local-' + Date.now(), email: email, fullName: email.split('@')[0], role: 'USER', isActive: true };
-          const fakeToken = 'local-token-' + Math.random().toString(36).slice(2);
-          saveStudentSession({ token: fakeToken, user: fakeUser });
-          flash('Logged in (offline mode) — ' + fakeUser.fullName, true);
-          setTimeout(() => { window.location.href = 'chat.html'; }, 600);
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/student/verify-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
+        if (data.requiresRegistrationNumber) {
+          localStorage.setItem('ucc_student_challenge', data.challengeToken);
+          localStorage.setItem('ucc_student_email', email);
+          $('#s-step1').classList.add('hidden');
+          $('#s-step2').classList.remove('hidden');
+          $('#s-step2-email').textContent = email;
+          $('#s-reg').value = '';
+          $('#s-reg').focus();
           return;
         }
-        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Login failed', false); return; }
-        saveStudentSession(data);
-        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : email), true);
-        setTimeout(() => { window.location.href = 'chat.html'; }, 600);
+        finishLogin(data, email);
       });
 
       $('#student-register-form').addEventListener('submit', async function (e) {
         e.preventDefault();
         const name = $('#s-name').value.trim();
         const email = $('#s-email-2').value.trim();
+        const regNumber = $('#s-reg-2').value.trim();
         const password = $('#s-password-2').value;
-        if (!name || !email || !password) { flash('All fields are required', false); return; }
+        const confirm = $('#s-confirm-2').value;
+        if (!name || !email || !regNumber || !password) { flash('All fields are required', false); return; }
+        if (password !== confirm) { flash('Passwords do not match', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name, role: 'USER' }) });
+        const r = await fetch(base + '/api/auth/student/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name, registrationNumber: regNumber }) });
         const data = await r.json().catch(() => ({}));
         if (!r.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);
@@ -239,33 +409,42 @@
         $('#s-password').focus();
       });
 
+      $('#student-step2-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const challengeToken = localStorage.getItem('ucc_student_challenge');
+        const regNumber = $('#s-reg').value.trim();
+        const password = $('#s-step2-password').value;
+        if (!challengeToken || !regNumber || !password) { flash('Invalid registration number or password', false); return; }
+        const base = apiBase();
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/student/verify-registration', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ challengeToken, registrationNumber: regNumber, password }) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) { flash(data.message || 'Invalid registration number or password', false); return; }
+        localStorage.removeItem('ucc_student_challenge');
+        localStorage.removeItem('ucc_student_email');
+        finishLogin(data, regNumber);
+      });
+
+      $('#s-back').addEventListener('click', (e) => { e.preventDefault(); $('#s-step2').classList.add('hidden'); $('#s-step1').classList.remove('hidden'); localStorage.removeItem('ucc_student_challenge'); localStorage.removeItem('ucc_student_email'); });
+
       $('#admin-login-form').addEventListener('submit', async function (e) {
         e.preventDefault();
         const email = $('#a-email').value.trim();
         const password = $('#a-password').value;
-        if (!email || !password) { flash('Enter email and password', false); return; }
+        if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
-        if (!base) {
-          // No backend configured — create a local admin session so the admin page loads
-          const fakeUser = { id: 'local-admin', email: email, fullName: 'UCC Administrator', role: 'ADMIN', isActive: true };
-          const fakeToken = 'local-admin-token-' + Math.random().toString(36).slice(2);
-          localStorage.setItem('ucc_auth_token', fakeToken);
-          localStorage.setItem('ucc_auth_role', 'ADMIN');
-          localStorage.setItem('ucc_auth_user', JSON.stringify(fakeUser));
-          flash('Logged in (offline mode) — ' + fakeUser.fullName, true);
-          setTimeout(() => { window.location.href = 'admin/news.html'; }, 600);
-          return;
-        }
-        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const r = await fetch(base + '/api/auth/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
         const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Login failed', false); return; }
-        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-        if (role !== 'ADMIN' && role !== 'SUPERADMIN') { flash('Access denied: admin role required', false); clearSession(); return; }
-        localStorage.setItem('ucc_auth_token', data.token);
-        localStorage.setItem('ucc_auth_role', role);
-        localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
+        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
+        saveStudentSession(data);
+        try {
+          if (window.UCCSession && typeof window.UCCSession.linkConversation === 'function') {
+            await window.UCCSession.linkConversation();
+          }
+        } catch (_) {}
         flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : email), true);
-        setTimeout(() => { window.location.href = 'admin/news.html'; }, 600);
+        setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
       });
 
       (async () => {
@@ -277,10 +456,11 @@
             const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
             localStorage.setItem('ucc_auth_role', role);
             if (role === 'ADMIN' || role === 'SUPERADMIN') {
-              setTab('admin');
+              // Admin sessions are handled on the dedicated admin dashboard, not here.
+              window.location.href = 'admin/dashboard.html';
             } else {
-              setTab('student');
-              $('#s-email').value = data.user && data.user.email ? data.user.email : '';
+              // Visitor or student — go to the chat.
+              window.location.href = 'chat.html';
             }
           } else {
             clearSession();

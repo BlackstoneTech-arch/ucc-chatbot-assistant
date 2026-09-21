@@ -48,9 +48,9 @@ public class AcademicAdminController {
         existing.setName(course.getName());
         existing.setDescription(course.getDescription());
         existing.setDuration(course.getDuration());
-        existing.setTotalFee(course.getTotalFee());
-        existing.setRequirements(course.getRequirements());
-        existing.setIsActive(course.getIsActive());
+        existing.setEntryRequirements(course.getEntryRequirements());
+        existing.setFee(course.getFee());
+        existing.setStatus(course.getStatus());
         return ResponseEntity.ok(courseRepository.save(existing));
     }
 

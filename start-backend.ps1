@@ -18,8 +18,8 @@ function Find-Java {
     $candidates = @(
         (Get-Command java -ErrorAction SilentlyContinue).Path,
         "$env:JAVA_HOME\bin\java.exe",
-        "C:\Program Files\Java\jdk-17\bin\java.exe",
-        "C:\Program Files\Java\jdk-21\bin\java.exe",
+        "C:\Program Files\Eclipse Adoptium\jdk-25*\bin\java.exe",
+        "C:\Program Files\Java\jdk-25\bin\java.exe",
         (Join-Path $ProjectRoot ".tools\java\bin\java.exe")
     )
     foreach ($c in $candidates) {

@@ -42,7 +42,7 @@ The system follows a **three-tier architecture**:
 | Tier | Component | Technology |
 |------|-----------|------------|
 | **Presentation** | Frontend Chatbot, Admin Dashboard | HTML, CSS, Vanilla JavaScript, Netlify hosting |
-| **Application** | REST API backend | Java 17, Spring Boot 3.3.4, Spring Security, JWT |
+| **Application** | REST API backend | Java 25, Spring Boot 3.5.6, Spring Security, JWT |
 | **Data** | Database, file storage | MySQL 8, knowledge-base Markdown files |
 
 ### 4.1 Architecture Diagram

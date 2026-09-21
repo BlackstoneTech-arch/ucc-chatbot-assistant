@@ -14,6 +14,7 @@ import com.ucc.chatbot.service.QueryUnderstandingService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +47,7 @@ public class ChatServiceImpl implements com.ucc.chatbot.service.ChatService {
 
         Conversation conversation = conversationService.getOrCreateConversation(
                 request.getConversationId(),
-                null
+                extractUserId(request)
         ).orElse(null);
 
         if (conversation != null) {
@@ -164,5 +165,15 @@ public class ChatServiceImpl implements com.ucc.chatbot.service.ChatService {
         }
 
         return context.toString();
+    }
+
+    private String extractUserId(ChatRequest request) {
+        if (request == null) return null;
+        java.util.Map<String, Object> user = request.getUser();
+        if (user == null) return null;
+        Object id = user.get("id");
+        if (id == null) id = user.get("userId");
+        if (id == null) id = user.get("phone");
+        return id != null ? String.valueOf(id) : null;
     }
 }

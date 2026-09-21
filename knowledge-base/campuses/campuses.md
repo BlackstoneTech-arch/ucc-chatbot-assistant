@@ -7,7 +7,7 @@ The main campus of UCC is located at the University of Dar es Salaam main campus
 
 **Address:**
 University of Dar es Salaam Computing Centre (UCC)
-P.O. Box 35091
+P.O. Box 35062
 Dar es Salaam, Tanzania
 
 **Coordinates:** Approximately 6.8°S, 39.3°E
