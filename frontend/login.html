@@ -41,7 +41,7 @@
 <body>
   <div class="auth-wrap">
     <div style="text-align:center;margin-bottom:18px">
-      <a href="index.html" style="color:var(--ucc-primary);text-decoration:none;font-weight:600">← Back to UCC Assistant</a>
+      <a href="/index.html" style="color:var(--ucc-primary);text-decoration:none;font-weight:600">← Back to UCC Assistant</a>
     </div>
     <div class="auth-card">
       <div style="text-align:center;margin-bottom:18px">
@@ -180,30 +180,6 @@
           <div class="auth-footer">Already have an account? <a href="#" id="show-student-login">Login</a></div>
         </div>
 
-        <div class="auth-form hidden" id="student-step2-box" style="margin-top:16px">
-          <div class="auth-title">Student Verification — Step 2</div>
-          <div class="auth-sub">For additional student verification, enter your UCC registration number.</div>
-          <div class="auth-progress" style="margin-bottom:14px">
-            <div class="auth-step done"><span>1</span> Account</div>
-            <div class="auth-step active"><span>2</span> Student Verification</div>
-          </div>
-          <form id="student-step2-form">
-            <div class="field">
-              <label for="s-step2-email">Email</label>
-              <input id="s-step2-email" type="email" readonly>
-            </div>
-            <div class="field">
-              <label for="s-reg">Registration number</label>
-              <input id="s-reg" type="text" placeholder="UCC/2026/XXXX" required autocomplete="off">
-            </div>
-            <div class="field">
-              <label for="s-step2-password">Password</label>
-              <input id="s-step2-password" type="password" placeholder="••••••••" required autocomplete="current-password">
-            </div>
-            <button type="submit" class="auth-btn">Verify Student Account</button>
-          </form>
-          <div class="auth-footer"><a href="#" id="s-back">← Back</a></div>
-        </div>
       </div>
 
       <!-- Admin form -->
@@ -211,7 +187,7 @@
         <div class="auth-form">
           <div class="auth-title">Admin login</div>
           <div class="auth-sub">Manage news, FAQs, and knowledge base content.</div>
-<form id="admin-login-form">
+          <form id="admin-login-form">
             <div class="field">
               <label for="a-email">Email</label>
               <input id="a-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
@@ -267,6 +243,20 @@
         return txt ? JSON.parse(txt) : null;
       } catch (e) {
         return null;
+      }
+    }
+
+    async function authRequest(endpoint, payload) {
+      try {
+        const response = await fetch(apiBase() + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json().catch(() => ({}));
+        return { ok: response.ok, data };
+      } catch (_) {
+        return { ok: false, data: { message: 'Unable to reach the authentication service.' } };
       }
     }
 
@@ -335,9 +325,9 @@
         if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
+        const result = await authRequest('/api/auth/login', { email, password });
+        const data = result.data;
+        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
         const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
         if (role !== 'VISITOR') { flash('Access denied: visitor role required', false); clearSession(); return; }
         finishLogin(data, email);
@@ -353,9 +343,9 @@
         if (password !== confirm) { flash('Passwords do not match', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/visitor-register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
+        const result = await authRequest('/api/auth/visitor-register', { email, password, fullName: name });
+        const data = result.data;
+        if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);
         $('#visitor-register-form').reset();
         $('#visitor-register-box').classList.add('hidden');
@@ -371,15 +361,15 @@
         if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/student/verify-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
+        const result = await authRequest('/api/auth/student/verify-email', { email, password });
+        const data = result.data;
+        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
         if (data.requiresRegistrationNumber) {
           localStorage.setItem('ucc_student_challenge', data.challengeToken);
           localStorage.setItem('ucc_student_email', email);
           $('#s-step1').classList.add('hidden');
           $('#s-step2').classList.remove('hidden');
-          $('#s-step2-email').textContent = email;
+          $('#s-step2-email').value = email;
           $('#s-reg').value = '';
           $('#s-reg').focus();
           return;
@@ -398,9 +388,9 @@
         if (password !== confirm) { flash('Passwords do not match', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/student/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, fullName: name, registrationNumber: regNumber }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
+        const result = await authRequest('/api/auth/student/register', { email, password, fullName: name, registrationNumber: regNumber });
+        const data = result.data;
+        if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);
         $('#student-register-form').reset();
         $('#student-register-box').classList.add('hidden');
@@ -417,9 +407,9 @@
         if (!challengeToken || !regNumber || !password) { flash('Invalid registration number or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/student/verify-registration', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ challengeToken, registrationNumber: regNumber, password }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Invalid registration number or password', false); return; }
+        const result = await authRequest('/api/auth/student/verify-registration', { challengeToken, registrationNumber: regNumber, password });
+        const data = result.data;
+        if (!result.ok || !data.success) { flash(data.message || 'Invalid registration number or password', false); return; }
         localStorage.removeItem('ucc_student_challenge');
         localStorage.removeItem('ucc_student_email');
         finishLogin(data, regNumber);
@@ -434,9 +424,9 @@
         if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const r = await fetch(base + '/api/auth/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
+        const result = await authRequest('/api/auth/admin-login', { email, password });
+        const data = result.data;
+        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
         saveStudentSession(data);
         try {
           if (window.UCCSession && typeof window.UCCSession.linkConversation === 'function') {
