@@ -33,10 +33,11 @@ function Find-Java {
     $candidates = @(
         (Get-Command java -ErrorAction SilentlyContinue).Path,
         "$env:JAVA_HOME\bin\java.exe",
-        "C:\Program Files\Java\jdk-17\bin\java.exe",
-        "C:\Program Files\Java\jdk-21\bin\java.exe",
-        "C:\Program Files\Eclipse Adoptium\jdk-17*\bin\java.exe",
-        "C:\Program Files\Microsoft\jdk-17*\bin\java.exe"
+        "C:\Program Files\Eclipse Adoptium\jdk-25*\bin\java.exe",
+        "C:\Program Files\Microsoft\jdk-25*\bin\java.exe",
+        "C:\Program Files\Java\jdk-25\bin\java.exe",
+        "C:\Program Files\Eclipse Adoptium\jdk-25*\bin\java.exe",
+        "C:\Program Files\Microsoft\jdk-25*\bin\java.exe"
     )
     foreach ($c in $candidates) {
         if ($c -and (Test-Path $c)) { return $c }
@@ -75,8 +76,8 @@ function Install-Java {
     if (Test-Path (Join-Path $JavaDir "bin\java.exe")) {
         return (Join-Path $JavaDir "bin\java.exe")
     }
-    Write-Log "Downloading Eclipse Temurin JDK 17..." "Yellow"
-    $url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.11%2B9/OpenJDK17U-jdk_x64_windows_hotspot_17.0.11_9.zip"
+    Write-Log "Downloading Eclipse Temurin JDK 25..." "Yellow"
+    $url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.2%2B10/OpenJDK25U-jdk_x64_windows_hotspot_25.0.2_10.zip"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $zip = Join-Path $ToolsDir "jdk.zip"
     Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing

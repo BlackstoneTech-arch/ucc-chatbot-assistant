@@ -38,7 +38,7 @@
 
 | Tool | Minimum | Notes |
 |---|---|---|
-| **Java JDK 17+** | 17 | The build scripts auto-download it if missing. Spring Boot 3.3.4 requires Java 17. |
+| **Java JDK 25+** | 25 | The build scripts auto-download it if missing. The backend targets Java 25. |
 | **Maven 3.8+** | 3.8 | Auto-downloaded by `build-backend.ps1`. Otherwise install via `brew install maven` / `apt install maven` / [download](https://maven.apache.org/download.cgi). |
 | **Node.js 18+** | 18 | Only needed to serve the admin dashboard locally via `npx serve`. Install from [nodejs.org](https://nodejs.org). |
 | **MySQL 8** (or PostgreSQL 14+) | 8.0 / 14 | Local install *or* a managed DB. See §4. |
@@ -61,7 +61,7 @@
 
 ```
 ucc-chatbot-assistant/
-├── backend/                    # Spring Boot 3.3.4 / Java 17
+├── backend/                    # Spring Boot 3.5.6 / Java 25
 │   ├── src/main/java/com/ucc/chatbot/
 │   │   ├── config/             # Security, CORS, async, JWT filter
 │   │   ├── controller/         # REST controllers (public + /api/admin)
@@ -366,7 +366,7 @@ Confirm there are no placeholder values like `your-password` or `change-me` stil
 ```
 
 This:
-1. Detects any installed JDK 17+, or downloads Eclipse Temurin 17 into `.tools/`
+1. Detects any installed JDK 25+, or downloads Eclipse Temurin 25 into `.tools/`
 2. Detects any installed Maven 3.8+, or downloads it into `.tools/`
 3. Compiles all 103 source files
 4. Runs the unit tests (skip with `-SkipTests`)
@@ -780,7 +780,7 @@ The default setup handles ~100 concurrent users comfortably on a $5/month VPS. T
 
 **Windows:**
 ```powershell
-[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Eclipse Adoptium\jdk-17.0.11.9\jdk-17.0.11+9", "User")
+[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Eclipse Adoptium\jdk-25.0.2.10-hotspot", "User")
 # Or run the build script which auto-downloads a JDK
 ```
 
@@ -792,8 +792,8 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 
 **Linux:**
 ```bash
-sudo apt install openjdk-17-jdk
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+sudo apt install openjdk-25-jdk
+export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 ```
 
 ### Build fails: "package com.ucc.chatbot does not exist"
@@ -855,7 +855,7 @@ The Maven repository is downloading for the first time. Be patient (~150 MB). Fo
 
 ### Java 25 build warnings
 
-If you're on JDK 25 (newer than the project's target of 17), you may see `WARNING: A restricted method in java.lang.System has been called`. These are harmless — the project compiles to Java 17 bytecode and runs on any JDK 17+.
+If you're on JDK 25, you may see `WARNING: A restricted method in java.lang.System has been called`. These are harmless when emitted by the build tooling; the project targets Java 25 bytecode.
 
 ---
 
