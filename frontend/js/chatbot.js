@@ -1344,7 +1344,7 @@
     const rt = currentRefreshToken();
     if (!base || !rt) return false;
     try {
-      const r = await fetch(base + "/api/auth/refresh", {
+      const r = await fetch(base + "/auth/refresh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: rt })
@@ -1374,7 +1374,7 @@
     const user = currentUser();
     if (!base || !token || !user) return false;
     try {
-      const r = await fetch(base + "/api/auth/link-conversation", {
+      const r = await fetch(base + "/auth/link-conversation", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
         body: JSON.stringify({ sessionId: state.sessionId })

@@ -292,7 +292,7 @@
         if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/login', { email, password });
+        const result = await authRequest('/auth/login', { email, password });
         const data = result.data;
         if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
         const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
@@ -310,7 +310,7 @@
         if (password !== confirm) { flash('Passwords do not match', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/visitor-register', { email, password, confirmPassword: confirm, fullName: name });
+        const result = await authRequest('/auth/visitor-register', { email, password, confirmPassword: confirm, fullName: name });
         const data = result.data;
         if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);
@@ -328,7 +328,7 @@
         if (!email || !password) { flash('Invalid email or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/student/verify-email', { email, password });
+        const result = await authRequest('/auth/student/verify-email', { email, password });
         const data = result.data;
         if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
         if (data.requiresRegistrationNumber) {
@@ -355,7 +355,7 @@
         if (password !== confirm) { flash('Passwords do not match', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/student/register', { email, password, confirmPassword: confirm, fullName: name, registrationNumber: regNumber });
+        const result = await authRequest('/auth/student/register', { email, password, confirmPassword: confirm, fullName: name, registrationNumber: regNumber });
         const data = result.data;
         if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
         flash('Account created. Please login.', true);
@@ -374,7 +374,7 @@
         if (!challengeToken || !regNumber || !password) { flash('Invalid registration number or password', false); return; }
         const base = apiBase();
         if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/api/auth/student/verify-registration', { challengeToken, registrationNumber: regNumber, password });
+        const result = await authRequest('/auth/student/verify-registration', { challengeToken, registrationNumber: regNumber, password });
         const data = result.data;
         if (!result.ok || !data.success) { flash(data.message || 'Invalid registration number or password', false); return; }
         localStorage.removeItem('ucc_student_challenge');
@@ -388,7 +388,7 @@
         const base = apiBase();
         const token = localStorage.getItem('ucc_auth_token');
         if (base && token) {
-          const data = await api('/api/auth/me');
+          const data = await api('/auth/me');
           if (data && data.success) {
             const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
             localStorage.setItem('ucc_auth_role', role);

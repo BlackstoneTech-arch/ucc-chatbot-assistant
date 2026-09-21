@@ -192,7 +192,7 @@ function flash(msg, ok) {
         renderTable(items);
         return;
       }
-      const data = await api('/api/news/all');
+      const data = await api('/news/all');
       if (!data) { flash('Backend unreachable or not authorized.', false); return; }
       const items = Array.isArray(data) ? data : (data.items || data.news || []);
       renderTable(items);
@@ -250,7 +250,7 @@ function flash(msg, ok) {
         renderTable(items);
         return;
       }
-      let url = base + '/api/news';
+      let url = base + '/news';
       let method = 'POST';
       if (id) { url += '/' + encodeURIComponent(id); method = 'PUT'; }
       const r = await fetch(url, {
@@ -276,7 +276,7 @@ function flash(msg, ok) {
         renderTable(items);
         return;
       }
-      const r = await api('/api/news/' + encodeURIComponent(id) + '/publish', {
+      const r = await api('/news/' + encodeURIComponent(id) + '/publish', {
         method: 'PATCH',
         body: JSON.stringify({ isPublished: true, publishedAt: new Date().toISOString() })
       });
@@ -296,14 +296,14 @@ function flash(msg, ok) {
         renderTable(items);
         return;
       }
-      const r = await api('/api/news/' + encodeURIComponent(id), { method: 'DELETE' });
+      const r = await api('/news/' + encodeURIComponent(id), { method: 'DELETE' });
       if (!r) { flash('Failed', false); return; }
       flash('Deleted', true);
       await loadItems();
     }
 
     async function editItem(id) {
-      const r = await api('/api/news/' + encodeURIComponent(id));
+      const r = await api('/news/' + encodeURIComponent(id));
       if (!r) { flash('Failed to load', false); return; }
       $('#n-id').value = r.id || id;
       $('#n-title').value = r.title || '';

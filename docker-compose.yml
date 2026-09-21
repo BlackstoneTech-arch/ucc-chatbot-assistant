@@ -26,8 +26,11 @@ services:
       - "8080:8080"
     environment:
       DB_URL: jdbc:mysql://db:3306/ucc_chatbot_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+      DB_TYPE: mysql
       DB_USERNAME: ${DB_USERNAME:-ucc_user}
       DB_PASSWORD: ${DB_PASSWORD:-ucc_password}
+      DB_DRIVER: com.mysql.cj.jdbc.Driver
+      DB_DIALECT: org.hibernate.dialect.MySQLDialect
       AI_API_KEY: ${AI_API_KEY}
       AI_API_URL: ${AI_API_URL:-https://api.openai.com/v1}
       AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
