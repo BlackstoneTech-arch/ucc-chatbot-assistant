@@ -52,6 +52,7 @@
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="visitor" type="button">Visitor</button>
         <button class="auth-tab" data-tab="student" type="button">Student</button>
+        <button class="auth-tab" data-tab="admin" type="button" title="For UCC staff and administrators">Admin</button>
       </div>
 
       <div id="flash-area"></div>
@@ -181,6 +182,23 @@
 
       </div>
 
+      <!-- Admin login -->
+      <div class="auth-form hidden" id="tab-admin">
+        <div class="auth-title">Admin login</div>
+        <div class="auth-sub">For UCC staff and administrators.</div>
+        <form id="admin-login-form">
+          <div class="field">
+            <label for="a-email">Email</label>
+            <input id="a-email" type="email" placeholder="admin@ucc.co.tz" required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="a-password">Password</label>
+            <input id="a-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="auth-btn">Login as Admin</button>
+        </form>
+      </div>
+
     </div>
   </div>
 
@@ -199,12 +217,13 @@
       setTimeout(() => d.remove(), 4000);
     }
 
-    function setTab(tab) {
-      document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-      $('#tab-visitor').classList.toggle('hidden', tab !== 'visitor');
-      $('#tab-student').classList.toggle('hidden', tab !== 'student');
-      $('#flash-area').innerHTML = '';
-    }
+function setTab(tab) {
+       document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+       $('#tab-visitor').classList.toggle('hidden', tab !== 'visitor');
+       $('#tab-student').classList.toggle('hidden', tab !== 'student');
+       $('#tab-admin').classList.toggle('hidden', tab !== 'admin');
+       $('#flash-area').innerHTML = '';
+     }
 
     async function api(endpoint, opts = {}) {
       const base = apiBase();
@@ -271,9 +290,8 @@
       setTimeout(() => { window.location.href = 'chat.html'; }, 600);
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
-      $('#show-student-register').addEventListener('click', (e) => { e.preventDefault(); $('#student-login-form').classList.add('hidden'); $('#student-register-box').classList.remove('hidden'); });
+document.addEventListener('DOMContentLoaded', function () {
+       document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
       $('#show-student-login').addEventListener('click', (e) => { e.preventDefault(); $('#student-register-box').classList.add('hidden'); $('#student-login-form').classList.remove('hidden'); });
       $('#show-visitor-register').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-login-form').classList.add('hidden'); $('#visitor-register-box').classList.remove('hidden'); });
       $('#show-visitor-login').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-register-box').classList.add('hidden'); $('#visitor-login-form').classList.remove('hidden'); });
@@ -296,6 +314,16 @@
         const data = result.data;
         if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
         const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+        // Admins use the same /auth/login endpoint but must be redirected to
+        // the admin dashboard. Previously this form rejected any role that
+        // wasn't VISITOR, so admin credentials always failed with
+        // "Access denied: visitor role required".
+        if (role === 'ADMIN' || role === 'SUPERADMIN') {
+          saveStudentSession(data);
+          flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
+          setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
+          return;
+        }
         if (role !== 'VISITOR') { flash('Access denied: visitor role required', false); clearSession(); return; }
         finishLogin(data, email);
       });
@@ -383,6 +411,27 @@
       });
 
       $('#s-back').addEventListener('click', (e) => { e.preventDefault(); $('#s-step2').classList.add('hidden'); $('#s-step1').classList.remove('hidden'); localStorage.removeItem('ucc_student_challenge'); localStorage.removeItem('ucc_student_email'); });
+
+      $('#admin-login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const email = $('#a-email').value.trim();
+        const password = $('#a-password').value;
+        if (!email || !password) { flash('Invalid email or password', false); return; }
+        const base = apiBase();
+        if (!base) { flash('Backend not configured on this host.', false); return; }
+        const result = await authRequest('/auth/login', { email, password });
+        const data = result.data;
+        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
+        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+        if (role !== 'ADMIN' && role !== 'SUPERADMIN') {
+          flash('Access denied: admin role required', false);
+          clearSession();
+          return;
+        }
+        saveStudentSession(data);
+        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
+        setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
+      });
 
       (async () => {
         const base = apiBase();
