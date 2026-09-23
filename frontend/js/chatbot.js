@@ -31,6 +31,7 @@
      history: loadHistory(),
      isProcessing: false,
      welcomeLoaded: false,
+     welcomeInProgress: false,   // true while loadWelcomeIfNeeded() is awaiting the API
      conversationStarted: false,   // true once the user sends their first message
      detectedLang: loadLangPref(),
      conversationHistory: []
@@ -399,8 +400,9 @@
      // Guard: only ever show the welcome screen once per session. Re-firing
      // it on every send (or on every API greeting response) caused the
      // welcome message to loop forever.
-     if (state.welcomeLoaded) return;
+     if (state.welcomeLoaded || state.welcomeInProgress) return;
      state.welcomeLoaded = true;
+     state.welcomeInProgress = true;
 
      let welcome = null;
      if (hasLiveApi() && navigator.onLine) {
@@ -413,53 +415,54 @@
        } catch (_) { welcome = null; }
      }
 
-    if (!welcome && typeof uccFallbackAnswer === 'function') {
-      const fb = uccFallbackAnswer('hello', state.detectedLang);
-      if (fb && fb.answer) {
-        welcome = {
-          message: fb.answer,
-          language: fb.language || state.detectedLang,
-          quickReplies: state.detectedLang === 'sw'
-            ? [
-                { label: '📥 Pakua Hati', message: 'Naomba pakua hati zote za kuomba' },
-                { label: 'Programu zenu', message: 'Naomba kuona programu zenu' },
-                { label: 'Ada ya DCIT', message: 'Ada ya DCIT ni ngapi?' },
-                { label: 'Lini maombi?', message: 'Lini maombi yanafunguliwa na yanafungwa?' },
-                { label: 'DCIT vs DBIT', message: 'DCIT na DBIT, ni ipi bora kwangu?' }
-              ]
-            : [
-                { label: '📥 Download Documents', message: 'I need the application pack' },
-                { label: 'Programmes', message: 'What programmes do you offer?' },
-                { label: 'DCIT fees', message: 'How much is DCIT?' },
-                { label: 'Admission dates', message: 'When do applications open and close?' },
-                { label: 'DCIT vs DBIT', message: 'Which is better for me, DCIT or DBIT?' }
-              ],
-          intakeOpen: '2026-06-01',
-          intakeClose: '2026-09-30',
-          intakeStart: '2026-11-01',
-          applicationFee: 'TZS 15,000 (local) / TZS 30,000 (foreign)'
-        };
-      }
-    }
+     if (!welcome && typeof uccFallbackAnswer === 'function') {
+       const fb = uccFallbackAnswer('hello', state.detectedLang);
+       if (fb && fb.answer) {
+         welcome = {
+           message: fb.answer,
+           language: fb.language || state.detectedLang,
+           quickReplies: state.detectedLang === 'sw'
+             ? [
+                 { label: '📥 Pakua Hati', message: 'Naomba pakua hati zote za kuomba' },
+                 { label: 'Programu zenu', message: 'Naomba kuona programu zenu' },
+                 { label: 'Ada ya DCIT', message: 'Ada ya DCIT ni ngapi?' },
+                 { label: 'Lini maombi?', message: 'Lini maombi yanafunguliwa na yanafungwa?' },
+                 { label: 'DCIT vs DBIT', message: 'DCIT na DBIT, ni ipi bora kwangu?' }
+               ]
+             : [
+                 { label: '📥 Download Documents', message: 'I need the application pack' },
+                 { label: 'Programmes', message: 'What programmes do you offer?' },
+                 { label: 'DCIT fees', message: 'How much is DCIT?' },
+                 { label: 'Admission dates', message: 'When do applications open and close?' },
+                 { label: 'DCIT vs DBIT', message: 'Which is better for me, DCIT or DBIT?' }
+               ],
+           intakeOpen: '2026-06-01',
+           intakeClose: '2026-09-30',
+           intakeStart: '2026-11-01',
+           applicationFee: 'TZS 15,000 (local) / TZS 30,000 (foreign)'
+         };
+       }
+     }
 
-    if (!welcome) {
-      welcome = {
-        message: state.detectedLang === 'sw'
-          ? 'Habari! Karibu katika UCC. Naweza kukusaidia na programu, udahili, ada, na huduma nyingine za UCC.'
-          : "Hello! Welcome to UCC. I can help you with programmes, admissions, fees, and other UCC services.",
-        language: state.detectedLang,
-        quickReplies: [],
-        intakeOpen: '2026-06-01',
-        intakeClose: '2026-09-30'
-      };
-    }
+     if (!welcome) {
+       welcome = {
+         message: state.detectedLang === 'sw'
+           ? 'Habari! Karibu katika UCC. Naweza kukusaidia na programu, udahili, ada, na huduma nyingine za UCC.'
+           : "Hello! Welcome to UCC. I can help you with programmes, admissions, fees, and other UCC services.",
+         language: state.detectedLang,
+         quickReplies: [],
+         intakeOpen: '2026-06-01',
+         intakeClose: '2026-09-30'
+       };
+     }
 
-    if (welcome.language) saveLangPref(welcome.language);
-    showIntakeBanner(welcome);
-    addMessage('assistant', welcome.message, [], '', 1.0, false, { quickReplies: welcome.quickReplies || [] });
-    state.history.push({ role: 'assistant', content: welcome.message, ts: Date.now() });
-    saveHistory();
-  }
+     if (welcome.language) saveLangPref(welcome.language);
+     showIntakeBanner(welcome);
+     addMessage('assistant', welcome.message, [], '', 1.0, false, { quickReplies: welcome.quickReplies || [] });
+     state.history.push({ role: 'assistant', content: welcome.message, ts: Date.now() });
+     saveHistory();
+     state.welcomeInProgress = false;
+   }
 
   function showIntakeBanner(welcome) {
     if (!welcome) return;
@@ -488,7 +491,9 @@
     }
     const sendBtn = $('send-btn');
     if (sendBtn) sendBtn.disabled = false;
-    if (!state.welcomeLoaded) loadWelcomeIfNeeded();
+    // Only show the welcome screen once per session. Calling this on every
+    // widget open (e.g. after each message) caused the welcome to loop.
+    if (!state.welcomeLoaded && !state.welcomeInProgress) loadWelcomeIfNeeded();
   }
 
   function closeChat() {
@@ -1078,16 +1083,19 @@ function setSendButtonStop(isStop) {
       inner.appendChild(note);
     }
   }
-
-  // ---------- Restore history ----------
+// ---------- Restore history ----------
   function restoreHistory() {
     if (!state.history || !state.history.length) return;
+
     const intro = el('div', { class: 'history-restore', role: 'status' });
     intro.innerHTML = '<em>Welcome back. Here is your recent conversation. <button id="clear-history-btn" type="button" class="link-btn">Start new conversation</button></em>';
     $('chat-messages').appendChild(intro);
     state.history.forEach(m => addMessage(m.role, m.content, [], '', 0, false, { skipFeedback: true }));
     const clr = $('clear-history-btn');
     if (clr) clr.addEventListener('click', clearHistoryAndRestart);
+    // History restored — do NOT re-fire the welcome screen, otherwise the
+    // welcome message loops forever on every page load.
+    state.welcomeLoaded = true;
   }
 
   function clearHistoryAndRestart() {
