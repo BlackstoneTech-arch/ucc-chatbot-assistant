@@ -60,6 +60,20 @@ This section maps the UCC AI Agent blueprint (Phases 1–5) to the actual codeba
 | Analytics dashboard | ✅ | `AnalyticsController.getStats()` + `activity()` + `health()` |
 | Audit logs | ✅ | `AuditLog` entity, `AcademicAdminController.listAudit()` |
 
+### LLM Model Registry (priority-based fallback routing)
+
+| Capability | Implementation |
+|-----------|----------------|
+| Multi-provider model registry | `LLMModel` entity (`llm_models` table) — openai / groq / pollinations / anthropic / custom |
+| Repository + service + admin controller | `LLMModelRepository`, `LLMModelService`, `LLMModelController` (`/api/admin/llm`) |
+| Active/default model selection | `getActiveModel()` — prefers `is_default`, falls back to lowest-priority active model |
+| Deterministic fallback ordering | `listActive()` ordered by `priority ASC`; `tryNextRegisteredModel()` walks the list on failure |
+| Per-model config | base URL, API key (encrypted), max tokens, temperature, timeout, cost per 1k tokens |
+| Seed on boot | `DataLoader.initLLMModels` — OpenAI / Groq / Pollinations, all inactive until an admin activates one |
+| Chat completions routed through registry | `AIServiceImpl.callRegisteredModel()` — replaces the single hard-coded env config |
+| Fallback chain | registered model → next registered model → KB static answer → escalation |
+| Test endpoint | `POST /api/admin/llm/{id}/test` — pings the model and records last-tested status |
+
 ### Hybrid Retrieval
 
 | Blueprint Requirement | Status | Implementation |
@@ -107,3 +121,14 @@ This section maps the UCC AI Agent blueprint (Phases 1–5) to the actual codeba
 ---
 
 **All blueprint gaps are now closed.** The system is ready for Phase 6 (Testing) and Phase 7 (Documentation).
+
+## Running the AI
+
+Chat completions are routed through the **LLM Model Registry**. An admin must activate a model and supply an API key before AI responses are served:
+
+1. Start the backend (needs a database + `JWT_SECRET`).
+2. Log in as admin and open the **LLM Models** panel (`/api/admin/llm`).
+3. Activate a seeded model (OpenAI / Groq / Pollinations) and paste its API key, or register a custom provider.
+4. The active model is used for every chat completion; lower-priority models act as automatic fallbacks.
+
+Out-of-the-box, all models are inactive — no outbound calls are made until an admin opts in.
