@@ -903,19 +903,16 @@
       if (hasLiveApi() && navigator.onLine) {
         try {
           activeRequest = new AbortController();
-          const t = setTimeout(() => activeRequest && activeRequest.abort(), 20000);
           const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('ucc_auth_token') : null;
           const userRaw = (typeof localStorage !== 'undefined') ? localStorage.getItem('ucc_auth_user') : null;
           const user = userRaw ? JSON.parse(userRaw) : null;
-          const response = await fetch(`${apiBase()}/chat`, {
+          const response = await apiRequest('/chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
-            body: JSON.stringify({ message: userText, conversationId: state.sessionId, language: state.detectedLang, user: user || null }),
-            signal: activeRequest.signal
-          });
-          clearTimeout(t);
+            headers: { ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
+            body: JSON.stringify({ message: userText, conversationId: state.sessionId, language: state.detectedLang, user: user || null })
+          }, 1);
           if (response.ok) {
-            const data = await response.json();
+            const data = await safeJson(response);
             const answerText = (data && data.answer) ? String(data.answer) : '';
             const isEscalation = /couldn't find verified information|please contact ucc|visit https:\/\/ucc\.co\.tz\//i.test(answerText);
             if (isEscalation && typeof uccFallbackAnswer === 'function') {

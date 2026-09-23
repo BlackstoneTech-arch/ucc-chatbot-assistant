@@ -259,8 +259,8 @@ function uccFallbackAnswer(message, lang) {
   }
 
   const fallback = detectedLang === 'sw'
-    ? "Samahani, sina taarifa maalum kuhusu hilo kwa sasa. Tafadhali wasiliana na UCC kwa info@ucc.co.tz au +255 22 2410641/5, au tembelea https://ucc.co.tz/."
-    : "I couldn't find verified information about that in the UCC knowledge base. I don't want to give you incorrect information. Please contact UCC at info@ucc.co.tz or +255 22 2410641/5, or visit https://ucc.co.tz/.";
+    ? "Samahani, sina taarifa maalum kuhusu hilo kwa sasa. Tafadhali wasiliana na UCC kwa info@ucc.co.tz au +255 22 2410641/5, au tembelea https://ucc.co.tz/. Kama swali lako linahusu programu, udahili, ada, au mawasiliano, jaribu kuuliza kwa maneno mengine."
+    : "I couldn't find verified information about that in the UCC knowledge base. I don't want to give you incorrect information. Please contact UCC at info@ucc.co.tz or +255 22 2410641/5, or visit https://ucc.co.tz/. If your question is about programmes, admissions, fees, or contacts, try rephrasing it.";
 
   return {
     answer: fallback,
