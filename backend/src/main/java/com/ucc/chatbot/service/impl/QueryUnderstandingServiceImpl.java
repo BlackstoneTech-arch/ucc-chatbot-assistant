@@ -392,15 +392,35 @@ public class QueryUnderstandingServiceImpl implements QueryUnderstandingService 
         else if (text.contains("cbit")) entities.setProgramme("CBIT");
 
         if (entities.getProgramme() == null && conversationContext != null) {
-            for (String code : PROGRAMME_CODES) {
-                if (conversationContext.contains(code)) {
-                    entities.setProgramme(code);
-                    break;
+            // Only adopt a programme from the conversation context when the user's
+            // current query is clearly a follow-up (e.g. "and its fees?"). A bare
+            // question about admissions, fees, or locations must NOT inherit the
+            // previous turn's programme, otherwise "When do applications open?"
+            // gets answered with the last programme's details.
+            if (isProgrammeFollowUp(text)) {
+                for (String code : PROGRAMME_CODES) {
+                    if (conversationContext.contains(code)) {
+                        entities.setProgramme(code);
+                        break;
+                    }
                 }
             }
         }
 
         return entities;
+    }
+
+    private static boolean isProgrammeFollowUp(String text) {
+        if (text == null || text.isBlank()) return false;
+        // Explicit follow-up cues with no programme mentioned in the current text.
+        // Only multi-word or longer cues are used so short substrings ("na", "hi",
+        // "ya") cannot accidentally match inside unrelated words.
+        String[] cues = {"and its", "and the", "what about", "how about",
+                "pia", "hiyo", "ile", "kwa", "kazi", "sasa", "hii", "hilo"};
+        for (String cue : cues) {
+            if (containsWord(text, cue)) return true;
+        }
+        return false;
     }
 
     private List<String> extractConcepts(String text, String lang) {

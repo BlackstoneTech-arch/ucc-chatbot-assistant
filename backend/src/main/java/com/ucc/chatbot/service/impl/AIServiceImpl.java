@@ -1341,10 +1341,16 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
     private String extractActiveProgrammeFromContext(String context) {
         if (context == null || context.isBlank()) return null;
-        String lower = context.toLowerCase();
-        for (String code : PROGRAMME_CODES) {
-            if (lower.contains(code.toLowerCase())) {
-                return code;
+        // Only honour an explicit "Active Programme:" line set by the conversation
+        // service. Scanning the whole retrieval context (which includes KB
+        // document bodies that mention DCIT/DBIT/CCIT/CBIT) would wrongly
+        // inject a programme code into every query.
+        for (String line : context.split("\n")) {
+            String lower = line.toLowerCase();
+            if (lower.startsWith("active programme:")) {
+                for (String code : PROGRAMME_CODES) {
+                    if (lower.contains(code.toLowerCase())) return code;
+                }
             }
         }
         return null;
