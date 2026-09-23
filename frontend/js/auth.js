@@ -94,7 +94,11 @@
     if (!res.ok) {
       const txt = await res.text().catch(function () { return ""; });
       let msg = "Request failed";
-      try { const j = JSON.parse(txt); if (j && j.message) msg = j.message; } catch (_) {}
+      try {
+        const j = JSON.parse(txt);
+        if (j && j.message) msg = j.message;
+        else if (j && j.error) msg = j.error;
+      } catch (_) {}
       throw new Error(msg);
     }
     const txt = await res.text().catch(function () { return ""; });

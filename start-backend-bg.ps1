@@ -5,7 +5,7 @@ $LogFile = Join-Path $ProjectRoot "logs\backend.log"
 if (-not (Test-Path (Split-Path -Parent $LogFile))) { New-Item -ItemType Directory -Path (Split-Path -Parent $LogFile) -Force | Out-Null }
 
 Get-Content (Join-Path $ProjectRoot ".env") | ForEach-Object {
-    if ($_ -match '^(DB_|AI_|JWT_|ADMIN_)') {
+    if ($_ -match '^(DB_|AI_|JWT_|ADMIN_|FRONTEND_URL|CORS_|ENCRYPTION_)') {
         $parts = $_ -split '=', 2
         $name = $parts[0]
         $val = $parts[1]

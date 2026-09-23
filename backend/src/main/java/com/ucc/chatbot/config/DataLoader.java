@@ -21,7 +21,8 @@ public class DataLoader {
                 return;
             }
 
-            if (userRepository.count() == 0) {
+            User existing = userRepository.findByEmail(adminEmail).orElse(null);
+            if (existing == null) {
                 User admin = new User();
                 admin.setEmail(adminEmail);
                 admin.setPasswordHash(passwordEncoder.encode(adminPassword));
@@ -29,6 +30,12 @@ public class DataLoader {
                 admin.setRole("ADMIN");
                 admin.setIsActive(true);
                 userRepository.save(admin);
+            } else {
+                existing.setPasswordHash(passwordEncoder.encode(adminPassword));
+                existing.setFullName(adminName);
+                existing.setRole("ADMIN");
+                existing.setIsActive(true);
+                userRepository.save(existing);
             }
         };
     }
