@@ -74,7 +74,9 @@ public class SecurityConfig {
                 "http://localhost:8081",
                 "https://uccchatbot.netlify.app",
                 "https://master--uccchatbot.netlify.app",
-                "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app"
+                "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app",
+                // Cloudflare Workers deployment (frontend served from here)
+                "https://ucc-chatbot.blackstone-tech02.workers.dev"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
