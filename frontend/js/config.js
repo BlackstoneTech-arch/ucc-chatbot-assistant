@@ -31,7 +31,8 @@ const API_BASE_URL = API_CONFIG.BASE_URL;
  *
  * - Respects the browser's online/offline state (navigator.onLine).
  * - Aborts on timeout instead of hanging forever (important for slow /
- *   unreliable networks and older browsers).
+ *   unreliable networks and older browsers). Hard timeout is 12s so the
+ *   chat always falls back to the local KB instead of freezing the UI.
  * - Retries once on transient 5xx / network errors before giving up.
  * - Never throws an unhandled rejection: always resolves with a Response
  *   or rejects with a descriptive Error the caller can fall back from.
@@ -44,7 +45,7 @@ async function apiRequest(endpoint, options = {}, retries = 1) {
   let lastError = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000);
+    const timer = setTimeout(() => controller.abort(), 12000);
     try {
       const response = await fetch(url, {
         method: options.method || "GET",
@@ -63,7 +64,7 @@ async function apiRequest(endpoint, options = {}, retries = 1) {
       const transient = name === "AbortError" || name === "TypeError" || !navigator.onLine;
       if (!transient || attempt >= retries) break;
       // Small back-off before the retry.
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 600));
     }
   }
   throw lastError || new Error(`API request failed: ${url}`);

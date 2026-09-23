@@ -1246,7 +1246,7 @@ public class AIServiceImpl implements com.ucc.chatbot.service.AIService {
 
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create("https://text.pollinations.ai/openai"))
-                .timeout(Duration.ofSeconds(45))
+                .timeout(Duration.ofSeconds(25))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();

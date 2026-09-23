@@ -13,6 +13,7 @@ import com.ucc.chatbot.service.ConversationService;
 import com.ucc.chatbot.service.QueryUnderstandingService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -150,16 +151,26 @@ public class ChatServiceImpl implements com.ucc.chatbot.service.ChatService {
             context.append("Active Programme: ").append(understanding.getEntities().getProgramme()).append("\n\n");
         }
 
-        List<KnowledgeDocument> documents = knowledgeRepository.findByIsActiveTrue();
-        String queryText = understanding.getCanonicalQuery() != null ? understanding.getCanonicalQuery().toLowerCase() : "";
-        for (KnowledgeDocument doc : documents) {
-            if (doc.getContent() != null && !doc.getContent().isBlank()) {
-                String title = doc.getTitle() != null ? doc.getTitle().toLowerCase() : "";
-                String category = doc.getCategory() != null ? doc.getCategory().toLowerCase() : "";
-                if (queryText.contains(title) || queryText.contains(category) ||
-                    (understanding.getEntities() != null && understanding.getEntities().getProgramme() != null &&
-                     title.contains(understanding.getEntities().getProgramme().toLowerCase()))) {
-                    context.append(doc.getTitle()).append(": ").append(doc.getContent()).append("\n\n");
+        // Only scan documents whose title/category actually matches the query.
+        // Iterating every KB document on every request was a DB query + full
+        // scan and added noticeable latency on each chat turn.
+        if (knowledgeRepository != null) {
+            List<KnowledgeDocument> documents = knowledgeRepository.findByIsActiveTrue();
+            String queryText = understanding.getCanonicalQuery() != null
+                    ? understanding.getCanonicalQuery().toLowerCase() : "";
+            String programme = understanding.getEntities() != null
+                    ? understanding.getEntities().getProgramme() : null;
+            int scanned = 0;
+            for (KnowledgeDocument doc : documents) {
+                if (scanned >= 12) break; // cap the scan so the context stays small
+                if (doc.getContent() != null && !doc.getContent().isBlank()) {
+                    String title = doc.getTitle() != null ? doc.getTitle().toLowerCase() : "";
+                    String category = doc.getCategory() != null ? doc.getCategory().toLowerCase() : "";
+                    if (queryText.contains(title) || queryText.contains(category) ||
+                        (programme != null && title.contains(programme.toLowerCase()))) {
+                        context.append(doc.getTitle()).append(": ").append(doc.getContent()).append("\n\n");
+                        scanned++;
+                    }
                 }
             }
         }
