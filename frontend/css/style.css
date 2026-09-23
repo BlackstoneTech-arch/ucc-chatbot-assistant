@@ -285,6 +285,8 @@ body {
 .social-link strong { font-size: .88rem; line-height: 1.1; }
 .social-link small { color: var(--gray-500); font-size: .7rem; font-weight: 500; white-space: nowrap; }
 .social-link-icon { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border-radius: 9px; color: #fff; background: var(--ucc-primary); font-size: 1rem; font-weight: 800; }
+.social-link-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.social-link-icon .social-icon-fill { fill: currentColor; stroke: none; }
 .social-link-facebook { border-top-color: #1877f2; }.social-link-facebook .social-link-icon { background: #1877f2; }
 .social-link-instagram { border-top-color: #d94680; }.social-link-instagram .social-link-icon { background: #d94680; }
 .social-link-twitter { border-top-color: #111827; }.social-link-twitter .social-link-icon { background: #111827; }
