@@ -25,15 +25,16 @@
   const MAX_HISTORY_MESSAGES = 200;
   const FEEDBACK_BATCH_SIZE = 10;
 
-  // ---------- State ----------
-  const state = {
-    sessionId: getOrCreateSessionId(),
-    history: loadHistory(),
-    isProcessing: false,
-    welcomeLoaded: false,
-    detectedLang: loadLangPref(),
-    conversationHistory: []
-  };
+// ---------- State ----------
+   const state = {
+     sessionId: getOrCreateSessionId(),
+     history: loadHistory(),
+     isProcessing: false,
+     welcomeLoaded: false,
+     conversationStarted: false,   // true once the user sends their first message
+     detectedLang: loadLangPref(),
+     conversationHistory: []
+   };
 
   // ---------- Storage helpers ----------
   function getOrCreateSessionId() {
@@ -393,21 +394,24 @@
     return e;
   }
 
-  // ---------- Welcome ----------
-  async function loadWelcomeIfNeeded() {
-    if (state.welcomeLoaded) return;
-    state.welcomeLoaded = true;
+// ---------- Welcome ----------
+   async function loadWelcomeIfNeeded() {
+     // Guard: only ever show the welcome screen once per session. Re-firing
+     // it on every send (or on every API greeting response) caused the
+     // welcome message to loop forever.
+     if (state.welcomeLoaded) return;
+     state.welcomeLoaded = true;
 
-    let welcome = null;
-    if (hasLiveApi()) {
-      try {
-        const controller = new AbortController();
-        const t = setTimeout(() => controller.abort(), 5000);
-        const r = await fetch(`${apiBase()}/chat/welcome?lang=${encodeURIComponent(state.detectedLang)}`, { method: 'GET', signal: controller.signal });
-        clearTimeout(t);
-        if (r.ok) welcome = await r.json();
-      } catch (_) { welcome = null; }
-    }
+     let welcome = null;
+     if (hasLiveApi() && navigator.onLine) {
+       try {
+         const controller = new AbortController();
+         const t = setTimeout(() => controller.abort(), 5000);
+         const r = await fetch(`${apiBase()}/chat/welcome?lang=${encodeURIComponent(state.detectedLang)}`, { method: 'GET', signal: controller.signal });
+         clearTimeout(t);
+         if (r.ok) welcome = await r.json();
+       } catch (_) { welcome = null; }
+     }
 
     if (!welcome && typeof uccFallbackAnswer === 'function') {
       const fb = uccFallbackAnswer('hello', state.detectedLang);
@@ -1105,12 +1109,16 @@
     loadWelcomeIfNeeded();
   }
 
-  // ---------- Submit ----------
-  function handleSubmit(event) {
-    event.preventDefault();
-    const input = $('chat-input');
-    if (input) sendMessage(input.value);
-  }
+// ---------- Submit ----------
+   function handleSubmit(event) {
+     event.preventDefault();
+     // Guard against double-firing: Enter key + button click can both fire,
+     // and the button's own onclick can fire too. Only the first valid send
+     // goes through.
+     if (state.isProcessing) return;
+     const input = $('chat-input');
+     if (input) sendMessage(input.value);
+   }
 
   // ---------- Init ----------
   function init() {
