@@ -19,7 +19,10 @@ const API_CONFIG = {
     ? __API_BASE_URL__
     : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
       ? "http://localhost:8081/api"
-      : "/api"
+      // Deployed on Cloudflare Workers: route chat traffic through the public
+      // backend tunnel. Override with __API_BASE_URL__ at build time if you
+      // host the backend elsewhere.
+      : "https://ucc-chatbot-api.loca.lt/api"
 };
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
