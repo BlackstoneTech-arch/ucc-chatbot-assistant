@@ -681,26 +681,14 @@
 
     const streamWords = (fullText) => {
       if (cancelled) return;
-      const tokens = fullText.split(/(\s+)/);
-      let idx = 0;
-      let acc = '';
-      const tick = () => {
-        if (cancelled) { finished = true; if (onDone) onDone(acc, true); return; }
-        // Reveal 2-3 tokens per frame for speed
-        const step = 2;
-        for (let i = 0; i < step && idx < tokens.length; i++) {
-          acc += tokens[idx++];
-        }
-        reveal(acc);
-        if (idx < tokens.length) {
-          timer = setTimeout(tick, 18);
-        } else {
-          finished = true;
-          textDiv.classList.remove('streaming');
-          if (onDone) onDone(acc, false);
-        }
-      };
-      tick();
+      // Reveal the full answer immediately. The previous word-by-word
+      // animation added ~1.4s of artificial delay on every response and
+      // made the chat feel slow. Instant reveal is both faster and more
+      // accurate (no partial text ever shown).
+      reveal(fullText);
+      finished = true;
+      textDiv.classList.remove('streaming');
+      if (onDone) onDone(fullText, false);
     };
 
     return {
@@ -1008,22 +996,23 @@
 
   const STREAMING_ENABLED = true; // word-by-word reveal
 
-  function setSendButtonStop(isStop) {
-    const sendBtn = $('send-btn');
-    if (!sendBtn) return;
-    if (isStop) {
-      sendBtn.classList.add('is-stop');
-      sendBtn.setAttribute('aria-label', 'Stop generating');
-      sendBtn.setAttribute('title', 'Stop');
-      sendBtn.disabled = false;
-      sendBtn.onclick = (e) => { e.preventDefault(); stopGenerating(); };
-    } else {
-      sendBtn.classList.remove('is-stop');
-      sendBtn.removeAttribute('onclick');
-      sendBtn.setAttribute('aria-label', 'Send message');
-      sendBtn.setAttribute('title', 'Send (Enter)');
-    }
-  }
+function setSendButtonStop(isStop) {
+     const sendBtn = $('send-btn');
+     if (!sendBtn) return;
+     // The send button's click handler is wired permanently in init() so it
+     // never goes dead. Here we only toggle the visual "stop" state.
+     if (isStop) {
+       sendBtn.classList.add('is-stop');
+       sendBtn.setAttribute('aria-label', 'Stop generating');
+       sendBtn.setAttribute('title', 'Stop');
+       sendBtn.disabled = false;
+     } else {
+       sendBtn.classList.remove('is-stop');
+       sendBtn.setAttribute('aria-label', 'Send message');
+       sendBtn.setAttribute('title', 'Send (Enter)');
+       sendBtn.disabled = false;
+     }
+   }
 
   function stopGenerating() {
     if (activeRequest) { try { activeRequest.abort(); } catch (_) {} }
@@ -1144,7 +1133,18 @@
       autoResizeInput(input);
     }
     const sendBtn = $('send-btn');
-    if (sendBtn) sendBtn.setAttribute('aria-label', 'Send message');
+    if (sendBtn) {
+      sendBtn.setAttribute('aria-label', 'Send message');
+      sendBtn.setAttribute('title', 'Send (Enter)');
+      // The send button must always be clickable. Previously it only had a
+      // temporary onclick set while generating; once that was cleared the
+      // button went dead until a page refresh. Wire a permanent listener here.
+      sendBtn.addEventListener('click', () => {
+        if (state.isProcessing) { stopGenerating(); return; }
+        const input = $('chat-input');
+        if (input) sendMessage(input.value);
+      });
+    }
 
     // Wire up topbar buttons
     const newChatBtn = $('new-chat-btn');
