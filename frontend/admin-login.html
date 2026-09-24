@@ -65,7 +65,7 @@
         message.className = 'admin-login-message ' + (success ? 'success' : 'error');
       }
 
-      if (window.AuthService && window.AuthService.requiresAdmin()) {
+      if (window.AuthService && window.AuthService.requireAdmin('/admin-login')) {
         window.location.replace('/admin/dashboard.html');
         return;
       }
@@ -75,10 +75,10 @@
         submit.disabled = true;
         try {
           if (!window.AuthService) throw new Error('Authentication service unavailable.');
-          const data = await window.AuthService.adminLogin(email.value.trim(), password.value);
-          if (!data || !data.success || !window.AuthService.requiresAdmin()) {
+          const data = await window.AuthService.login(email.value.trim(), password.value);
+          if (!data || !window.AuthService.requireAdmin('/admin-login')) {
             window.AuthService.clearSession();
-            throw new Error('Invalid administrator credentials.');
+            throw new Error('Invalid administrator credentials or insufficient privileges.');
           }
           showMessage('Signed in. Redirecting...', true);
           window.location.replace('/admin/dashboard.html');

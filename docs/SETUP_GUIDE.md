@@ -53,7 +53,7 @@
 - A **managed MySQL** or **PostgreSQL** instance (or self-hosted on the same VM)
 - A **TLS reverse proxy** (Caddy, nginx, or the PaaS's built-in TLS)
 - A **DNS A/CNAME** pointing your domain to the backend host
-- A **Netlify** (or Cloudflare Pages / Vercel) account for the admin dashboard
+- A **Cloudflare Pages** (static frontend/admin) + **Cloudflare Worker** (/api proxy) + external backend host + managed DB
 
 ---
 
@@ -77,9 +77,8 @@ ucc-chatbot-assistant/
 ├── admin/                      # Admin dashboard (vanilla HTML/CSS/JS)
 │   ├── dashboard.html
 │   ├── index.html
-│   ├── js/admin.js, admin-auth.js
+│   ├── js/admin.js
 │   ├── css/admin.css
-│   └── netlify.toml
 ├── frontend/                   # Public website + chatbot widget
 │   ├── index.html, chat.html, courses.html, ...
 │   └── js/chatbot.js, app.js, ucc-kb.js
@@ -228,25 +227,26 @@ When you create the DB, copy these values for the next step:
 - **Password**
 - **SSL** — note whether it's required (`?sslmode=REQUIRED` in URL) or optional
 
-### Option C — Netlify PostgreSQL (for the Netlify-first deployment)
+### Option C — Managed PostgreSQL (Render / Railway / Fly.io / Cloud SQL)
 
-If you want to use the Netlify DB that was provisioned earlier:
+Use your provider's connection details:
 
 ```
-Host:     ep-lucky-mouse-a5nt5hhl.us-east-2.db.netlify.com
+Host:     <provider-host>
 Port:     5432
-Database: netlifydb
-Username: netlifydb_owner
-Password: npg_FOjBtW7N3rRA
-SSL:      required
+Database: <db-name>
+Username: <db-user>
+Password: <db-password>
+SSL:      required (most managed providers)
 ```
 
 Connection URL:
+
 ```
-jdbc:postgresql://ep-lucky-mouse-a5nt5hhl.us-east-2.db.netlify.com:5432/netlifydb?sslmode=require
+jdbc:postgresql://<provider-host>:5432/<db-name>?sslmode=require
 ```
 
-**Important:** Netlify DB is a shared/free PostgreSQL. Tables will be created automatically on first run. For production UCC traffic, get a dedicated managed DB instead.
+**Important:** Use a dedicated managed DB for production. Free/shared tiers are fine for testing.
 
 ### Option D — Docker MySQL (fastest on any machine with Docker)
 
@@ -293,11 +293,11 @@ DB_PASSWORD=strong_password_here
 DB_DRIVER=com.mysql.cj.jdbc.Driver
 DB_DIALECT=org.hibernate.dialect.MySQLDialect
 
-# Option B: PostgreSQL (Netlify example) - just uncomment and use these:
+# Option B: PostgreSQL (managed provider example) - just uncomment and use these:
 # DB_TYPE=postgres
-# DB_URL=jdbc:postgresql://ep-lucky-mouse-a5nt5hhl.us-east-2.db.netlify.com:5432/netlifydb?sslmode=require
-# DB_USERNAME=netlifydb_owner
-# DB_PASSWORD=npg_FOjBtW7N3rRA
+# DB_URL=jdbc:postgresql://<provider-host>:5432/<db-name>?sslmode=require
+# DB_USERNAME=<db-user>
+# DB_PASSWORD=<db-password>
 # DB_DRIVER=org.postgresql.Driver
 # DB_DIALECT=org.hibernate.dialect.PostgreSQLDialect
 
@@ -491,34 +491,22 @@ The admin dashboard is a static SPA. It has two files that talk to the backend:
 
 ### 8.1 Update the API base URL
 
-Open `admin/js/admin-auth.js` and change line 5-7:
+In production the frontend uses the same-origin `/api` path by default (`frontend/js/config.js`). The Cloudflare Worker proxy forwards `/api/*` to your backend.
 
-```js
-const ADMIN_CONFIG = {
-  API_BASE_URL: "https://api.your-domain.com/api"   // <-- your backend URL
-};
-```
+### 8.2 Deploy frontend/admin to Cloudflare Pages
 
-> For local dev, leave it as `http://localhost:8081/api`.
+1. Push to `master`.
+2. Cloudflare Pages → Create → Connect Git → select this repo.
+3. **Build command:** `echo "Static site — no build step required"`
+4. **Publish directory:** `frontend`
+5. Click Deploy. Cloudflare Pages gives you a URL like `https://ucc-chatbot.pages.dev`.
+6. **Custom domain** (optional): set `uccchatbot.your-domain.com` in Cloudflare DNS.
 
-### 8.2 Deploy to Netlify (recommended, free)
+### 8.3 Deploy the API proxy to Cloudflare Workers
 
-1. Push the `admin/` directory to its own Git repo (or use the same repo with `base = admin` in `netlify.toml`).
-2. In Netlify, "Add new site" → "Import from Git" → select the repo.
-3. **Build command:** `echo "no build"`
-4. **Publish directory:** `.` (the `admin/` folder)
-5. Click Deploy. Netlify gives you a URL like `https://ucc-admin.netlify.app`.
-6. Go to **Site settings → Environment variables** and add (if you want to override):
-   - `API_BASE_URL` (we still hardcode in JS for now, but future versions will read this)
-7. **Custom domain** (optional): set up `admin.your-domain.com` in Domain settings.
-
-The `admin/netlify.toml` already configures SPA-style redirects and security headers.
-
-### 8.3 Deploy to Cloudflare Pages (alternative)
-
-1. Push to Git.
-2. Cloudflare Pages → Create → Direct Upload → drag the `admin/` folder.
-3. Custom domain: `admin.your-domain.com`.
+1. In Cloudflare Dashboard → Workers & Pages → Create Application → Start with Hello World!
+2. Install `wrangler`, set `BACKEND_URL` env secret/token to your backend base URL, and deploy `workers/index.js`.
+3. Add a route: `uccchatbot.your-domain.com/api/*` → Worker.
 
 ### 8.4 Self-host with nginx
 
@@ -551,7 +539,7 @@ server {
 .\start-admin.ps1
 ```
 
-This serves the admin dashboard at `http://localhost:3001/` and points it at `http://localhost:8081/api` by default.
+This serves the admin dashboard at `http://localhost:3001/` and points it at `http://localhost:8080/api` by default.
 
 ---
 
@@ -770,7 +758,7 @@ The default setup handles ~100 concurrent users comfortably on a $5/month VPS. T
 | DB CPU | Move to a managed MySQL with more vCPUs |
 | Backend CPU | Run 2–4 backend instances behind a load balancer |
 | LLM cost | Cache popular answers in Redis, lower `max_tokens` |
-| Static assets | Put admin + frontend behind a CDN (Cloudflare, Netlify) |
+| Static assets | Put admin + frontend behind a CDN (Cloudflare) |
 
 ---
 
@@ -824,7 +812,7 @@ The default admin user wasn't created. Two causes:
 
 Your `CORS_ALLOWED_ORIGINS` doesn't include the URL you're accessing from. Add it to `.env` and restart. Example:
 ```env
-CORS_ALLOWED_ORIGINS=https://admin.netlify.app,https://uccchatbot.netlify.app
+CORS_ALLOWED_ORIGINS=https://uccchatbot.blackstone-tech02.workers.dev,https://uccchatbot.pages.dev,http://localhost:5500,http://localhost:3000,http://localhost:3001
 ```
 
 ### Chat returns "I'm having trouble processing your request"

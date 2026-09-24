@@ -13,7 +13,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/admin/logs")
 @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "https://uccchatbot.netlify.app"})
 public class LogsController {
 
     private final AILogRepository aiLogRepository;

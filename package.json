@@ -9,7 +9,9 @@
     "dev:admin": "npx serve admin -l 3001",
     "build:backend": "cd backend && mvn clean package",
     "test": "cd backend && mvn test",
-    "lint": "echo \"No lint configured\""
+    "lint": "echo \"No lint configured\"",
+    "deploy:pages": "npx --yes wrangler@latest pages project create ucc-chatbot --production-branch master || true",
+    "deploy:worker": "npx --yes wrangler@latest deploy"
   },
   "devDependencies": {
     "serve": "^14.2.0"

@@ -12,7 +12,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/admin/conversations")
 @PreAuthorize("hasAnyRole('ADMIN','STAFF','VIEWER')")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "https://uccchatbot.netlify.app"})
 public class ConversationAdminController {
 
     private final ConversationRepository conversationRepository;

@@ -46,7 +46,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- PostgreSQL (for Netlify DB) -->
+        <!-- Database (H2 included for local dev/tests) -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

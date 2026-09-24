@@ -4,11 +4,24 @@
 /terms    /terms.html    200
 /cookies  /cookies.html  200
 
+# Auth / clean routes
+/login   /login.html    200
+/chat    /chat.html     200
+/courses /courses.html  200
+/services /services.html 200
+/downloads /downloads.html 200
+/contact /contact.html  200
+/about   /about.html    200
+
 # Admin pages
-/admin/news       /admin/news.html       200
-/admin/news.html  /admin/news.html       200
+/admin-login         /admin-login.html 200
+/admin-login.html    /admin-login.html 200
+/admin/dashboard     /admin/dashboard.html 200
+/admin/dashboard.html /admin/dashboard.html 200
+/admin/news          /admin/news.html 200
+/admin/news.html     /admin/news.html 200
 
 # Fallback for SPA-style admin routes
-/admin/*          /admin/news.html       200
+/admin/*             /admin/dashboard.html 200
 
-# Last updated: 2026-09-14
+# Last updated: 2026-09-24

@@ -18,7 +18,7 @@ const API_CONFIG = {
   BASE_URL: (typeof __API_BASE_URL__ !== 'undefined' && __API_BASE_URL__)
     ? __API_BASE_URL__
     : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-      ? "http://localhost:8081/api"
+      ? "http://localhost:8080/api"
       : "/api"
 };
 const API_BASE_URL = API_CONFIG.BASE_URL;

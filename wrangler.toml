@@ -1,8 +1,10 @@
 name = "ucc-chatbot"
+main = "workers/index.js"
 compatibility_date = "2024-09-23"
 workers_dev = true
 
 [assets]
-  directory = "frontend"
+directory = "frontend"
 
-# Auto-deploy trigger — 2026-09-14 — v2
+# Cloudflare Pages deployment is handled by .github/workflows/deploy.yml
+# The Worker proxy below catches /api/* requests that are not static assets.

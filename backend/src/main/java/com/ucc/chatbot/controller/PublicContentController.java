@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:5500", "https://uccchatbot.netlify.app", "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app"})
 public class PublicContentController {
 
     private final FAQRepository faqRepository;

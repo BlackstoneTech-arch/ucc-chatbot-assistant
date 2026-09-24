@@ -20,7 +20,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/admin/integrations")
 @PreAuthorize("hasAnyRole('ADMIN')")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "https://uccchatbot.netlify.app"})
 public class IntegrationController {
 
     private final IntegrationRepository integrationRepository;

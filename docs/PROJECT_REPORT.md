@@ -5,8 +5,8 @@
 The **University of Dar es Salaam Computing Centre (UCC) AI Assistant** is an intelligent, multilingual customer-care chatbot designed to help prospective students, current students, and the public discover accurate information about UCC's academic programmes, professional courses, admissions, fees, IT services, and software products. The system runs 24/7, supports English and Kiswahili, and operates under the official identity of **"UCC AI Assistant"** — a neutral, professional, institutional persona.
 
 **Live system:**
-- **Frontend (Chatbot):** https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app/
-- **Admin Dashboard:** https://admin-uccchatbot.netlify.app/
+- **Frontend (Chatbot):** https://ucc-chatbot.blackstone-tech02.workers.dev/
+- **Admin Dashboard:** https://ucc-chatbot.blackstone-tech02.workers.dev/admin/
 
 ---
 
@@ -41,7 +41,7 @@ The system follows a **three-tier architecture**:
 
 | Tier | Component | Technology |
 |------|-----------|------------|
-| **Presentation** | Frontend Chatbot, Admin Dashboard | HTML, CSS, Vanilla JavaScript, Netlify hosting |
+| **Presentation** | Frontend Chatbot, Admin Dashboard | HTML, CSS, Vanilla JavaScript, Cloudflare Pages / Worker |
 | **Application** | REST API backend | Java 25, Spring Boot 3.5.6, Spring Security, JWT |
 | **Data** | Database, file storage | MySQL 8, knowledge-base Markdown files |
 
@@ -58,9 +58,9 @@ The system follows a **three-tier architecture**:
             │                                  │
             ▼                                  ▼
 ┌───────────────────────┐          ┌──────────────────────────┐
-│  Netlify (Frontend)   │          │  Netlify (Admin Panel)   │
-│  uccchatbot.netlify   │          │  admin-uccchatbot        │
-│  Static HTML/CSS/JS   │          │  Static HTML/CSS/JS      │
+│  Cloudflare Pages (Frontend) │   Cloudflare Pages (Admin Panel)   │
+│  uccchatbot.pages.dev         │   admin path under same Pages      │
+│  Static HTML/CSS/JS           │   Static HTML/CSS/JS               │
 └───────────┬───────────┘          └────────────┬─────────────┘
             │                                   │
             └─────────────┬─────────────────────┘
@@ -417,8 +417,8 @@ User Message
 
 ```mermaid
 graph LR
-    A[Public User Browser] -->|HTTPS| B[Netlify CDN<br/>uccchatbot.netlify.app]
-    C[Admin Browser] -->|HTTPS| D[Netlify CDN<br/>admin-uccchatbot.netlify.app]
+    A[Public User Browser] -->|HTTPS| B[Cloudflare Pages<br/>uccchatbot.pages.dev / Worker]
+    C[Admin Browser] -->|HTTPS| D[Cloudflare Pages<br/>admin path / Worker]
 
     B -->|REST /api/*| E[Spring Boot API<br/>:8080]
     D -->|REST /api/*| E
@@ -490,9 +490,9 @@ graph LR
 
 ## 11. Deployment
 
-### 11.1 Frontend & Admin — Netlify
-- Frontend deployed at: **https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app/**
-- Admin deployable at: **https://admin-uccchatbot.netlify.app/** (drag-and-drop `admin/` folder)
+### 11.1 Frontend & Admin — Cloudflare Pages
+- Frontend deployed at: **https://uccchatbot.blackstone-tech02.workers.dev/**
+- Admin served from the same Pages project under `/admin/*`
 - Static HTML/CSS/JS — no build step required
 
 ### 11.2 Backend — Java Spring Boot
@@ -512,7 +512,7 @@ DB_URL=jdbc:mysql://...
 DB_USERNAME=...
 DB_PASSWORD=...
 AI_API_KEY=sk-...
-CORS_ALLOWED_ORIGINS=https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app,https://admin-uccchatbot.netlify.app
+CORS_ALLOWED_ORIGINS=https://uccchatbot.blackstone-tech02.workers.dev,https://uccchatbot.pages.dev
 PORT=8080
 ```
 
