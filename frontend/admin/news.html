@@ -128,9 +128,9 @@
   </div>
 
   <script>
-    (function () {
+    (async function () {
       "use strict";
-      if (!window.AuthService || !window.AuthService.requireAdmin("/admin-login")) return;
+      if (!window.AuthService || !(await window.AuthService.requireAdmin("../admin-login.html"))) return;
 
       const $ = (s) => document.querySelector(s);
       const apiBase = (typeof API_BASE_URL !== "undefined" && API_BASE_URL) ? API_BASE_URL : "";
@@ -153,9 +153,9 @@
 
       function logout() {
         AuthService.logout().then(function () {
-          window.location.href = "/admin-login";
+          window.location.href = "../admin-login.html";
         }).catch(function () {
-          window.location.href = "/admin-login";
+          window.location.href = "../admin-login.html";
         });
       }
 

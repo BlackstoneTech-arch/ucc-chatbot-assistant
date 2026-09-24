@@ -47,13 +47,13 @@
         </div>
         <button id="admin-login-submit" class="admin-login-button" type="submit">Sign in to admin</button>
       </form>
-      <div class="admin-login-footer"><a href="/index.html">Back to UCC Assistant</a></div>
+      <div class="admin-login-footer"><a href="./index.html">Back to UCC Assistant</a></div>
     </div>
   </main>
-  <script src="js/config.js"></script>
+<script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script>
-    (function () {
+    (async function () {
       const form = document.getElementById('admin-login-form');
       const email = document.getElementById('admin-email');
       const password = document.getElementById('admin-password');
@@ -65,10 +65,17 @@
         message.className = 'admin-login-message ' + (success ? 'success' : 'error');
       }
 
-      if (window.AuthService && window.AuthService.requireAdmin('/admin-login')) {
-        window.location.replace('/admin/dashboard.html');
-        return;
+      async function checkExistingSession() {
+        if (!window.AuthService) return;
+        try {
+          await window.AuthService.me();
+          if (window.AuthService.hasRole(['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN'])) {
+            window.location.replace('admin/dashboard.html');
+          }
+        } catch (_) {}
       }
+
+      await checkExistingSession();
 
       form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -76,12 +83,13 @@
         try {
           if (!window.AuthService) throw new Error('Authentication service unavailable.');
           const data = await window.AuthService.login(email.value.trim(), password.value);
-          if (!data || !window.AuthService.requireAdmin('/admin-login')) {
+          const role = data && data.user && data.user.role ? String(data.user.role).toUpperCase() : '';
+          if (role !== 'ADMIN' && role !== 'SUPERADMIN' && role !== 'SUPER_ADMIN') {
             window.AuthService.clearSession();
             throw new Error('Invalid administrator credentials or insufficient privileges.');
           }
           showMessage('Signed in. Redirecting...', true);
-          window.location.replace('/admin/dashboard.html');
+          window.location.replace('admin/dashboard.html');
         } catch (error) {
           showMessage(error.message || 'Unable to sign in.', false);
           submit.disabled = false;

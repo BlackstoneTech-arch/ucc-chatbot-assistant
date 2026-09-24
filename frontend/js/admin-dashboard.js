@@ -82,9 +82,9 @@
   function initLogout() {
     const logout = function () {
       AuthService.logout().then(function () {
-        window.location.href = "/admin-login";
+        window.location.href = "../admin-login.html";
       }).catch(function () {
-        window.location.href = "/admin-login";
+        window.location.href = "../admin-login.html";
       });
     };
     var sidebar = document.getElementById("sidebar-logout");
@@ -94,7 +94,7 @@
   }
 
   async function init() {
-    if (!window.AuthService || !window.AuthService.requireAdmin("/admin-login")) return;
+    if (!window.AuthService || !(await window.AuthService.requireAdmin("../admin-login.html"))) return;
     initTabs();
     initLogout();
     await loadDashboard();

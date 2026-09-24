@@ -1234,28 +1234,39 @@ function setSendButtonStop(isStop) {
     input.style.height = Math.min(input.scrollHeight, 200) + 'px';
   }
 
-  function startNewConversation() {
+  function resetVisitorChat() {
     // Abort any in-flight request
     if (activeRequest) { try { activeRequest.abort(); } catch (_) {} }
     if (activeStream) { try { activeStream.abort(); } catch (_) {} }
+    if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
     state.isProcessing = false;
     setSendButtonStop(false);
 
-    // Clear UI
+    // Reset the visitor session and all conversation state.
+    clearAllStoredData();
+    state.history = [];
+    state.conversationHistory = [];
+    state.conversationId = null;
+    state.conversationStarted = false;
+    state.welcomeLoaded = false;
+
+    // Clear UI and re-add the welcome screen
     const messagesContainer = $('chat-messages');
     if (messagesContainer) messagesContainer.innerHTML = '';
-    // Re-add welcome screen
     rebuildWelcomeScreen();
-
-    // Reset history
-    try { localStorage.removeItem(STORAGE_KEYS.HISTORY); } catch (_) {}
-    state.history = [];
-    state.welcomeLoaded = false;
     loadWelcomeIfNeeded();
 
     // Focus input
     const input = $('chat-input');
     if (input) input.focus();
+  }
+
+  function startNewConversation() {
+    resetVisitorChat();
+  }
+
+  function endSession() {
+    resetVisitorChat();
   }
 
   function rebuildWelcomeScreen() {
@@ -1421,6 +1432,8 @@ function setSendButtonStop(isStop) {
     handleSubmit,
     clearHistory: clearHistoryAndRestart,
     newChat: startNewConversation,
+    reset: resetVisitorChat,
+    endSession: endSession,
     toggleTheme,
     setLanguage: (lang) => { if (lang === 'sw' || lang === 'en') saveLangPref(lang); }
   };
@@ -1431,6 +1444,7 @@ function setSendButtonStop(isStop) {
   window.sendQuickAction = sendQuickAction;
   window.handleSubmit = handleSubmit;
   window.startNewConversation = startNewConversation;
+  window.endSession = endSession;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

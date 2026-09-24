@@ -417,40 +417,34 @@ document.addEventListener('DOMContentLoaded', function () {
         const email = $('#a-email').value.trim();
         const password = $('#a-password').value;
         if (!email || !password) { flash('Invalid email or password', false); return; }
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/auth/login', { email, password });
-        const data = result.data;
-        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
-        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-        if (role !== 'ADMIN' && role !== 'SUPERADMIN') {
-          flash('Access denied: admin role required', false);
-          clearSession();
-          return;
+        if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
+        try {
+          const data = await window.AuthService.login(email, password);
+          const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+          if (role !== 'ADMIN' && role !== 'SUPERADMIN' && role !== 'SUPER_ADMIN') {
+            window.AuthService.clearSession();
+            flash('Access denied: admin role required', false);
+            return;
+          }
+          flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
+          setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
+        } catch (error) {
+          flash(error.message || 'Invalid email or password', false);
         }
-        saveStudentSession(data);
-        flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
-        setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
       });
 
       (async () => {
-        const base = apiBase();
-        const token = localStorage.getItem('ucc_auth_token');
-        if (base && token) {
-          const data = await api('/auth/me');
-          if (data && data.success) {
-            const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-            localStorage.setItem('ucc_auth_role', role);
-            if (role === 'ADMIN' || role === 'SUPERADMIN') {
-              // Admin sessions are handled on the dedicated admin dashboard, not here.
-              window.location.href = 'admin/dashboard.html';
-            } else {
-              // Visitor or student â€” go to the chat.
-              window.location.href = 'chat.html';
-            }
+        if (!window.AuthService) return;
+        try {
+          const data = await window.AuthService.me();
+          const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+          if (role === 'ADMIN' || role === 'SUPERADMIN' || role === 'SUPER_ADMIN') {
+            window.location.href = 'admin/dashboard.html';
           } else {
-            clearSession();
+            window.location.href = 'chat.html';
           }
+        } catch (_) {
+          clearSession();
         }
       })();
     });
