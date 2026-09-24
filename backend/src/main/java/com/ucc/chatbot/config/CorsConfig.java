@@ -1,34 +1,11 @@
 package com.ucc.chatbot.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-@Configuration
-public class CorsConfig {
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
-                        .allowedOrigins(
-                                "http://localhost:5500",
-                                "http://localhost:3000",
-                                "http://localhost:3001",
-                                "http://localhost:8080",
-                                "http://localhost:8081",
-                                "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app",
-                                "https://ucc-chatbot.blackstone-tech02.workers.dev"
-                        )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-                        .allowedHeaders("Authorization", "Content-Type", "Accept")
-                        .exposedHeaders("Authorization")
-                        .allowCredentials(true)
-                        .maxAge(3600);
-            }
-        };
+/**
+ * CORS is centralized in {@link SecurityConfig} so the application has one
+ * authoritative origin allow-list. Keeping a second MVC CORS configuration
+ * here previously allowed the two configurations to drift apart.
+ */
+public final class CorsConfig {
+    private CorsConfig() {
     }
 }

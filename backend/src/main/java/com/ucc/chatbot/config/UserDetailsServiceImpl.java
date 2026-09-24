@@ -2,6 +2,7 @@ package com.ucc.chatbot.config;
 
 import com.ucc.chatbot.model.User;
 import com.ucc.chatbot.repository.UserRepository;
+import com.ucc.chatbot.util.RoleNames;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPasswordHash(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+                List.of(new SimpleGrantedAuthority(RoleNames.authority(user.getRole())))
         );
     }
 }

@@ -1,259 +1,242 @@
 /* ============================================
    UCC Chatbot - Centralized Auth Service
-   Single source of truth for all authentication
-   logic. Used by login.html, chat.html, and
-   every admin page. No duplicate fetch logic.
+   HttpOnly session cookies are the source of truth.
+   The browser never persists access or refresh tokens.
    ============================================ */
 
 (function (global) {
   "use strict";
 
-  const AUTH_STORAGE = {
-    TOKEN: "ucc_auth_token",
-    REFRESH: "ucc_auth_refresh_token",
-    ROLE: "ucc_auth_role",
-    USER: "ucc_auth_user",
-    SESSION: "ucc_chat_session"
-  };
+  const SESSION_KEY = "ucc_chat_session";
+  let currentUser = null;
+  let csrfToken = null;
+  let refreshPromise = null;
 
   function apiBase() {
     return (typeof API_BASE_URL !== "undefined" && API_BASE_URL) ? API_BASE_URL : "";
   }
 
-  function storage() {
-    try { return window.localStorage; } catch (_) { return null; }
+  function isPublicAuthEndpoint(endpoint) {
+    return endpoint === "/auth/login" || endpoint === "/auth/refresh" || endpoint === "/auth/logout";
   }
 
-  function get(key) {
-    const s = storage();
-    return s ? s.getItem(key) : null;
+  function setUser(user) {
+    currentUser = user && typeof user === "object" ? user : null;
   }
 
-  function set(key, value) {
-    const s = storage();
-    if (s) s.setItem(key, value);
-  }
-
-  function remove(key) {
-    const s = storage();
-    if (s) s.removeItem(key);
-  }
-
-  function clearSession() {
-    remove(AUTH_STORAGE.TOKEN);
-    remove(AUTH_STORAGE.REFRESH);
-    remove(AUTH_STORAGE.ROLE);
-    remove(AUTH_STORAGE.USER);
-  }
-
-  function getToken() { return get(AUTH_STORAGE.TOKEN); }
-  function getRefreshToken() { return get(AUTH_STORAGE.REFRESH); }
-  function getRole() { return get(AUTH_STORAGE.ROLE); }
   function getUser() {
+    return currentUser;
+  }
+
+  function getSessionId() {
     try {
-      const raw = get(AUTH_STORAGE.USER);
-      return raw ? JSON.parse(raw) : null;
-    } catch (_) { return null; }
+      let id = sessionStorage.getItem(SESSION_KEY);
+      if (!id) {
+        id = (global.crypto && global.crypto.randomUUID)
+          ? global.crypto.randomUUID()
+          : "sess-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+        sessionStorage.setItem(SESSION_KEY, id);
+      }
+      return id;
+    } catch (_) {
+      return "sess-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+    }
   }
 
-  function isAuthenticated() {
-    return !!getToken() && !!getRole();
+  function clearMemorySession() {
+    currentUser = null;
+    csrfToken = null;
+    refreshPromise = null;
   }
 
-  function hasRole(role) {
-    const r = (getRole() || "").toUpperCase();
-    if (!role) return !!r;
-    if (Array.isArray(role)) return role.map(function (x) { return x.toUpperCase(); }).includes(r);
-    return r === role.toUpperCase();
+  async function parseResponse(response) {
+    const text = await response.text().catch(function () { return ""; });
+    let data = {};
+    if (text) {
+      try { data = JSON.parse(text); } catch (_) { data = {}; }
+    }
+    if (!response.ok) {
+      const error = new Error(data.message || "Unable to complete the request");
+      error.status = response.status;
+      error.code = data.error && data.error.code;
+      throw error;
+    }
+    return data;
   }
 
-  function requiresAdmin() {
-    return hasRole(["ADMIN", "SUPERADMIN"]);
+  async function request(endpoint, options, allowRefresh) {
+    options = options || {};
+    const method = (options.method || "GET").toUpperCase();
+    const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+    if (csrfToken && !["GET", "HEAD", "OPTIONS"].includes(method)) {
+      headers["X-XSRF-TOKEN"] = csrfToken;
+    }
+    const response = await fetch(apiBase() + endpoint, {
+      method: method,
+      headers: headers,
+      body: options.body,
+      credentials: "include",
+      signal: options.signal
+    });
+    if (response.status === 401 && allowRefresh !== false && !isPublicAuthEndpoint(endpoint)) {
+      try {
+        await refresh();
+        return request(endpoint, options, false);
+      } catch (_) {
+        clearMemorySession();
+      }
+    }
+    return parseResponse(response);
   }
 
-  function requiresAuth() {
-    return !!getToken();
-  }
-
-  function authHeaders(extra) {
-    const t = getToken();
-    const h = { "Content-Type": "application/json" };
-    if (t) h.Authorization = "Bearer " + t;
-    if (extra) Object.assign(h, extra);
-    return h;
+  async function loadCsrf() {
+    if (csrfToken) return csrfToken;
+    const data = await request("/auth/csrf", { method: "GET" }, false);
+    csrfToken = data.token || null;
+    return csrfToken;
   }
 
   async function apiFetch(endpoint, options) {
     options = options || {};
-    const base = apiBase();
-    if (!base) throw new Error("Backend API not configured");
-    const res = await fetch(base + endpoint, {
-      headers: authHeaders(options.headers),
-      ...options
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(function () { return ""; });
-      let msg = "Request failed";
-      try {
-        const j = JSON.parse(txt);
-        if (j && j.message) msg = j.message;
-        else if (j && j.error) msg = j.error;
-      } catch (_) {}
-      throw new Error(msg);
+    const method = (options.method || "GET").toUpperCase();
+    if (!["GET", "HEAD", "OPTIONS"].includes(method) && !isPublicAuthEndpoint(endpoint)) {
+      await loadCsrf();
     }
-    const txt = await res.text().catch(function () { return ""; });
-    return txt ? JSON.parse(txt) : null;
+    return request(endpoint, options, true);
   }
 
   async function login(email, password) {
-    const data = await apiFetch("/auth/login", {
+    const data = await request("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email: email, password: password })
-    });
-    storeSession(data);
+    }, false);
+    setUser(data.user);
     return data;
   }
 
-  async function adminLogin(email, password) {
-    const data = await apiFetch("/auth/admin-login", {
+  async function registerVisitor(fullName, email, password, confirmPassword) {
+    return request("/auth/visitor-register", {
       method: "POST",
-      body: JSON.stringify({ email: email, password: password })
-    });
-    storeSession(data);
-    return data;
+      body: JSON.stringify({
+        fullName: fullName,
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword
+      })
+    }, false);
   }
 
-  async function registerVisitor(fullName, email, password) {
-    return apiFetch("/auth/visitor-register", {
+  async function registerStudent(fullName, email, registrationNumber, password, confirmPassword) {
+    return request("/auth/student/register", {
       method: "POST",
-      body: JSON.stringify({ fullName: fullName, email: email, password: password })
-    });
-  }
-
-  async function registerStudent(fullName, email, registrationNumber, password) {
-    return apiFetch("/auth/student/register", {
-      method: "POST",
-      body: JSON.stringify({ fullName: fullName, email: email, registrationNumber: registrationNumber, password: password })
-    });
+      body: JSON.stringify({
+        fullName: fullName,
+        email: email,
+        registrationNumber: registrationNumber,
+        password: password,
+        confirmPassword: confirmPassword
+      })
+    }, false);
   }
 
   async function studentStep1(email, password) {
-    return apiFetch("/auth/student/verify-email", {
+    return request("/auth/student/verify-email", {
       method: "POST",
       body: JSON.stringify({ email: email, password: password })
-    });
+    }, false);
   }
 
   async function studentStep2(challengeToken, registrationNumber, password) {
-    return apiFetch("/auth/student/verify-registration", {
+    const data = await request("/auth/student/verify-registration", {
       method: "POST",
-      body: JSON.stringify({ challengeToken: challengeToken, registrationNumber: registrationNumber, password: password })
-    });
-  }
-
-  async function me() {
-    return apiFetch("/auth/me");
-  }
-
-  async function refresh() {
-    const rt = getRefreshToken();
-    if (!rt) throw new Error("No refresh token");
-    const data = await apiFetch("/auth/refresh", {
-      method: "POST",
-      body: JSON.stringify({ refreshToken: rt })
-    });
-    if (data && data.token) set(AUTH_STORAGE.TOKEN, data.token);
-    if (data && data.refreshToken) set(AUTH_STORAGE.REFRESH, data.refreshToken);
-    scheduleRefresh();
+      body: JSON.stringify({
+        challengeToken: challengeToken,
+        registrationNumber: registrationNumber,
+        password: password
+      })
+    }, false);
+    setUser(data.user);
     return data;
   }
 
-  function logout() {
-    const rt = getRefreshToken();
-    clearSession();
-    if (rt && apiBase()) {
-      fetch(apiBase() + "/auth/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: rt })
-      }).catch(function () {});
-    }
+  async function me() {
+    const data = await request("/auth/me", { method: "GET" }, true);
+    setUser(data.user);
+    return data;
   }
 
-  function storeSession(data) {
-    if (!data) return;
-    if (data.token) set(AUTH_STORAGE.TOKEN, data.token);
-    if (data.refreshToken) set(AUTH_STORAGE.REFRESH, data.refreshToken);
-    if (data.user) {
-      set(AUTH_STORAGE.USER, JSON.stringify(data.user));
-      if (data.user.role) set(AUTH_STORAGE.ROLE, data.user.role);
-    }
-    scheduleRefresh();
+  async function refresh() {
+    if (refreshPromise) return refreshPromise;
+    refreshPromise = request("/auth/refresh", { method: "POST", body: "{}" }, false)
+      .then(function (data) {
+        setUser(data.user);
+        return data;
+      })
+      .catch(function (error) {
+        clearMemorySession();
+        throw error;
+      })
+      .finally(function () { refreshPromise = null; });
+    return refreshPromise;
   }
 
-  const REFRESH_GRACE_MS = 5 * 60 * 1000;
-  let refreshTimer = null;
-
-  function scheduleRefresh() {
-    clearTimeout(refreshTimer);
-    if (!getToken() || !getRefreshToken()) return;
-    const delay = 7 * 24 * 60 * 60 * 1000 - REFRESH_GRACE_MS;
-    refreshTimer = setTimeout(function () { refresh().catch(function () {}); }, Math.max(60000, delay));
+  async function logout() {
+    try {
+      await request("/auth/logout", { method: "POST", body: "{}" }, false);
+    } finally {
+      clearMemorySession();
+    }
   }
 
   async function linkConversation(sessionId) {
-    if (!isAuthenticated()) return null;
-    try {
-      return await apiFetch("/auth/link-conversation", {
-        method: "POST",
-        body: JSON.stringify({ sessionId: sessionId || getSessionId() })
-      });
-    } catch (_) { return null; }
+    if (!currentUser) return null;
+    return apiFetch("/auth/link-conversation", {
+      method: "POST",
+      body: JSON.stringify({ sessionId: sessionId || getSessionId() })
+    });
   }
 
-  function getSessionId() {
-    let sid = get(AUTH_STORAGE.SESSION);
-    if (!sid) {
-      sid = "sess_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-      set(AUTH_STORAGE.SESSION, sid);
-    }
-    return sid;
+  function isAuthenticated() {
+    return !!currentUser;
+  }
+
+  function hasRole(role) {
+    const actual = (currentUser && currentUser.role ? currentUser.role : "").toUpperCase();
+    if (!role) return !!actual;
+    if (Array.isArray(role)) return role.map(function (item) { return item.toUpperCase(); }).includes(actual);
+    return actual === role.toUpperCase();
   }
 
   function requireAuth(redirect) {
     if (!isAuthenticated()) {
-      window.location.href = redirect || "/login";
+      global.location.href = redirect || "/login";
       return false;
     }
     return true;
   }
 
-  function requireAdmin(redirect) {
-    if (!isAuthenticated()) {
-      window.location.href = redirect || "/admin-login";
+  async function requireAdmin(redirect) {
+    try {
+      if (!currentUser) await me();
+    } catch (_) {
+      global.location.href = redirect || "/login";
       return false;
     }
-    if (!requiresAdmin()) {
-      window.location.href = redirect || "../index.html";
+    if (!hasRole(["ADMIN", "SUPER_ADMIN", "SUPERADMIN"])) {
+      global.location.href = "/chat.html";
       return false;
     }
     return true;
   }
 
-  const AuthService = {
-    STORAGE: AUTH_STORAGE,
-    getToken: getToken,
-    getRefreshToken: getRefreshToken,
-    getRole: getRole,
+  global.AuthService = {
     getUser: getUser,
+    getSessionId: getSessionId,
     isAuthenticated: isAuthenticated,
     hasRole: hasRole,
-    requiresAdmin: requiresAdmin,
-    requiresAuth: requiresAuth,
-    authHeaders: authHeaders,
+    authHeaders: function () { return { "Content-Type": "application/json" }; },
     apiFetch: apiFetch,
     login: login,
-    adminLogin: adminLogin,
     registerVisitor: registerVisitor,
     registerStudent: registerStudent,
     studentStep1: studentStep1,
@@ -261,15 +244,9 @@
     me: me,
     refresh: refresh,
     logout: logout,
-    storeSession: storeSession,
-    scheduleRefresh: scheduleRefresh,
     linkConversation: linkConversation,
-    getSessionId: getSessionId,
     requireAuth: requireAuth,
     requireAdmin: requireAdmin,
-    clearSession: clearSession
+    clearSession: clearMemorySession
   };
-
-  global.AuthService = AuthService;
-  global.UCCSession = AuthService;
 })(window);

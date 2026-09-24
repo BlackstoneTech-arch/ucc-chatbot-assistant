@@ -1,6 +1,7 @@
 package com.ucc.chatbot.service.impl;
 
 import com.ucc.chatbot.service.JwtService;
+import com.ucc.chatbot.util.RoleNames;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtServiceImpl implements JwtService {
@@ -17,16 +19,20 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration.ms:604800000}")
+    @Value("${jwt.expiration.ms:900000}")
     private long jwtExpirationMs;
 
     @Override
     public String generateToken(String email, String role) {
+        Date now = new Date();
         return Jwts.builder()
                 .subject(email)
-                .claim("role", role)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                // Kept for compatibility with older clients; authorization never
+                // trusts this claim and always reloads the role from the database.
+                .claim("role", RoleNames.normalize(role))
+                .id(UUID.randomUUID().toString())
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + jwtExpirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -48,19 +54,19 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public boolean isTokenValid(String token, String email) {
         try {
-            final String extractedEmail = extractEmail(token);
-            return (extractedEmail.equals(email)) && !isTokenExpired(token);
-        } catch (Exception e) {
+            String extractedEmail = extractEmail(token);
+            return extractedEmail != null
+                    && extractedEmail.equalsIgnoreCase(email)
+                    && extractClaims(token).getExpiration().after(new Date());
+        } catch (Exception ignored) {
             return false;
         }
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractClaims(token).getExpiration().before(new Date());
-    }
-
     private SecretKey getSigningKey() {
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT_SECRET must contain at least 32 bytes");
+        }
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }

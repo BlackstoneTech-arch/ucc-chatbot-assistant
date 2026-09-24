@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — UCC Customer Care Assistant</title>
+  <title>Login â€” UCC Customer Care Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@
 <body>
   <div class="auth-wrap">
     <div style="text-align:center;margin-bottom:18px">
-      <a href="/index.html" style="color:var(--ucc-primary);text-decoration:none;font-weight:600">← Back to UCC Assistant</a>
+      <a href="/index.html" style="color:var(--ucc-primary);text-decoration:none;font-weight:600">â† Back to UCC Assistant</a>
     </div>
     <div class="auth-card">
       <div style="text-align:center;margin-bottom:18px">
@@ -69,7 +69,7 @@
             </div>
             <div class="field">
               <label for="v-password">Password</label>
-              <input id="v-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+              <input id="v-password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required autocomplete="current-password">
             </div>
             <button type="submit" class="auth-btn">Login as Visitor</button>
           </form>
@@ -105,7 +105,7 @@
       <div id="tab-student" class="hidden">
         <div id="s-step1">
           <div class="auth-form">
-            <div class="auth-title">Student Login — Step 1</div>
+            <div class="auth-title">Student Login â€” Step 1</div>
             <div class="auth-sub">Enter your email and password.</div>
             <div class="auth-progress" style="margin-bottom:14px">
               <div class="auth-step active"><span>1</span> Account</div>
@@ -118,7 +118,7 @@
               </div>
               <div class="field">
                 <label for="s-password">Password</label>
-                <input id="s-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+                <input id="s-password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required autocomplete="current-password">
               </div>
               <button type="submit" class="auth-btn">Continue</button>
             </form>
@@ -127,7 +127,7 @@
         </div>
         <div id="s-step2" class="hidden">
           <div class="auth-form">
-            <div class="auth-title">Student Verification — Step 2</div>
+            <div class="auth-title">Student Verification â€” Step 2</div>
             <div class="auth-sub">For additional student verification, enter your UCC registration number.</div>
             <div class="auth-progress" style="margin-bottom:14px">
               <div class="auth-step done"><span>1</span> Account</div>
@@ -144,11 +144,11 @@
               </div>
               <div class="field">
                 <label for="s-step2-password">Password</label>
-                <input id="s-step2-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+                <input id="s-step2-password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required autocomplete="current-password">
               </div>
               <button type="submit" class="auth-btn">Verify Student Account</button>
             </form>
-            <div class="auth-footer"><a href="#" id="s-back">← Back</a></div>
+            <div class="auth-footer"><a href="#" id="s-back">â† Back</a></div>
           </div>
         </div>
         <div class="auth-form hidden" id="student-register-box" style="margin-top:16px">
@@ -193,7 +193,7 @@
           </div>
           <div class="field">
             <label for="a-password">Password</label>
-            <input id="a-password" type="password" placeholder="••••••••" required autocomplete="current-password">
+            <input id="a-password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required autocomplete="current-password">
           </div>
           <button type="submit" class="auth-btn">Login as Admin</button>
         </form>
@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function () {
               // Admin sessions are handled on the dedicated admin dashboard, not here.
               window.location.href = 'admin/dashboard.html';
             } else {
-              // Visitor or student — go to the chat.
+              // Visitor or student â€” go to the chat.
               window.location.href = 'chat.html';
             }
           } else {
