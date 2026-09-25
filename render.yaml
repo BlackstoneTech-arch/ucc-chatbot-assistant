@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: ucc-chatbot-backend
+    runtime: docker
+    plan: free
+    branch: master
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: DB_TYPE
+        value: mysql
+      - key: DB_URL
+        fromDatabase:
+          name: ucc-chatbot-db
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: ucc-chatbot-db
+          property: username
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ucc-chatbot-db
+          property: password
+      - key: DB_DRIVER
+        value: com.mysql.cj.jdbc.Driver
+      - key: DB_DIALECT
+        value: org.hibernate.dialect.MySQL8Dialect
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://ucc-chatbot.blackstone-tech02.workers.dev,http://localhost:3000,http://localhost:8080
+      - key: FRONTEND_URL
+        value: https://ucc-chatbot.blackstone-tech02.workers.dev
+      - key: PORT
+        value: 8080
+
+databases:
+  - name: ucc-chatbot-db
+    plan: free
+    databaseName: ucc_chatbot_db
+    user: ucc_user

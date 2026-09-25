@@ -1,39 +1,33 @@
 /* ============================================
    API Configuration
    ============================================
-  Production uses the same-origin /api proxy by default. A separately
-  hosted backend can override this with the __API_BASE_URL__ global.
+   Production uses the same-origin /api proxy by default.
+   Auto-resolution order:
+     1. window.__API_BASE_URL__
+     2. localStorage/sessionStorage API_BASE_URL
+     3. Same-origin /api when not localhost
+     4. Local backend when frontend is on localhost/127.0.0.1
+   ============================================ */
+function resolveApiBaseUrl() {
+  const host = window.location.hostname;
+  const isLocalhost = host === "localhost" || host === "127.0.0.1" || host.startsWith("192.168.") || host.startsWith("10.") || host.startsWith("172.16.");
 
-  To connect to a live backend API, set BASE_URL to the
-  backend root, for example:
-    - "https://ucc-chatbot-api.example.com/api"
-    - "http://localhost:8081/api"  (local dev)
-  The frontend will then POST to {BASE_URL}/chat and GET
-  {BASE_URL}/chat/welcome and POST feedback to
-  {BASE_URL}/chat/feedback.
+  if (typeof __API_BASE_URL__ !== "undefined" && __API_BASE_URL__) return __API_BASE_URL__;
+  try {
+    const stored = localStorage.getItem("API_BASE_URL");
+    if (stored) return stored;
+  } catch (_) {}
+  try {
+    const stored = sessionStorage.getItem("API_BASE_URL");
+    if (stored) return stored;
+  } catch (_) {}
 
-  CORS must allow the deployed frontend origin.
-  ============================================ */
-const API_CONFIG = {
-  BASE_URL: (typeof __API_BASE_URL__ !== 'undefined' && __API_BASE_URL__)
-    ? __API_BASE_URL__
-    : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-      ? "http://localhost:8080/api"
-      : "/api"
-};
-const API_BASE_URL = API_CONFIG.BASE_URL;
+  if (isLocalhost) return "http://localhost:8080/api";
+  return "/api";
+}
 
-/**
- * Robust fetch wrapper used by the chat UI.
- *
- * - Respects the browser's online/offline state (navigator.onLine).
- * - Aborts on timeout instead of hanging forever (important for slow /
- *   unreliable networks and older browsers). Hard timeout is 12s so the
- *   chat always falls back to the local KB instead of freezing the UI.
- * - Retries once on transient 5xx / network errors before giving up.
- * - Never throws an unhandled rejection: always resolves with a Response
- *   or rejects with a descriptive Error the caller can fall back from.
- */
+const API_BASE_URL = resolveApiBaseUrl();
+
 async function apiRequest(endpoint, options = {}, retries = 1) {
   if (!API_BASE_URL) throw new Error("Backend API not configured for this host");
   const url = `${API_BASE_URL}${endpoint}`;
@@ -56,21 +50,15 @@ async function apiRequest(endpoint, options = {}, retries = 1) {
     } catch (err) {
       clearTimeout(timer);
       lastError = err;
-      // Only retry transient failures (offline / timeout / connection refused).
       const name = err && err.name;
       const transient = name === "AbortError" || name === "TypeError" || !navigator.onLine;
       if (!transient || attempt >= retries) break;
-      // Small back-off before the retry.
       await new Promise(r => setTimeout(r, 600));
     }
   }
   throw lastError || new Error(`API request failed: ${url}`);
 }
 
-/**
- * Parse a JSON body safely. Some backends (or proxies) return HTML error
- * pages on 5xx responses; this avoids a SyntaxError in those cases.
- */
 async function safeJson(response) {
   const text = await response.text();
   if (!text) return {};

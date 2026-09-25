@@ -4,16 +4,21 @@
   "description": "UCC Chatbot Assistant - University of Dar es Salaam Computing Centre",
   "private": true,
   "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && mvn spring-boot:run",
     "dev:frontend": "npx serve frontend -l 3000",
     "dev:admin": "npx serve admin -l 3001",
     "build:backend": "cd backend && mvn clean package",
     "test": "cd backend && mvn test",
     "lint": "echo \"No lint configured\"",
+    "typecheck": "node --check frontend/js/config.js && node --check frontend/js/auth.js && node --check frontend/js/chatbot.js",
+    "health": "node scripts/health-check.js",
+    "check": "npm run typecheck && npm run lint",
     "deploy:pages": "npx --yes wrangler@latest pages project create ucc-chatbot --production-branch master || true",
     "deploy:worker": "npx --yes wrangler@latest deploy"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "serve": "^14.2.0"
   },
   "dependencies": {
