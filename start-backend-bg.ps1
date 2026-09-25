@@ -16,12 +16,12 @@ Get-Content (Join-Path $ProjectRoot ".env") | ForEach-Object {
 Write-Host "DB_URL=$($env:DB_URL)"
 Write-Host "AI_PROVIDER=$($env:AI_PROVIDER)"
 
-$javaExe = (Get-Command java -ErrorAction SilentlyContinue).Path
-if (-not $javaExe) {
-    $javaExe = "$env:JAVA_HOME\bin\java.exe"
+$javaExe = Join-Path $ProjectRoot ".tools\java\bin\java.exe"
+if (-not (Test-Path $javaExe)) {
+    $javaExe = (Get-Command java -ErrorAction SilentlyContinue).Path
 }
 if (-not $javaExe -or -not (Test-Path $javaExe)) {
-    Write-Host "Java not found. Install JDK 21+ or run build-backend.ps1 first." -ForegroundColor Red
+    Write-Host "Java not found. Install JDK 25+ or run build-backend.ps1 first." -ForegroundColor Red
     exit 1
 }
 

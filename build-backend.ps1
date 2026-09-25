@@ -94,8 +94,22 @@ function Install-Java {
 Write-Log "=== UCC Chatbot Build Script ===" "Green"
 
 $javaExe = Find-Java
+if ($javaExe) {
+    $p = Start-Process -FilePath $javaExe -ArgumentList "-version" -NoNewWindow -Wait -PassThru -RedirectStandardError "$env:TEMP\java-version.err"
+    $versionOutput = ""
+    if (Test-Path "$env:TEMP\java-version.err") {
+        $versionOutput = Get-Content "$env:TEMP\java-version.err" -Raw
+        Remove-Item "$env:TEMP\java-version.err" -ErrorAction SilentlyContinue
+    }
+    $major = 0
+    if ($versionOutput -match 'version\s+"(\d+)\.') { $major = [long]$Matches[1] }
+    if ($major -lt 25) {
+        Write-Log "Found Java $major on PATH, but JDK 25+ is required. Downloading JDK 25..." "Yellow"
+        $javaExe = $null
+    }
+}
 if (-not $javaExe) {
-    Write-Log "Java not found, downloading..." "Yellow"
+    Write-Log "Java 25+ not found, downloading JDK 25..." "Yellow"
     $javaExe = Install-Java
 }
 Write-Log "Using Java: $javaExe" "Cyan"

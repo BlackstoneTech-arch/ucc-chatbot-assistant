@@ -23,13 +23,12 @@ jobs:
     needs: deploy-pages
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: corepack enable && corepack prepare pnpm@latest --activate
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec wrangler deploy
+          cache: npm
+      - run: npm ci
+      - run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
