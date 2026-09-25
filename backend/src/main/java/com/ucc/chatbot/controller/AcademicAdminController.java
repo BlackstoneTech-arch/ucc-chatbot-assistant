@@ -10,7 +10,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/admin/academic")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:5500", "https://uccchatbot.netlify.app", "https://agent-6a87a4d1bce5537b6d8d53a5--uccchatbot.netlify.app", "https://ucc-chatbot-assistant.blackstone-tech02.workers.dev"})
 @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
 public class AcademicAdminController {
 

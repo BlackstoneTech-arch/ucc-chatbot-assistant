@@ -101,10 +101,19 @@ public class ChatController {
     }
 
     @GetMapping("/history/{sessionId}")
-    public ResponseEntity<List<Map<String, Object>>> getHistory(@PathVariable String sessionId) {
+    public ResponseEntity<List<Map<String, Object>>> getHistory(@PathVariable String sessionId,
+                                                                 Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return ResponseEntity.status(401).body(List.of());
+        }
         Optional<Conversation> convOpt = conversationService.getOrCreateConversation(sessionId, null);
         if (convOpt.isEmpty()) return ResponseEntity.ok(List.of());
-        List<Message> msgs = messageRepository.findByConversationIdOrderByCreatedAtAsc(convOpt.get().getId());
+        Conversation conv = convOpt.get();
+        if (conv.getUserId() != null && !authentication.getName().equals(conv.getUserId().toString())) {
+            return ResponseEntity.status(403).body(List.of());
+        }
+        List<Message> msgs = messageRepository.findByConversationIdOrderByCreatedAtAsc(conv.getId());
         List<Map<String, Object>> result = msgs.stream().map(m -> {
             Map<String, Object> r = new LinkedHashMap<>();
             r.put("id", m.getId());

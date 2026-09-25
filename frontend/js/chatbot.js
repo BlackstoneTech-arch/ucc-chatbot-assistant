@@ -900,13 +900,11 @@
       if (hasLiveApi() && navigator.onLine) {
         try {
           activeRequest = new AbortController();
-          const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('ucc_auth_token') : null;
-          const userRaw = (typeof localStorage !== 'undefined') ? localStorage.getItem('ucc_auth_user') : null;
-          const user = userRaw ? JSON.parse(userRaw) : null;
           const response = await apiRequest('/chat', {
             method: 'POST',
-            headers: { ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
-            body: JSON.stringify({ message: userText, conversationId: state.sessionId, language: state.detectedLang, user: user || null })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userText, conversationId: state.sessionId, language: state.detectedLang }),
+            credentials: 'include'
           }, 1);
           if (response.ok) {
             const data = await safeJson(response);
@@ -1161,37 +1159,31 @@ function setSendButtonStop(isStop) {
     if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
     const authBtn = $('auth-btn');
     if (authBtn) {
-      const hasToken = !!localStorage.getItem('ucc_auth_token');
-      authBtn.setAttribute('aria-label', hasToken ? 'Account menu' : 'Sign in');
-      authBtn.setAttribute('title', hasToken ? 'Account / logout' : 'Sign in (visitor, student or admin)');
+      const authed = window.AuthService && window.AuthService.isAuthenticated();
+      authBtn.setAttribute('aria-label', authed ? 'Account menu' : 'Sign in');
+      authBtn.setAttribute('title', authed ? 'Account / logout' : 'Sign in (visitor, student or admin)');
       authBtn.addEventListener('click', () => {
-        if (hasToken) {
+        if (authed) {
           if (confirm('Logout from your account?')) {
-            localStorage.removeItem('ucc_auth_token');
-            localStorage.removeItem('ucc_auth_role');
-            localStorage.removeItem('ucc_auth_user');
-            location.reload();
+            window.AuthService.logout().then(() => location.reload()).catch(() => location.reload());
           }
         } else {
-          location.href = '/login';
+          location.href = 'login.html';
         }
       });
     }
     const widgetAuthBtn = $('widget-auth-btn');
     if (widgetAuthBtn) {
-      const hasToken = !!localStorage.getItem('ucc_auth_token');
-      widgetAuthBtn.setAttribute('aria-label', hasToken ? 'Account menu' : 'Sign in');
-      widgetAuthBtn.setAttribute('title', hasToken ? 'Account / logout' : 'Sign in (visitor, student or admin)');
+      const authed = window.AuthService && window.AuthService.isAuthenticated();
+      widgetAuthBtn.setAttribute('aria-label', authed ? 'Account menu' : 'Sign in');
+      widgetAuthBtn.setAttribute('title', authed ? 'Account / logout' : 'Sign in (visitor, student or admin)');
       widgetAuthBtn.addEventListener('click', () => {
-        if (hasToken) {
+        if (authed) {
           if (confirm('Logout from your account?')) {
-            localStorage.removeItem('ucc_auth_token');
-            localStorage.removeItem('ucc_auth_role');
-            localStorage.removeItem('ucc_auth_user');
-            location.reload();
+            window.AuthService.logout().then(() => location.reload()).catch(() => location.reload());
           }
         } else {
-          location.href = '/login';
+          location.href = 'login.html';
         }
       });
     }
@@ -1347,80 +1339,7 @@ function setSendButtonStop(isStop) {
       : (state.detectedLang === 'sw' ? 'Nje ya mtandao' : 'Offline'));
   }
 
-  // ---------- Session management ----------
-  const REFRESH_GRACE_MS = 5 * 60 * 1000; // refresh 5 min before expiry
-  let refreshTimer = null;
-
-  function currentToken() {
-    try { return localStorage.getItem("ucc_auth_token"); } catch (_) { return null; }
-  }
-
-  function currentUser() {
-    try { const r = localStorage.getItem("ucc_auth_user"); return r ? JSON.parse(r) : null; } catch (_) { return null; }
-  }
-
-  function currentRefreshToken() {
-    try { return localStorage.getItem("ucc_auth_refresh_token"); } catch (_) { return null; }
-  }
-
-  async function refreshAuthToken() {
-    const base = (typeof API_BASE_URL !== "undefined" && API_BASE_URL) ? API_BASE_URL : "";
-    const rt = currentRefreshToken();
-    if (!base || !rt) return false;
-    try {
-      const r = await fetch(base + "/auth/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: rt })
-      });
-      if (!r.ok) return false;
-      const data = await r.json();
-      if (!data || !data.success) return false;
-      localStorage.setItem("ucc_auth_token", data.token);
-      if (data.refreshToken) localStorage.setItem("ucc_auth_refresh_token", data.refreshToken);
-      scheduleTokenRefresh();
-      return true;
-    } catch (_) { return false; }
-  }
-
-  function scheduleTokenRefresh() {
-    clearTimeout(refreshTimer);
-    const token = currentToken();
-    if (!token) return;
-    // Access tokens live 7 days; refresh a bit before they expire.
-    const delay = 7 * 24 * 60 * 60 * 1000 - REFRESH_GRACE_MS;
-    refreshTimer = setTimeout(() => { refreshAuthToken(); }, Math.max(60000, delay));
-  }
-
-  async function linkConversationToUser() {
-    const base = (typeof API_BASE_URL !== "undefined" && API_BASE_URL) ? API_BASE_URL : "";
-    const token = currentToken();
-    const user = currentUser();
-    if (!base || !token || !user) return false;
-    try {
-      const r = await fetch(base + "/auth/link-conversation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-        body: JSON.stringify({ sessionId: state.sessionId })
-      });
-      if (!r.ok) return false;
-      const data = await r.json();
-      if (data && data.success && data.conversationId) {
-        state.conversationId = data.conversationId;
-        return true;
-      }
-    } catch (_) { /* best-effort */ }
-    return false;
-  }
-
-  window.UCCSession = {
-    getToken: currentToken,
-    getUser: currentUser,
-    getRefreshToken: currentRefreshToken,
-    refresh: refreshAuthToken,
-    scheduleRefresh: scheduleTokenRefresh,
-    linkConversation: linkConversationToUser
-  };
+  // Session management is handled by AuthService (cookie-based).
 
   // ---------- Expose ----------
   window.UCCChatbot = {

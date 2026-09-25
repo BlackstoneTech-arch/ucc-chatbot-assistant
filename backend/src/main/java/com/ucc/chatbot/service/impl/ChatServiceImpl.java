@@ -10,6 +10,7 @@ import com.ucc.chatbot.repository.ConversationRepository;
 import com.ucc.chatbot.repository.KnowledgeDocumentRepository;
 import com.ucc.chatbot.service.AIService;
 import com.ucc.chatbot.service.ConversationService;
+import com.ucc.chatbot.service.HybridRetrievalService;
 import com.ucc.chatbot.service.QueryUnderstandingService;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +24,14 @@ public class ChatServiceImpl implements com.ucc.chatbot.service.ChatService {
 
     private final AIService aiService;
     private final ConversationService conversationService;
-    private final KnowledgeDocumentRepository knowledgeRepository;
     private final QueryUnderstandingService queryUnderstandingService;
+    private final HybridRetrievalService hybridRetrievalService;
 
-    public ChatServiceImpl(AIService aiService, ConversationService conversationService, KnowledgeDocumentRepository knowledgeRepository, QueryUnderstandingService queryUnderstandingService) {
+    public ChatServiceImpl(AIService aiService, ConversationService conversationService, QueryUnderstandingService queryUnderstandingService, HybridRetrievalService hybridRetrievalService) {
         this.aiService = aiService;
         this.conversationService = conversationService;
-        this.knowledgeRepository = knowledgeRepository;
         this.queryUnderstandingService = queryUnderstandingService;
+        this.hybridRetrievalService = hybridRetrievalService;
     }
 
     @Override
@@ -151,25 +152,20 @@ public class ChatServiceImpl implements com.ucc.chatbot.service.ChatService {
             context.append("Active Programme: ").append(understanding.getEntities().getProgramme()).append("\n\n");
         }
 
-        // Only scan documents whose title/category actually matches the query.
-        // Iterating every KB document on every request was a DB query + full
-        // scan and added noticeable latency on each chat turn.
-        if (knowledgeRepository != null) {
-            List<KnowledgeDocument> documents = knowledgeRepository.findByIsActiveTrue();
-            String queryText = understanding.getCanonicalQuery() != null
-                    ? understanding.getCanonicalQuery().toLowerCase() : "";
-            String programme = understanding.getEntities() != null
-                    ? understanding.getEntities().getProgramme() : null;
-            int scanned = 0;
-            for (KnowledgeDocument doc : documents) {
-                if (scanned >= 12) break; // cap the scan so the context stays small
-                if (doc.getContent() != null && !doc.getContent().isBlank()) {
-                    String title = doc.getTitle() != null ? doc.getTitle().toLowerCase() : "";
-                    String category = doc.getCategory() != null ? doc.getCategory().toLowerCase() : "";
-                    if (queryText.contains(title) || queryText.contains(category) ||
-                        (programme != null && title.contains(programme.toLowerCase()))) {
-                        context.append(doc.getTitle()).append(": ").append(doc.getContent()).append("\n\n");
-                        scanned++;
+        if (hybridRetrievalService != null) {
+            String queryText = understanding.getCanonicalQuery();
+            if (queryText == null || queryText.isBlank()) {
+                queryText = understanding.getRetrievalQueries() != null && !understanding.getRetrievalQueries().isEmpty()
+                        ? understanding.getRetrievalQueries().get(0) : null;
+            }
+            if (queryText != null && !queryText.isBlank()) {
+                List<KnowledgeDocument> docs = hybridRetrievalService.hybridSearch(queryText, 5);
+                if (!docs.isEmpty()) {
+                    context.append("Retrieved Knowledge:\n");
+                    for (KnowledgeDocument doc : docs) {
+                        if (doc.getContent() != null && !doc.getContent().isBlank()) {
+                            context.append(doc.getTitle()).append(": ").append(doc.getContent()).append("\n\n");
+                        }
                     }
                 }
             }

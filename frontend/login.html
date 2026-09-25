@@ -205,249 +205,195 @@
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script>
-    const $ = (s) => document.querySelector(s);
-    const apiBase = () => (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
+    (function() {
+      const $ = (s) => document.querySelector(s);
+      const apiBase = () => (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
 
-    function flash(msg, ok) {
-      const el = $('#flash-area');
-      const d = document.createElement('div');
-      d.className = 'flash ' + (ok ? 'flash-ok' : 'flash-err');
-      d.textContent = msg;
-      el.appendChild(d);
-      setTimeout(() => d.remove(), 4000);
-    }
-
-function setTab(tab) {
-       document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-       $('#tab-visitor').classList.toggle('hidden', tab !== 'visitor');
-       $('#tab-student').classList.toggle('hidden', tab !== 'student');
-       $('#tab-admin').classList.toggle('hidden', tab !== 'admin');
-       $('#flash-area').innerHTML = '';
-     }
-
-    async function api(endpoint, opts = {}) {
-      const base = apiBase();
-      if (!base) return null;
-      const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
-      const token = localStorage.getItem('ucc_auth_token');
-      if (token) headers['Authorization'] = 'Bearer ' + token;
-      const ctrl = new AbortController();
-      const tmo = setTimeout(() => ctrl.abort(), 8000);
-      try {
-        const r = await fetch(base + endpoint, { signal: ctrl.signal, headers, ...opts });
-        clearTimeout(tmo);
-        const txt = await r.text();
-        if (!r.ok) throw new Error(r.status + ': ' + txt);
-        return txt ? JSON.parse(txt) : null;
-      } catch (e) {
-        return null;
+      function flash(msg, ok) {
+        const el = $('#flash-area');
+        const d = document.createElement('div');
+        d.className = 'flash ' + (ok ? 'flash-ok' : 'flash-err');
+        d.textContent = msg;
+        el.appendChild(d);
+        setTimeout(() => d.remove(), 4000);
       }
-    }
 
-    async function authRequest(endpoint, payload) {
-      try {
-        const response = await fetch(apiBase() + endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+      function setTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+        $('#tab-visitor').classList.toggle('hidden', tab !== 'visitor');
+        $('#tab-student').classList.toggle('hidden', tab !== 'student');
+        $('#tab-admin').classList.toggle('hidden', tab !== 'admin');
+        $('#flash-area').innerHTML = '';
+      }
+
+      async function finishLogin() {
+        try {
+          if (window.AuthService && window.AuthService.isAuthenticated()) {
+            await window.AuthService.linkConversation();
+          }
+        } catch (_) {}
+        flash('Welcome! Redirecting...', true);
+        setTimeout(() => { window.location.href = 'chat.html'; }, 600);
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
+        $('#show-student-login').addEventListener('click', (e) => { e.preventDefault(); $('#student-register-box').classList.add('hidden'); $('#student-login-form').classList.remove('hidden'); });
+        $('#show-visitor-register').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-login-form').classList.add('hidden'); $('#visitor-register-box').classList.remove('hidden'); });
+        $('#show-visitor-login').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-register-box').classList.add('hidden'); $('#visitor-login-form').classList.remove('hidden'); });
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('email')) {
+          const email = params.get('email');
+          $('#s-email').value = email;
+        }
+
+        $('#visitor-login-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const email = $('#v-email').value.trim();
+          const password = $('#v-password').value;
+          if (!email || !password) { flash('Invalid email or password', false); return; }
+          if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
+          try {
+            const data = await window.AuthService.login(email, password);
+            const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+            if (role === 'ADMIN' || role === 'SUPERADMIN' || role === 'SUPER_ADMIN') {
+              flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
+              setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
+              return;
+            }
+            if (role !== 'VISITOR') { flash('Access denied: visitor role required', false); window.AuthService.clearSession(); return; }
+            await finishLogin();
+          } catch (error) {
+            flash(error.message || 'Invalid email or password', false);
+          }
         });
-        const data = await response.json().catch(() => ({}));
-        return { ok: response.ok, data };
-      } catch (_) {
-        return { ok: false, data: { message: 'Unable to reach the authentication service.' } };
-      }
-    }
 
-    function saveStudentSession(data) {
-      localStorage.setItem('ucc_auth_token', data.token);
-      if (data.refreshToken) localStorage.setItem('ucc_auth_refresh_token', data.refreshToken);
-      localStorage.setItem('ucc_auth_role', data.user && data.user.role ? data.user.role : 'USER');
-      localStorage.setItem('ucc_auth_user', JSON.stringify(data.user || {}));
-    }
-
-    function clearSession() {
-      localStorage.removeItem('ucc_auth_token');
-      localStorage.removeItem('ucc_auth_refresh_token');
-      localStorage.removeItem('ucc_auth_role');
-      localStorage.removeItem('ucc_auth_user');
-    }
-
-    async function finishLogin(data, fallbackName) {
-      saveStudentSession(data);
-      // Best-effort: link any anonymous conversation to this user so history survives.
-      try {
-        if (window.UCCSession && typeof window.UCCSession.linkConversation === 'function') {
-          await window.UCCSession.linkConversation();
-        }
-      } catch (_) {}
-      // Best-effort: schedule token refresh so sessions don't silently expire.
-      try {
-        if (window.UCCSession && typeof window.UCCSession.scheduleRefresh === 'function') {
-          window.UCCSession.scheduleRefresh();
-        }
-      } catch (_) {}
-      flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : (fallbackName || 'there')), true);
-      setTimeout(() => { window.location.href = 'chat.html'; }, 600);
-    }
-
-document.addEventListener('DOMContentLoaded', function () {
-       document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
-      $('#show-student-login').addEventListener('click', (e) => { e.preventDefault(); $('#student-register-box').classList.add('hidden'); $('#student-login-form').classList.remove('hidden'); });
-      $('#show-visitor-register').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-login-form').classList.add('hidden'); $('#visitor-register-box').classList.remove('hidden'); });
-      $('#show-visitor-login').addEventListener('click', (e) => { e.preventDefault(); $('#visitor-register-box').classList.add('hidden'); $('#visitor-login-form').classList.remove('hidden'); });
-
-      // Pre-fill from URL params: ?email=...&password=...
-      const params = new URLSearchParams(window.location.search);
-      if (params.has('email')) {
-        const email = params.get('email');
-        $('#s-email').value = email;
-      }
-
-      $('#visitor-login-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const email = $('#v-email').value.trim();
-        const password = $('#v-password').value;
-        if (!email || !password) { flash('Invalid email or password', false); return; }
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/auth/login', { email, password });
-        const data = result.data;
-        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
-        const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-        // Admins use the same /auth/login endpoint but must be redirected to
-        // the admin dashboard. Previously this form rejected any role that
-        // wasn't VISITOR, so admin credentials always failed with
-        // "Access denied: visitor role required".
-        if (role === 'ADMIN' || role === 'SUPERADMIN') {
-          saveStudentSession(data);
-          flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
-          setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
-          return;
-        }
-        if (role !== 'VISITOR') { flash('Access denied: visitor role required', false); clearSession(); return; }
-        finishLogin(data, email);
-      });
-
-      $('#visitor-register-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const name = $('#v-name').value.trim();
-        const email = $('#v-email-2').value.trim();
-        const password = $('#v-password-2').value;
-        const confirm = $('#v-confirm-2').value;
-        if (!name || !email || !password) { flash('All fields are required', false); return; }
-        if (password !== confirm) { flash('Passwords do not match', false); return; }
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/auth/visitor-register', { email, password, confirmPassword: confirm, fullName: name });
-        const data = result.data;
-        if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
-        flash('Account created. Please login.', true);
-        $('#visitor-register-form').reset();
-        $('#visitor-register-box').classList.add('hidden');
-        $('#visitor-login-form').classList.remove('hidden');
-        $('#v-email').value = email;
-        $('#v-password').focus();
-      });
-
-      $('#student-login-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const email = $('#s-email').value.trim();
-        const password = $('#s-password').value;
-        if (!email || !password) { flash('Invalid email or password', false); return; }
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/auth/student/verify-email', { email, password });
-        const data = result.data;
-        if (!result.ok || !data.success) { flash(data.message || 'Invalid email or password', false); return; }
-        if (data.requiresRegistrationNumber) {
-          localStorage.setItem('ucc_student_challenge', data.challengeToken);
-          localStorage.setItem('ucc_student_email', email);
-          $('#s-step1').classList.add('hidden');
-          $('#s-step2').classList.remove('hidden');
-          $('#s-step2-email').value = email;
-          $('#s-reg').value = '';
-          $('#s-reg').focus();
-          return;
-        }
-        finishLogin(data, email);
-      });
-
-      $('#student-register-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const name = $('#s-name').value.trim();
-        const email = $('#s-email-2').value.trim();
-        const regNumber = $('#s-reg-2').value.trim();
-        const password = $('#s-password-2').value;
-        const confirm = $('#s-confirm-2').value;
-        if (!name || !email || !regNumber || !password) { flash('All fields are required', false); return; }
-        if (password !== confirm) { flash('Passwords do not match', false); return; }
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/auth/student/register', { email, password, confirmPassword: confirm, fullName: name, registrationNumber: regNumber });
-        const data = result.data;
-        if (!result.ok || !data.success) { flash((data.message || 'Registration failed'), false); return; }
-        flash('Account created. Please login.', true);
-        $('#student-register-form').reset();
-        $('#student-register-box').classList.add('hidden');
-        $('#student-login-form').classList.remove('hidden');
-        $('#s-email').value = email;
-        $('#s-password').focus();
-      });
-
-      $('#student-step2-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const challengeToken = localStorage.getItem('ucc_student_challenge');
-        const regNumber = $('#s-reg').value.trim();
-        const password = $('#s-step2-password').value;
-        if (!challengeToken || !regNumber || !password) { flash('Invalid registration number or password', false); return; }
-        const base = apiBase();
-        if (!base) { flash('Backend not configured on this host.', false); return; }
-        const result = await authRequest('/auth/student/verify-registration', { challengeToken, registrationNumber: regNumber, password });
-        const data = result.data;
-        if (!result.ok || !data.success) { flash(data.message || 'Invalid registration number or password', false); return; }
-        localStorage.removeItem('ucc_student_challenge');
-        localStorage.removeItem('ucc_student_email');
-        finishLogin(data, regNumber);
-      });
-
-      $('#s-back').addEventListener('click', (e) => { e.preventDefault(); $('#s-step2').classList.add('hidden'); $('#s-step1').classList.remove('hidden'); localStorage.removeItem('ucc_student_challenge'); localStorage.removeItem('ucc_student_email'); });
-
-      $('#admin-login-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const email = $('#a-email').value.trim();
-        const password = $('#a-password').value;
-        if (!email || !password) { flash('Invalid email or password', false); return; }
-        if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
-        try {
-          const data = await window.AuthService.login(email, password);
-          const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-          if (role !== 'ADMIN' && role !== 'SUPERADMIN' && role !== 'SUPER_ADMIN') {
-            window.AuthService.clearSession();
-            flash('Access denied: admin role required', false);
-            return;
+        $('#visitor-register-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const name = $('#v-name').value.trim();
+          const email = $('#v-email-2').value.trim();
+          const password = $('#v-password-2').value;
+          const confirm = $('#v-confirm-2').value;
+          if (!name || !email || !password) { flash('All fields are required', false); return; }
+          if (password !== confirm) { flash('Passwords do not match', false); return; }
+          if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
+          try {
+            await window.AuthService.registerVisitor(name, email, password, confirm);
+            flash('Account created. Please login.', true);
+            $('#visitor-register-form').reset();
+            $('#visitor-register-box').classList.add('hidden');
+            $('#visitor-login-form').classList.remove('hidden');
+            $('#v-email').value = email;
+            $('#v-password').focus();
+          } catch (error) {
+            flash(error.message || 'Registration failed', false);
           }
-          flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
-          setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
-        } catch (error) {
-          flash(error.message || 'Invalid email or password', false);
-        }
-      });
+        });
 
-      (async () => {
-        if (!window.AuthService) return;
-        try {
-          const data = await window.AuthService.me();
-          const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
-          if (role === 'ADMIN' || role === 'SUPERADMIN' || role === 'SUPER_ADMIN') {
-            window.location.href = 'admin/dashboard.html';
-          } else {
-            window.location.href = 'chat.html';
+        $('#student-login-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const email = $('#s-email').value.trim();
+          const password = $('#s-password').value;
+          if (!email || !password) { flash('Invalid email or password', false); return; }
+          if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
+          try {
+            const data = await window.AuthService.studentStep1(email, password);
+            if (data.requiresRegistrationNumber) {
+              sessionStorage.setItem('ucc_student_challenge', data.challengeToken);
+              sessionStorage.setItem('ucc_student_email', email);
+              $('#s-step1').classList.add('hidden');
+              $('#s-step2').classList.remove('hidden');
+              $('#s-step2-email').value = email;
+              $('#s-reg').value = '';
+              $('#s-reg').focus();
+              return;
+            }
+            await finishLogin();
+          } catch (error) {
+            flash(error.message || 'Invalid email or password', false);
           }
-        } catch (_) {
-          clearSession();
-        }
-      })();
-    });
+        });
+
+        $('#student-register-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const name = $('#s-name').value.trim();
+          const email = $('#s-email-2').value.trim();
+          const regNumber = $('#s-reg-2').value.trim();
+          const password = $('#s-password-2').value;
+          const confirm = $('#s-confirm-2').value;
+          if (!name || !email || !regNumber || !password) { flash('All fields are required', false); return; }
+          if (password !== confirm) { flash('Passwords do not match', false); return; }
+          if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
+          try {
+            await window.AuthService.registerStudent(name, email, regNumber, password, confirm);
+            flash('Account created. Please login.', true);
+            $('#student-register-form').reset();
+            $('#student-register-box').classList.add('hidden');
+            $('#student-login-form').classList.remove('hidden');
+            $('#s-email').value = email;
+            $('#s-password').focus();
+          } catch (error) {
+            flash(error.message || 'Registration failed', false);
+          }
+        });
+
+        $('#student-step2-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const challengeToken = sessionStorage.getItem('ucc_student_challenge');
+          const regNumber = $('#s-reg').value.trim();
+          const password = $('#s-step2-password').value;
+          if (!challengeToken || !regNumber || !password) { flash('Invalid registration number or password', false); return; }
+          if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
+          try {
+            const data = await window.AuthService.studentStep2(challengeToken, regNumber, password);
+            sessionStorage.removeItem('ucc_student_challenge');
+            sessionStorage.removeItem('ucc_student_email');
+            await finishLogin();
+          } catch (error) {
+            flash(error.message || 'Invalid registration number or password', false);
+          }
+        });
+
+        $('#s-back').addEventListener('click', (e) => { e.preventDefault(); $('#s-step2').classList.add('hidden'); $('#s-step1').classList.remove('hidden'); sessionStorage.removeItem('ucc_student_challenge'); sessionStorage.removeItem('ucc_student_email'); });
+
+        $('#admin-login-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const email = $('#a-email').value.trim();
+          const password = $('#a-password').value;
+          if (!email || !password) { flash('Invalid email or password', false); return; }
+          if (!window.AuthService) { flash('Authentication service unavailable.', false); return; }
+          try {
+            const data = await window.AuthService.login(email, password);
+            const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+            if (role !== 'ADMIN' && role !== 'SUPERADMIN' && role !== 'SUPER_ADMIN') {
+              window.AuthService.clearSession();
+              flash('Access denied: admin role required', false);
+              return;
+            }
+            flash('Welcome, ' + (data.user && data.user.fullName ? data.user.fullName : 'Administrator'), true);
+            setTimeout(() => { window.location.href = 'admin/dashboard.html'; }, 600);
+          } catch (error) {
+            flash(error.message || 'Invalid email or password', false);
+          }
+        });
+
+        (async () => {
+          if (!window.AuthService) return;
+          try {
+            const data = await window.AuthService.me();
+            const role = (data.user && data.user.role) ? data.user.role.toUpperCase() : '';
+            if (role === 'ADMIN' || role === 'SUPERADMIN' || role === 'SUPER_ADMIN') {
+              window.location.href = 'admin/dashboard.html';
+            } else {
+              window.location.href = 'chat.html';
+            }
+          } catch (_) {
+            // Not logged in — stay on login page.
+          }
+        })();
+      });
+    })();
   </script>
 </body>
 </html>

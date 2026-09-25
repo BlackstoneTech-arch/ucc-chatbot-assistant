@@ -33,9 +33,66 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
 
     @Override
     public List<KnowledgeDocument> vectorSearch(String query, int limit) {
-        // Vector search placeholder — uses simple text overlap as fallback
-        // In production, replace with actual embedding + cosine similarity
-        return bm25Search(query, limit);
+        if (query == null || query.isBlank()) return List.of();
+        List<KnowledgeDocument> corpus = knowledgeRepository.findByIsActiveTrue();
+        if (corpus.isEmpty()) return List.of();
+
+        List<String> queryTerms = tokenize(query);
+        if (queryTerms.isEmpty()) return List.of();
+
+        List<KnowledgeDocument> candidates = corpus.stream()
+                .filter(doc -> {
+                    String text = docTitleContent(doc).toLowerCase();
+                    return queryTerms.stream().anyMatch(text::contains);
+                })
+                .collect(Collectors.toList());
+
+        if (candidates.isEmpty()) return List.of();
+
+        Map<String, Long> docFreq = new HashMap<>();
+        for (KnowledgeDocument doc : candidates) {
+            Set<String> terms = new HashSet<>(tokenize(docTitleContent(doc)));
+            for (String t : terms) {
+                docFreq.merge(t, 1L, Long::sum);
+            }
+        }
+        int n = candidates.size();
+        Map<String, Double> idf = new HashMap<>();
+        for (Map.Entry<String, Long> e : docFreq.entrySet()) {
+            idf.put(e.getKey(), Math.log((double) (n + 1) / (e.getValue() + 1)) + 1.0);
+        }
+
+        Map<String, Long> queryTf = new HashMap<>();
+        for (String t : queryTerms) queryTf.merge(t, 1L, Long::sum);
+        double queryNorm = 0;
+        Map<String, Double> queryVec = new HashMap<>();
+        for (Map.Entry<String, Long> e : queryTf.entrySet()) {
+            double w = (e.getValue() + 1) * idf.getOrDefault(e.getKey(), 0.0);
+            queryVec.put(e.getKey(), w);
+            queryNorm += w * w;
+        }
+        queryNorm = Math.sqrt(queryNorm);
+        if (queryNorm == 0) return List.of();
+
+        List<ScoredDoc> scored = new ArrayList<>();
+        for (KnowledgeDocument doc : candidates) {
+            Map<String, Long> docTf = new HashMap<>();
+            for (String t : tokenize(docTitleContent(doc))) docTf.merge(t, 1L, Long::sum);
+            double dot = 0;
+            double docNorm = 0;
+            for (Map.Entry<String, Long> e : docTf.entrySet()) {
+                double w = (e.getValue() + 1) * idf.getOrDefault(e.getKey(), 0.0);
+                dot += w * queryVec.getOrDefault(e.getKey(), 0.0);
+                docNorm += w * w;
+            }
+            double sim = (docNorm == 0) ? 0 : dot / (queryNorm * Math.sqrt(docNorm));
+            if (sim > 0) scored.add(new ScoredDoc(doc, sim));
+        }
+        return scored.stream()
+                .sorted((a, b) -> Double.compare(b.score, a.score))
+                .limit(limit)
+                .map(sd -> sd.doc)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -67,5 +124,29 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
             }
         }
         return score;
+    }
+
+    private List<String> tokenize(String text) {
+        if (text == null || text.isBlank()) return List.of();
+        return Arrays.stream(text.toLowerCase().split("[^a-z0-9]+"))
+                .filter(s -> s.length() > 1)
+                .collect(Collectors.toList());
+    }
+
+    private String docTitleContent(KnowledgeDocument doc) {
+        StringBuilder sb = new StringBuilder();
+        if (doc.getTitle() != null) sb.append(doc.getTitle()).append(' ');
+        if (doc.getContent() != null) sb.append(doc.getContent()).append(' ');
+        if (doc.getCategory() != null) sb.append(doc.getCategory()).append(' ');
+        return sb.toString();
+    }
+
+    private static class ScoredDoc {
+        final KnowledgeDocument doc;
+        final double score;
+        ScoredDoc(KnowledgeDocument doc, double score) {
+            this.doc = doc;
+            this.score = score;
+        }
     }
 }

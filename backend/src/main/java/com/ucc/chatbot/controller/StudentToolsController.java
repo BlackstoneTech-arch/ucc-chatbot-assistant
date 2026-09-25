@@ -13,7 +13,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/student")
-@PreAuthorize("hasAnyRole('USER','STUDENT','ADMIN','SUPERADMIN','STAFF','EDITOR')")
+@PreAuthorize("hasRole('STUDENT')")
 public class StudentToolsController {
 
     private final DemoAcademicService academicService;
