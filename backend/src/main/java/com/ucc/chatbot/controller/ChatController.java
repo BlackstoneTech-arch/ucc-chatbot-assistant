@@ -105,13 +105,13 @@ public class ChatController {
                                                                  Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getName())) {
-            return ResponseEntity.status(401).body(List.of());
+            return ResponseEntity.status(401).body(Collections.emptyList());
         }
         Optional<Conversation> convOpt = conversationService.getOrCreateConversation(sessionId, null);
-        if (convOpt.isEmpty()) return ResponseEntity.ok(List.of());
+        if (convOpt.isEmpty()) return ResponseEntity.ok(Collections.emptyList());
         Conversation conv = convOpt.get();
         if (conv.getUserId() != null && !authentication.getName().equals(conv.getUserId().toString())) {
-            return ResponseEntity.status(403).body(List.of());
+            return ResponseEntity.status(403).body(Collections.emptyList());
         }
         List<Message> msgs = messageRepository.findByConversationIdOrderByCreatedAtAsc(conv.getId());
         List<Map<String, Object>> result = msgs.stream().map(m -> {

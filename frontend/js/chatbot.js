@@ -1210,6 +1210,15 @@ function setSendButtonStop(isStop) {
     // Restore history if any
     restoreHistory();
 
+    // Restore auth session from cookies if available, then link conversation.
+    if (window.AuthService && typeof window.AuthService.me === 'function') {
+      window.AuthService.me().then(() => {
+        if (window.AuthService.isAuthenticated()) {
+          window.AuthService.linkConversation().catch(() => {});
+        }
+      }).catch(() => {});
+    }
+
     // Load welcome if widget is visible
     const widget = $('chat-widget');
     if (widget && !widget.classList.contains('hidden')) loadWelcomeIfNeeded();
