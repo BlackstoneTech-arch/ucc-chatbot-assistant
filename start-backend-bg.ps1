@@ -15,6 +15,21 @@ Get-Content (Join-Path $ProjectRoot ".env") | ForEach-Object {
 
 Write-Host "DB_URL=$($env:DB_URL)"
 Write-Host "AI_PROVIDER=$($env:AI_PROVIDER)"
-Write-Host "Starting Java..."
 
-& "C:\Program Files\Eclipse Adoptium\jdk-25.0.2.10-hotspot\bin\java.exe" -Xmx768m -jar (Join-Path $ProjectRoot "backend\target\ucc-chatbot-1.0.0.jar") --server.port=8081 *>&1 | Tee-Object -FilePath $LogFile -Append
+$javaExe = (Get-Command java -ErrorAction SilentlyContinue).Path
+if (-not $javaExe) {
+    $javaExe = "$env:JAVA_HOME\bin\java.exe"
+}
+if (-not $javaExe -or -not (Test-Path $javaExe)) {
+    Write-Host "Java not found. Install JDK 21+ or run build-backend.ps1 first." -ForegroundColor Red
+    exit 1
+}
+
+$jar = Join-Path $ProjectRoot "backend\target\ucc-chatbot-1.0.0.jar"
+if (-not (Test-Path $jar)) {
+    Write-Host "JAR not found at $jar. Run build-backend.ps1 first." -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Starting Java..."
+& $javaExe -Xmx768m -jar $jar --server.port=8081 *>&1 | Tee-Object -FilePath $LogFile -Append

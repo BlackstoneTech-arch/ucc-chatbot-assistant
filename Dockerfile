@@ -1,29 +1,14 @@
-FROM node:20-alpine AS builder
+FROM maven:3.9.9-eclipse-temurin-25 AS build
 
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY backend/package*.json ./backend/
-RUN cd backend && npm ci --only=production
-
+WORKDIR /workspace
+COPY pom.xml .
 COPY backend/src ./backend/src
-COPY backend/tsconfig*.json ./backend/
-RUN cd backend && npm run build
+RUN mvn -B -DskipTests package
 
-FROM node:20-alpine
+FROM eclipse-temurin:25-jre
 
 WORKDIR /app
+COPY --from=build /workspace/backend/target/ucc-chatbot-1.0.0.jar app.jar
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/backend/node_modules ./backend/node_modules
-COPY --from=builder /app/backend/dist ./backend/dist
-COPY --from=builder /app/backend/package.json ./backend/
-COPY frontend ./frontend
-COPY admin ./admin
-COPY knowledge-base ./knowledge-base
-
-EXPOSE 5000
-
-CMD ["npm", "run", "start", "--workspace=backend"]
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
