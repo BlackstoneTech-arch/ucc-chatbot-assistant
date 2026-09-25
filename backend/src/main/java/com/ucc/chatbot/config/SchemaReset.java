@@ -41,14 +41,28 @@ public class SchemaReset implements ApplicationListener<ApplicationEnvironmentPr
             Class.forName(driver != null ? driver : "org.postgresql.Driver");
             DataSource ds = new DriverManagerDataSource(url, user, pass);
             JdbcTemplate jdbc = new JdbcTemplate(ds);
-            List<String> tables = jdbc.queryForList(
-                "SELECT tablename FROM pg_tables WHERE schemaname = 'public'", String.class);
-            for (String t : tables) {
-                try {
-                    jdbc.execute("DROP TABLE IF EXISTS \"" + t + "\" CASCADE");
-                    log.info("Dropped: {}", t);
-                } catch (Exception e) {
-                    log.warn("Could not drop {}: {}", t, e.getMessage());
+            List<String> tables;
+            if (url.contains("jdbc:mysql")) {
+                tables = jdbc.queryForList(
+                        "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()", String.class);
+                for (String t : tables) {
+                    try {
+                        jdbc.execute("DROP TABLE IF EXISTS `" + t.replace("`", "``") + "`");
+                        log.info("Dropped: {}", t);
+                    } catch (Exception e) {
+                        log.warn("Could not drop {}: {}", t, e.getMessage());
+                    }
+                }
+            } else {
+                tables = jdbc.queryForList(
+                        "SELECT tablename FROM pg_tables WHERE schemaname = 'public'", String.class);
+                for (String t : tables) {
+                    try {
+                        jdbc.execute("DROP TABLE IF EXISTS \"" + t + "\" CASCADE");
+                        log.info("Dropped: {}", t);
+                    } catch (Exception e) {
+                        log.warn("Could not drop {}: {}", t, e.getMessage());
+                    }
                 }
             }
             log.warn("All tables dropped. Hibernate will recreate them on boot.");

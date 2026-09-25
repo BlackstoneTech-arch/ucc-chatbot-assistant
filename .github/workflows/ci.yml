@@ -12,19 +12,20 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: postgres:14
+      mysql:
+        image: mysql:8.0
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: ucc_chatbot_test
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: ucc_chatbot_test
+          MYSQL_USER: ucc_user
+          MYSQL_PASSWORD: ucc_password
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
         ports:
-          - 5432:5432
+          - 3306:3306
 
     steps:
       - name: Checkout code
@@ -50,7 +51,7 @@ jobs:
       - name: Run tests
         run: npm test --workspace=backend
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ucc_chatbot_test
+          DATABASE_URL: jdbc:mysql://localhost:3306/ucc_chatbot_test?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
           AI_API_KEY: test-key
           JWT_SECRET: test-jwt-secret-key-for-ci-only
         continue-on-error: true
